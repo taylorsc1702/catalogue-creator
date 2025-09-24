@@ -14,7 +14,7 @@ const STORE = process.env.SHOPIFY_STORE_DOMAIN!;
 const TOKEN = process.env.SHOPIFY_ADMIN_TOKEN!;
 const API_URL = `https://${STORE}/admin/api/2024-07/graphql.json`;
 
-// include ALL metafields you listed
+// include ALL metafields you shared
 const IDENTIFIERS = [
   { namespace: "custom",    key: "weight" },
   { namespace: "my_fields", key: "Dimensions" },
@@ -28,7 +28,7 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "ICRKDT" },
   { namespace: "my_fields", key: "icillus" },
   { namespace: "my_fields", key: "ICAUTH" },
-  { namespace: "my_fields", key: "Illlustrations" }, // as provided
+  { namespace: "my_fields", key: "Illlustrations" },
   { namespace: "my_fields", key: "Edition" },
 ] as const;
 
@@ -38,7 +38,11 @@ const query = `
       edges {
         cursor
         node {
-          id title handle vendor tags
+          id
+          title
+          handle
+          vendor
+          tags
           featuredImage { url altText }
           images(first: 1) { edges { node { url altText } } }
           variants(first: 1) { edges { node { price } } }
@@ -58,20 +62,40 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
   let after: string | null = null;
   const out: ShopifyProduct[] = [];
 
+  // minimal types to keep TS happy without over-modeling Shopify’s response
+  type Edge = { cursor: string; node: any };
+  type Gql = {
+    data?: {
+      products?: {
+        edges?: Edge[];
+        pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+      };
+    };
+  };
+
   while (true) {
-    const resp = await fetch(API_URL, {
+    const init: RequestInit = {
       method: "POST",
-      headers: { "X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json" },
+      headers: {
+        "X-Shopify-Access-Token": TOKEN,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ query, variables: { query: searchQuery, after } }),
-    });
-    if (!resp.ok) throw new Error(`Shopify GraphQL error ${resp.status}`);
-    const data = await resp.json();
-    const edges = data?.data?.products?.edges ?? [];
+    };
+
+    const response: Response = await fetch(API_URL, init);
+    if (!response.ok) {
+      const t = await response.text();
+      throw new Error(`Shopify GraphQL error: ${response.status} ${t}`);
+    }
+
+    const data: Gql = await response.json();
+    const edges: Edge[] = data?.data?.products?.edges ?? [];
 
     for (const e of edges) {
       const n = e.node;
       const mf: Record<string, string | undefined> = {};
-      for (const m of n.metafields ?? []) mf[m.key] = m.value ?? undefined;
+      for (const m of n?.metafields ?? []) mf[m.key] = m.value ?? undefined;
 
       out.push({
         id: n.id,
@@ -86,7 +110,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
     }
 
     const page = data?.data?.products?.pageInfo;
-    after = page?.hasNextPage ? page?.endCursor : null;
+    after = page?.hasNextPage ? page?.endCursor ?? null : null;
     if (!after) break;
   }
 
@@ -118,5 +142,9 @@ export function buildShopifyQuery(opts: {
   if (opts.freeText) p.push(opts.freeText);
   return p.join(" AND ") || "status:active";
 }
-function escapeVal(v: string) { return v.replace(/'/g, "\\'"); }
+
+function escapeVal(v: string) {
+  return v.replace(/'/g, "\\'");
+}
+
 export const firstDefined = (...vals: (string | undefined)[]) => vals.find(v => v?.trim());
