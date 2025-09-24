@@ -13,11 +13,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       metafieldContains: z.string().optional(),
       freeText: z.string().optional(),
     });
+
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
     const query = buildShopifyQuery(parsed);
     const products = await fetchProductsByQuery(query);
 
-    const items = products.map(p => {
+    const items = products.map((p) => {
       const mf = p.metafields;
       return {
         title: p.title,
@@ -43,7 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     res.status(200).json({ items });
-  } catch (e: any) {
-    res.status(400).json({ error: e.message ?? "Invalid request" });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Invalid request";
+    res.status(400).json({ error: message });
   }
 }
