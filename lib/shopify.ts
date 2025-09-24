@@ -112,20 +112,18 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       }
 
       out.push({
-        id: n.id,
-        title: n.title,
-        handle: n.handle,
-        vendor: n.vendor,
-        tags: n.tags ?? [],
-        featuredImageUrl:
-          n.featuredImage?.url ??
-          (n.images?.edges && n.images.edges[0]?.node?.url) ??
-          undefined,
-        price:
-          (n.variants?.edges && n.variants.edges[0]?.node?.price ?? undefined) || undefined,
-        metafields: mf,
-      });
-    }
+  id: n.id,
+  title: n.title,
+  handle: n.handle,
+  vendor: n.vendor,
+  tags: n.tags ?? [],
+  featuredImageUrl:
+    n.featuredImage?.url ??
+    n.images?.edges?.[0]?.node?.url ??
+    undefined,
+  price: n.variants?.edges?.[0]?.node?.price ?? undefined,
+  metafields: mf,
+});
 
     const page = data?.data?.products?.pageInfo;
     after = page?.hasNextPage ? page?.endCursor ?? null : null;
