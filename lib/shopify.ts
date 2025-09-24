@@ -56,22 +56,34 @@ const query = `
   }
 `;
 
+type ProductNode = {
+  id: string;
+  title: string;
+  handle: string;
+  vendor: string;
+  tags?: string[] | null;
+  featuredImage?: { url?: string | null } | null;
+  images?: { edges?: Array<{ node?: { url?: string | null } | null }> | null } | null;
+  variants?: { edges?: Array<{ node?: { price?: string | null } | null }> | null } | null;
+  metafields?: Array<{ key: string; value?: string | null }> | null;
+};
+
+type Edge = { cursor: string; node: ProductNode };
+
+type Gql = {
+  data?: {
+    products?: {
+      edges?: Edge[];
+      pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+    };
+  };
+};
+
 export async function fetchProductsByQuery(searchQuery: string): Promise<ShopifyProduct[]> {
   if (!STORE || !TOKEN) throw new Error("Missing SHOPIFY env");
 
   let after: string | null = null;
   const out: ShopifyProduct[] = [];
-
-  // minimal types to keep TS happy without over-modeling Shopify’s response
-  type Edge = { cursor: string; node: any };
-  type Gql = {
-    data?: {
-      products?: {
-        edges?: Edge[];
-        pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
-      };
-    };
-  };
 
   while (true) {
     const init: RequestInit = {
@@ -95,7 +107,9 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
     for (const e of edges) {
       const n = e.node;
       const mf: Record<string, string | undefined> = {};
-      for (const m of n?.metafields ?? []) mf[m.key] = m.value ?? undefined;
+      for (const m of n.metafields ?? []) {
+        mf[m.key] = m.value ?? undefined;
+      }
 
       out.push({
         id: n.id,
@@ -103,8 +117,12 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
         handle: n.handle,
         vendor: n.vendor,
         tags: n.tags ?? [],
-        featuredImageUrl: n.featuredImage?.url ?? n.images?.edges?.[0]?.node?.url,
-        price: n.variants?.edges?.[0]?.node?.price ?? undefined,
+        featuredImageUrl:
+          n.featuredImage?.url ??
+          (n.images?.edges && n.images.edges[0]?.node?.url) ??
+          undefined,
+        price:
+          (n.variants?.edges && n.variants.edges[0]?.node?.price ?? undefined) || undefined,
         metafields: mf,
       });
     }
