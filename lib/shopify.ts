@@ -157,15 +157,13 @@ export function buildShopifyQuery(opts: {
   }
   if (opts.freeText) p.push(opts.freeText);
 
-  // If no filters, return ALL products (draft/archived/active)
+  // If no filters, return ALL products
   return p.length ? p.join(" AND ") : "status:any";
 }
 
 function escapeVal(v: string) {
-  // escape single quotes in Shopify search strings
   return v.replace(/'/g, "\\'");
 }
 
-// Handy helper used by the API route to pick the first non-empty metafield
 export const firstDefined = (...vals: (string | undefined)[]) =>
   vals.find(v => v?.trim());
