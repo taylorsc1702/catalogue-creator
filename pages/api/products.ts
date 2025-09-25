@@ -15,7 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
+
     const query = buildShopifyQuery(parsed);
+    console.log("Shopify search query:", query || "(none)");
+
     const products = await fetchProductsByQuery(query);
 
     const items = products.map((p) => {
