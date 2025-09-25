@@ -1,4 +1,5 @@
 // lib/shopify.ts
+
 export type ShopifyProduct = {
   id: string;
   title: string;
@@ -14,7 +15,7 @@ const STORE = process.env.SHOPIFY_STORE_DOMAIN!;
 const TOKEN = process.env.SHOPIFY_ADMIN_TOKEN!;
 const API_URL = `https://${STORE}/admin/api/2024-07/graphql.json`;
 
-// include ALL metafields you shared
+// Metafields you listed
 const IDENTIFIERS = [
   { namespace: "custom",    key: "weight" },
   { namespace: "my_fields", key: "Dimensions" },
@@ -29,7 +30,7 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "icillus" },
   { namespace: "my_fields", key: "ICAUTH" },
   { namespace: "my_fields", key: "Illlustrations" },
-  { namespace: "my_fields", key: "Edition" },
+  { namespace: "my_fields", key: "Edition" }
 ] as const;
 
 const query = `
@@ -56,6 +57,7 @@ const query = `
   }
 `;
 
+// Minimal shapes to satisfy TS + ESLint
 type ProductNode = {
   id: string;
   title: string;
@@ -90,9 +92,9 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": TOKEN,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ query, variables: { query: searchQuery, after } }),
+      body: JSON.stringify({ query, variables: { query: searchQuery, after } })
     };
 
     const response: Response = await fetch(API_URL, init);
@@ -112,21 +114,19 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       }
 
       out.push({
-  id: n.id,
-  title: n.title,
-  handle: n.handle,
-  vendor: n.vendor,
-  tags: n.tags ?? [],
-  featuredImageUrl:
-    n.featuredImage?.url ??
-    n.images?.edges?.[0]?.node?.url ??
-    undefined,
-  price: n.variants?.edges?.[0]?.node?.price ?? undefined,
-  metafields: mf,
-});
+        id: n.id,
+        title: n.title,
+        handle: n.handle,
+        vendor: n.vendor,
+        tags: n.tags ?? [],
+        featuredImageUrl: n.featuredImage?.url ?? n.images?.edges?.[0]?.node?.url ?? undefined,
+        price: n.variants?.edges?.[0]?.node?.price ?? undefined,
+        metafields: mf
+      });
+    }
 
     const page = data?.data?.products?.pageInfo;
-    after = page?.hasNextPage ? page?.endCursor ?? null : null;
+    after = page?.hasNextPage ? (page?.endCursor ?? null) : null;
     if (!after) break;
   }
 
