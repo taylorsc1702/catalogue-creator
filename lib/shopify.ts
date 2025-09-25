@@ -33,8 +33,9 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "Edition" },
 ] as const;
 
+// NOTE: $query is OPTIONAL now (String, not String!)
 const query = `
-  query CatalogueProducts($query: String!, $first: Int = 100, $after: String) {
+  query CatalogueProducts($query: String, $first: Int = 100, $after: String) {
     products(first: $first, after: $after, query: $query) {
       edges {
         cursor
@@ -94,7 +95,8 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
         "X-Shopify-Access-Token": TOKEN,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, variables: { query: searchQuery, after } }),
+      // send null when empty to fetch ALL products
+      body: JSON.stringify({ query, variables: { query: searchQuery || null, after } }),
     };
 
     const response: Response = await fetch(API_URL, init);
@@ -157,13 +159,14 @@ export function buildShopifyQuery(opts: {
   }
   if (opts.freeText) p.push(opts.freeText);
 
-  // If no filters, return ALL products
-  return p.length ? p.join(" AND ") : "status:any";
+  // Return empty string when there are no filters
+  return p.join(" AND ");
 }
 
 function escapeVal(v: string) {
   return v.replace(/'/g, "\\'");
 }
 
+// Handy helper used by the API route
 export const firstDefined = (...vals: (string | undefined)[]) =>
   vals.find(v => v?.trim());
