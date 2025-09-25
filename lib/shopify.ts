@@ -30,7 +30,7 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "icillus" },
   { namespace: "my_fields", key: "ICAUTH" },
   { namespace: "my_fields", key: "Illlustrations" },
-  { namespace: "my_fields", key: "Edition" }
+  { namespace: "my_fields", key: "Edition" },
 ] as const;
 
 const query = `
@@ -92,9 +92,9 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": TOKEN,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, variables: { query: searchQuery, after } })
+      body: JSON.stringify({ query, variables: { query: searchQuery, after } }),
     };
 
     const response: Response = await fetch(API_URL, init);
@@ -121,7 +121,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
         tags: n.tags ?? [],
         featuredImageUrl: n.featuredImage?.url ?? n.images?.edges?.[0]?.node?.url ?? undefined,
         price: n.variants?.edges?.[0]?.node?.price ?? undefined,
-        metafields: mf
+        metafields: mf,
       });
     }
 
@@ -160,3 +160,12 @@ export function buildShopifyQuery(opts: {
   // If no filters, return ALL products (draft/archived/active)
   return p.length ? p.join(" AND ") : "status:any";
 }
+
+function escapeVal(v: string) {
+  // escape single quotes in Shopify search strings
+  return v.replace(/'/g, "\\'");
+}
+
+// Handy helper used by the API route to pick the first non-empty metafield
+export const firstDefined = (...vals: (string | undefined)[]) =>
+  vals.find(v => v?.trim());
