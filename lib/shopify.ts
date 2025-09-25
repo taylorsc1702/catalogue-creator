@@ -156,11 +156,7 @@ export function buildShopifyQuery(opts: {
     }
   }
   if (opts.freeText) p.push(opts.freeText);
-  return p.join(" AND ") || "status:active";
-}
 
-function escapeVal(v: string) {
-  return v.replace(/'/g, "\\'");
+  // If no filters, return ALL products (draft/archived/active)
+  return p.length ? p.join(" AND ") : "status:any";
 }
-
-export const firstDefined = (...vals: (string | undefined)[]) => vals.find(v => v?.trim());
