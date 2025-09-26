@@ -14,6 +14,14 @@ const PROBE = `
   }
 `;
 
+type ProbeData = {
+  data?: {
+    shop?: { name?: string | null } | null;
+    products?: { edges?: Array<{ node?: { id?: string | null; title?: string | null; vendor?: string | null; tags?: string[] | null } | null }> | null } | null;
+  };
+  errors?: unknown;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const r = await fetch(API_URL, {
@@ -24,9 +32,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       body: JSON.stringify({ query: PROBE, variables: { first: 3 } }),
     });
-    const data = await r.json();
+
+    const data = (await r.json()) as ProbeData;
     res.status(r.ok ? 200 : 400).json(data);
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message || "probe failed" });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "probe failed";
+    res.status(500).json({ error: message });
   }
 }
