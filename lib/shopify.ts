@@ -33,7 +33,7 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "Edition" },
 ] as const;
 
-// NOTE: $query is OPTIONAL now (String, not String!)
+// $query is OPTIONAL (String, not String!)
 const query = `
   query CatalogueProducts($query: String, $first: Int = 100, $after: String) {
     products(first: $first, after: $after, query: $query) {
@@ -70,9 +70,7 @@ type ProductNode = {
   variants?: { edges?: Array<{ node?: { price?: string | null } | null }> | null } | null;
   metafields?: Array<{ key: string; value?: string | null }> | null;
 };
-
 type Edge = { cursor: string; node: ProductNode };
-
 type Gql = {
   data?: {
     products?: {
@@ -87,16 +85,20 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
 
   let after: string | null = null;
   const out: ShopifyProduct[] = [];
+  const trimmed = (searchQuery ?? "").trim();
 
   while (true) {
+    // Build variables WITHOUT 'query' when empty (omit instead of sending null)
+    const variables: Record<string, unknown> = { after };
+    if (trimmed.length > 0) variables.query = trimmed;
+
     const init: RequestInit = {
       method: "POST",
       headers: {
         "X-Shopify-Access-Token": TOKEN,
         "Content-Type": "application/json",
       },
-      // send null when empty to fetch ALL products
-      body: JSON.stringify({ query, variables: { query: searchQuery || null, after } }),
+      body: JSON.stringify({ query, variables }),
     };
 
     const response: Response = await fetch(API_URL, init);
@@ -105,8 +107,11 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       throw new Error(`Shopify GraphQL error: ${response.status} ${t}`);
     }
 
-    const data: Gql = await response.json();
+    const data = (await response.json()) as Gql;
     const edges: Edge[] = data?.data?.products?.edges ?? [];
+
+    // Light debug (appears in Vercel Runtime Logs)
+    console.log("Shopify edges this page:", edges.length, "query:", trimmed || "(none)");
 
     for (const e of edges) {
       const n = e.node;
@@ -144,8 +149,8 @@ export function buildShopifyQuery(opts: {
   freeText?: string;
 }) {
   const p: string[] = [];
-  if (opts.tag) p.push(`tag:'${escapeVal(opts.tag)}'`);
-  if (opts.vendor) p.push(`vendor:'${escapeVal(opts.vendor)}'`);
+  if (opts.tag) p.push(`tag:${escapeVal(opts.tag)}`);                 // unquoted is often friendlier
+  if (opts.vendor) p.push(`vendor:'${escapeVal(opts.vendor)}'`);      // vendor likes quotes for spaces
   if (opts.collectionId) p.push(`collection_id:${opts.collectionId}`);
   if (opts.metafieldKey) {
     const [ns, key] = opts.metafieldKey.split(".");
@@ -157,7 +162,7 @@ export function buildShopifyQuery(opts: {
       }
     }
   }
-  if (opts.freeText) p.push(opts.freeText);
+  if (opts.freeText?.trim()) p.push(opts.freeText.trim());
 
   // Return empty string when there are no filters
   return p.join(" AND ");
