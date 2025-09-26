@@ -17,7 +17,7 @@ const API_URL = `https://${STORE}/admin/api/2024-07/graphql.json`;
 
 // Metafields you listed
 const IDENTIFIERS = [
-  { namespace: "custom",    key: "weight" },
+  { namespace: "custom", key: "weight" },
   { namespace: "my_fields", key: "Dimensions" },
   { namespace: "my_fields", key: "Author_Bio" },
   { namespace: "my_fields", key: "Subtitle" },
@@ -33,9 +33,9 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "Edition" },
 ] as const;
 
-// $query is OPTIONAL (String, not String!)
+// Shopify GraphQL
 const query = `
-  query CatalogueProducts($query: String, $first: Int = 100, $after: String) {
+  query CatalogueProducts($query: String, $first: Int = 250, $after: String) {
     products(first: $first, after: $after, query: $query) {
       edges {
         cursor
@@ -58,7 +58,7 @@ const query = `
   }
 `;
 
-// Minimal shapes to satisfy TS + ESLint
+// Minimal shapes
 type ProductNode = {
   id: string;
   title: string;
@@ -80,6 +80,7 @@ type Gql = {
   };
 };
 
+// Fetch with pagination + safety cutoff
 export async function fetchProductsByQuery(searchQuery: string): Promise<ShopifyProduct[]> {
   if (!STORE || !TOKEN) throw new Error("Missing SHOPIFY env");
 
@@ -87,9 +88,11 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
   const out: ShopifyProduct[] = [];
   const trimmed = (searchQuery ?? "").trim();
 
+  // Safety limit (don’t fetch >2000 per request cycle)
+  const MAX_PRODUCTS = 2000;
+
   while (true) {
-    // Build variables WITHOUT 'query' when empty (omit instead of sending null)
-    const variables: Record<string, unknown> = { after };
+    const variables: Record<string, unknown> = { first: 250, after };
     if (trimmed.length > 0) variables.query = trimmed;
 
     const init: RequestInit = {
@@ -110,8 +113,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
     const data = (await response.json()) as Gql;
     const edges: Edge[] = data?.data?.products?.edges ?? [];
 
-    // Light debug (appears in Vercel Runtime Logs)
-    console.log("Shopify edges this page:", edges.length, "query:", trimmed || "(none)");
+    console.log("Shopify edges:", edges.length, "so far:", out.length);
 
     for (const e of edges) {
       const n = e.node;
@@ -132,25 +134,30 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       });
     }
 
+    // Break if we hit either Shopify’s end OR our cutoff
     const page = data?.data?.products?.pageInfo;
-    after = page?.hasNextPage ? (page?.endCursor ?? null) : null;
-    if (!after) break;
+    after = page?.hasNextPage ? page?.endCursor ?? null : null;
+
+    if (!after || out.length >= MAX_PRODUCTS) {
+      break;
+    }
   }
 
   return out;
 }
 
+// Build Shopify query strings
 export function buildShopifyQuery(opts: {
   tag?: string;
   vendor?: string;
   collectionId?: string;
-  metafieldKey?: string;       // e.g. "my_fields.author"
-  metafieldContains?: string;  // value fragment
+  metafieldKey?: string;
+  metafieldContains?: string;
   freeText?: string;
 }) {
   const p: string[] = [];
-  if (opts.tag) p.push(`tag:${escapeVal(opts.tag)}`);                 // unquoted is often friendlier
-  if (opts.vendor) p.push(`vendor:'${escapeVal(opts.vendor)}'`);      // vendor likes quotes for spaces
+  if (opts.tag) p.push(`tag:${escapeVal(opts.tag)}`);
+  if (opts.vendor) p.push(`vendor:'${escapeVal(opts.vendor)}'`);
   if (opts.collectionId) p.push(`collection_id:${opts.collectionId}`);
   if (opts.metafieldKey) {
     const [ns, key] = opts.metafieldKey.split(".");
@@ -164,7 +171,6 @@ export function buildShopifyQuery(opts: {
   }
   if (opts.freeText?.trim()) p.push(opts.freeText.trim());
 
-  // Return empty string when there are no filters
   return p.join(" AND ");
 }
 
@@ -172,6 +178,5 @@ function escapeVal(v: string) {
   return v.replace(/'/g, "\\'");
 }
 
-// Handy helper used by the API route
 export const firstDefined = (...vals: (string | undefined)[]) =>
   vals.find(v => v?.trim());
