@@ -146,7 +146,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
   return out;
 }
 
-// Build Shopify query strings
+// Build Shopify query strings (tries quoted + unquoted for vendor/tag)
 export function buildShopifyQuery(opts: {
   tag?: string;
   vendor?: string;
@@ -156,9 +156,21 @@ export function buildShopifyQuery(opts: {
   freeText?: string;
 }) {
   const p: string[] = [];
-  if (opts.tag) p.push(`tag:${escapeVal(opts.tag)}`);
-  if (opts.vendor) p.push(`vendor:'${escapeVal(opts.vendor)}'`);
+
+  if (opts.tag) {
+    const t = escapeVal(opts.tag);
+    // OR both forms to be lenient
+    p.push(`(tag:${t} OR tag:'${t}')`);
+  }
+
+  if (opts.vendor) {
+    const v = escapeVal(opts.vendor);
+    // OR both forms to be lenient
+    p.push(`(vendor:${v} OR vendor:'${v}')`);
+  }
+
   if (opts.collectionId) p.push(`collection_id:${opts.collectionId}`);
+
   if (opts.metafieldKey) {
     const [ns, key] = opts.metafieldKey.split(".");
     if (ns && key) {
@@ -169,6 +181,7 @@ export function buildShopifyQuery(opts: {
       }
     }
   }
+
   if (opts.freeText?.trim()) p.push(opts.freeText.trim());
 
   return p.join(" AND ");
