@@ -73,7 +73,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
       ].join("");
     }).join("");
 
-    return `<div class="page">${cards}</div>`;
+        const layoutClass = layout === 2 ? " layout-2" : "";
+        return `<div class="page${layoutClass}">${cards}</div>`;
   }).join("");
 
   return `<!doctype html>
@@ -123,6 +124,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     page-break-after: always; 
     padding: 0;
     height: 100vh;
+  }
+  .page.layout-2 {
+    grid-template-rows: 1fr;
+    gap: 20mm;
   }
   .product-card {
     display: flex;

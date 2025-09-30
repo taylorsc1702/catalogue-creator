@@ -129,33 +129,34 @@ export default function Home() {
     }
   }
 
-  async function downloadDocx() {
-    if (!items.length) { alert("Fetch products first."); return; }
-    try {
-      const resp = await fetch("/api/render/docx", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          items, 
-          title: `Catalogue - ${new Date().toLocaleDateString()}` 
-        })
-      });
-      
-      if (!resp.ok) throw new Error("Failed to generate DOCX");
-      
-      const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `catalogue-${new Date().toISOString().split('T')[0]}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      alert("Error generating DOCX: " + (error instanceof Error ? error.message : "Unknown error"));
-    }
-  }
+      async function downloadDocx() {
+        if (!items.length) { alert("Fetch products first."); return; }
+        try {
+          const resp = await fetch("/api/render/docx", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              items, 
+              layout,
+              title: `Catalogue - ${new Date().toLocaleDateString()}` 
+            })
+          });
+          
+          if (!resp.ok) throw new Error("Failed to generate DOCX");
+          
+          const blob = await resp.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `catalogue-${layout}-per-page-${new Date().toISOString().split('T')[0]}.docx`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          alert("Error generating DOCX: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+      }
 
   return (
     <div style={{ 
