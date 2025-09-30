@@ -5,14 +5,15 @@ import { z } from "zod";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const schema = z.object({
-      tag: z.string().optional(),
-      vendor: z.string().optional(),
-      collectionId: z.string().optional(),
-      metafieldKey: z.string().optional(),
-      metafieldContains: z.string().optional(),
-      freeText: z.string().optional(),
-    });
+const schema = z.object({
+  tag: z.string().optional(),
+  vendor: z.string().optional(),
+  collectionId: z.string().optional(),
+  metafieldKey: z.string().optional(),
+  metafieldContains: z.string().optional(),
+  freeText: z.string().optional(),
+  handleList: z.array(z.string()).optional(),
+});
 
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
 
@@ -24,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return {
         title: p.title,
         subtitle: mf["Subtitle"],
+        description: p.description,
         price: p.price,
         author: firstDefined(mf["Author"], mf["author"], mf["ICAUTH"]),
         authorBio: mf["Author_Bio"],

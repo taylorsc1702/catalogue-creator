@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 type Item = {
-  title: string; subtitle?: string; price?: string;
+  title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
@@ -22,12 +22,19 @@ export default function Home() {
   const [metafieldKey, setMetafieldKey] = useState("my_fields.author");
   const [metafieldContains, setMetafieldContains] = useState("");
   const [freeText, setFreeText] = useState("");
+  const [handleList, setHandleList] = useState("");
   const [layout, setLayout] = useState<1|2|4|8>(4);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
+  const [useHandleList, setUseHandleList] = useState(false);
 
   const queryPreview = useMemo(() => {
+    if (useHandleList && handleList.trim()) {
+      const handles = handleList.split('\n').map(h => h.trim()).filter(Boolean);
+      return `handle:(${handles.join(' OR ')})`;
+    }
+    
     const parts: string[] = [];
     if (tag) parts.push(`tag:'${tag}'`);
     if (vendor) parts.push(`vendor:'${vendor}'`);
@@ -38,15 +45,19 @@ export default function Home() {
     }
     if (freeText) parts.push(freeText);
     return parts.join(" AND ") || "status:active";
-  }, [tag, vendor, collectionId, metafieldKey, metafieldContains, freeText]);
+  }, [tag, vendor, collectionId, metafieldKey, metafieldContains, freeText, useHandleList, handleList]);
 
   async function fetchItems() {
     setLoading(true);
     try {
+      const requestBody = useHandleList && handleList.trim() 
+        ? { handleList: handleList.trim().split('\n').map(h => h.trim()).filter(Boolean) }
+        : { tag, vendor, collectionId, metafieldKey, metafieldContains, freeText };
+        
       const resp = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tag, vendor, collectionId, metafieldKey, metafieldContains, freeText }),
+        body: JSON.stringify(requestBody),
       });
 
       const data: ProductsResponse & { error?: string } = await resp.json();
@@ -117,18 +128,142 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: 24, fontFamily: "system-ui, Arial" }}>
-      <h1>Catalogue Creator</h1>
-      <p style={{ color: "#656F91" }}>Filter by Tag/Vendor/Collection/Metafield, preview, then generate HTML, DOCX, or QR code catalogues.</p>
+    <div style={{ 
+      padding: 32, 
+      fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      minHeight: "100vh"
+    }}>
+      <div style={{
+        background: "white",
+        borderRadius: 16,
+        padding: 32,
+        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+        maxWidth: 1200,
+        margin: "0 auto"
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ 
+            fontSize: 36, 
+            fontWeight: 700, 
+            color: "#2C3E50", 
+            margin: 0,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent"
+          }}>
+            📚 Catalogue Creator
+          </h1>
+          <p style={{ 
+            color: "#7F8C8D", 
+            fontSize: 18, 
+            margin: "12px 0 0 0",
+            fontWeight: 400
+          }}>
+            Create professional product catalogues from your Shopify store
+          </p>
+        </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
-        <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
-        <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
-        <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
-        <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
-        <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
-        <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
+      {/* Search Mode Toggle */}
+      <div style={{ 
+        marginBottom: 24, 
+        display: "flex", 
+        gap: 8, 
+        alignItems: "center",
+        background: "#F8F9FA",
+        padding: 8,
+        borderRadius: 12,
+        border: "1px solid #E9ECEF"
+      }}>
+        <label style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 8, 
+          cursor: "pointer",
+          padding: "12px 20px",
+          borderRadius: 8,
+          background: !useHandleList ? "white" : "transparent",
+          border: !useHandleList ? "2px solid #667eea" : "2px solid transparent",
+          transition: "all 0.2s ease",
+          flex: 1,
+          justifyContent: "center"
+        }}>
+          <input 
+            type="radio" 
+            checked={!useHandleList} 
+            onChange={() => setUseHandleList(false)}
+            style={{ margin: 0, display: "none" }}
+          />
+          <span style={{ 
+            fontWeight: 600, 
+            color: !useHandleList ? "#667eea" : "#6C757D",
+            fontSize: 14
+          }}>
+            🔍 Filter by Fields
+          </span>
+        </label>
+        <label style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 8, 
+          cursor: "pointer",
+          padding: "12px 20px",
+          borderRadius: 8,
+          background: useHandleList ? "white" : "transparent",
+          border: useHandleList ? "2px solid #667eea" : "2px solid transparent",
+          transition: "all 0.2s ease",
+          flex: 1,
+          justifyContent: "center"
+        }}>
+          <input 
+            type="radio" 
+            checked={useHandleList} 
+            onChange={() => setUseHandleList(true)}
+            style={{ margin: 0, display: "none" }}
+          />
+          <span style={{ 
+            fontWeight: 600, 
+            color: useHandleList ? "#667eea" : "#6C757D",
+            fontSize: 14
+          }}>
+            📋 Paste ISBN List
+          </span>
+        </label>
       </div>
+
+      {!useHandleList ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+          <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
+          <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
+          <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
+          <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
+          <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
+          <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 16 }}>
+          <Field label="ISBN/Handle List (one per line)">
+            <textarea 
+              value={handleList} 
+              onChange={e=>setHandleList(e.target.value)} 
+              placeholder="9781597842204&#10;9781597842181&#10;9781597842198"
+              style={{ 
+                width: "100%", 
+                height: 120, 
+                border: "1px solid #e7eef3", 
+                borderRadius: 8, 
+                padding: 12, 
+                fontSize: 14,
+                fontFamily: "monospace",
+                resize: "vertical"
+              }}
+            />
+          </Field>
+          <div style={{ fontSize: 12, color: "#656F91", marginTop: 4 }}>
+            💡 Paste a list of ISBNs or product handles (one per line). This will create a targeted catalogue with only these specific products.
+          </div>
+        </div>
+      )}
 
       {/* Local preview of what YOU typed */}
       <div style={{ marginTop: 8, color: "#656F91", fontSize: 12 }}>
@@ -156,45 +291,189 @@ export default function Home() {
         <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
       </div>
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} />
+      </div>
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label style={{ display: "grid", gap: 6 }}>
-      <span style={{ fontSize: 12, color: "#192C6B", fontWeight: 600 }}>{label}</span>
+    <label style={{ display: "grid", gap: 8 }}>
+      <span style={{ 
+        fontSize: 13, 
+        color: "#495057", 
+        fontWeight: 600,
+        textTransform: "uppercase",
+        letterSpacing: "0.5px"
+      }}>
+        {label}
+      </span>
       {children}
-      <style jsx>{`input { border:1px solid #e7eef3; border-radius:8px; padding:8px 10px; font-size:14px; }`}</style>
+      <style jsx>{`
+        input { 
+          border: 2px solid #E9ECEF; 
+          border-radius: 10px; 
+          padding: 12px 16px; 
+          font-size: 14px;
+          transition: all 0.2s ease;
+          background: #FAFBFC;
+        }
+        input:focus {
+          outline: none;
+          border-color: #667eea;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea {
+          border: 2px solid #E9ECEF;
+          border-radius: 10px;
+          padding: 12px 16px;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          background: #FAFBFC;
+        }
+        textarea:focus {
+          outline: none;
+          border-color: #667eea;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      `}</style>
     </label>
   );
 }
 
 function btn(active = false): React.CSSProperties {
-  return { border:"1px solid #e7eef3", background: active?"#A8DCF6":"#F1F6F7", color:"#192C6B", padding:"8px 12px", borderRadius:8, cursor:"pointer", fontWeight:600 };
+  return { 
+    border: active ? "2px solid #667eea" : "2px solid #E9ECEF", 
+    background: active ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "white", 
+    color: active ? "white" : "#495057", 
+    padding: "12px 24px", 
+    borderRadius: 12, 
+    cursor: "pointer", 
+    fontWeight: 600,
+    fontSize: 14,
+    transition: "all 0.2s ease",
+    boxShadow: active ? "0 4px 12px rgba(102, 126, 234, 0.3)" : "0 2px 4px rgba(0,0,0,0.1)",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+  };
 }
 
 function Preview({ items, layout }: { items: Item[]; layout: 1|2|4|8 }) {
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
   return (
-    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, 1fr)`, gap:12 }}>
+    <div style={{ 
+      display: "grid", 
+      gridTemplateColumns: `repeat(${cols}, 1fr)`, 
+      gap: 20,
+      marginTop: 24
+    }}>
       {items.map((it, i) => (
-        <div key={i} style={{ border:"1px solid #e7eef3", borderRadius:10, padding:12, display:"grid", gridTemplateColumns:"95px 1fr", gap:12 }}>
-          <img src={it.imageUrl || "https://via.placeholder.com/95x140?text=No+Image"} alt={it.title}
-            style={{ width:95, height:140, objectFit:"cover", borderRadius:6, background:"#F1F6F7" }}/>
-          <div>
-            <div style={{ fontWeight:700 }}>{it.title}</div>
-            {it.subtitle && <div style={{ color:"#656F91", fontSize:12 }}>{it.subtitle}</div>}
-            {it.author && <div style={{ color:"#656F91", fontSize:12 }}>By {it.author}</div>}
-            <div style={{ color:"#656F91", fontSize:12 }}>
+        <div key={i} style={{ 
+          border: "2px solid #E9ECEF", 
+          borderRadius: 16, 
+          padding: 20, 
+          display: "grid", 
+          gridTemplateColumns: "120px 1fr", 
+          gap: 16,
+          background: "white",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          transition: "all 0.2s ease",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <div style={{ position: "relative" }}>
+            <img 
+              src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
+              alt={it.title}
+              style={{ 
+                width: 120, 
+                height: 180, 
+                objectFit: "cover", 
+                borderRadius: 12, 
+                background: "#F8F9FA",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+              }}
+            />
+            {it.price && (
+              <div style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                padding: "4px 8px",
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600
+              }}>
+                ${it.price}
+              </div>
+            )}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ 
+              fontWeight: 700, 
+              fontSize: 16,
+              color: "#2C3E50",
+              lineHeight: 1.3
+            }}>
+              {it.title}
+            </div>
+            {it.subtitle && (
+              <div style={{ 
+                fontSize: 14, 
+                color: "#7F8C8D",
+                fontStyle: "italic",
+                lineHeight: 1.3
+              }}>
+                {it.subtitle}
+              </div>
+            )}
+            {it.author && (
+              <div style={{ 
+                fontSize: 13, 
+                color: "#667eea",
+                fontWeight: 600
+              }}>
+                👤 {it.author}
+              </div>
+            )}
+            <div style={{ 
+              fontSize: 12, 
+              color: "#6C757D",
+              lineHeight: 1.4
+            }}>
               {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
             </div>
-            {it.imprint && <div style={{ color:"#656F91", fontSize:12 }}>{it.imprint}</div>}
-            {it.releaseDate && <div style={{ color:"#656F91", fontSize:12 }}>Release: {it.releaseDate}</div>}
-            {it.price && <div style={{ marginTop:6, fontWeight:600 }}>AUD$ {it.price}</div>}
-            <div style={{ color:"#656F91", fontSize:12, marginTop:6 }}>/products/{it.handle}</div>
+            {it.imprint && (
+              <div style={{ 
+                fontSize: 12, 
+                color: "#6C757D"
+              }}>
+                🏢 {it.imprint}
+              </div>
+            )}
+            {it.releaseDate && (
+              <div style={{ 
+                fontSize: 12, 
+                color: "#6C757D"
+              }}>
+                📅 {it.releaseDate}
+              </div>
+            )}
+            <div style={{ 
+              fontSize: 11, 
+              color: "#ADB5BD", 
+              marginTop: "auto",
+              wordBreak: "break-all",
+              fontFamily: "monospace"
+            }}>
+              /products/{it.handle}
+            </div>
           </div>
         </div>
       ))}

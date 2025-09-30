@@ -48,6 +48,7 @@ const query = `
           featuredImage { url altText }
           images(first: 1) { edges { node { url altText } } }
           variants(first: 1) { edges { node { price } } }
+          description
           metafields(first: 10) { 
             edges { 
               node { 
@@ -71,6 +72,7 @@ type ProductNode = {
   handle: string;
   vendor: string;
   tags?: string[] | null;
+  description?: string | null;
   featuredImage?: { url?: string | null } | null;
   images?: { edges?: Array<{ node?: { url?: string | null } | null }> | null } | null;
   variants?: { edges?: Array<{ node?: { price?: string | null } | null }> | null } | null;
@@ -150,6 +152,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
         handle: n.handle,
         vendor: n.vendor,
         tags: n.tags ?? [],
+        description: n.description ?? undefined,
         featuredImageUrl: n.featuredImage?.url ?? n.images?.edges?.[0]?.node?.url ?? undefined,
         price: n.variants?.edges?.[0]?.node?.price ?? undefined,
         metafields: mf,
@@ -176,7 +179,14 @@ export function buildShopifyQuery(opts: {
   metafieldKey?: string;
   metafieldContains?: string;
   freeText?: string;
+  handleList?: string[];
 }) {
+  // Handle list takes priority
+  if (opts.handleList && opts.handleList.length > 0) {
+    const handleQuery = opts.handleList.map(handle => `handle:'${escapeVal(handle)}'`).join(" OR ");
+    return `(${handleQuery})`;
+  }
+
   const p: string[] = [];
 
   if (opts.tag) {

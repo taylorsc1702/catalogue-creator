@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ImageRun, ExternalHyperlink } from "docx";
 
 type Item = {
-  title: string; subtitle?: string; price?: string;
+  title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
@@ -24,41 +24,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sections: [{
         properties: {},
         children: [
+          // Header
           new Paragraph({
-            text: title,
+            children: [
+              new TextRun({
+                text: title,
+                bold: true,
+                size: 32,
+                color: "2C3E50",
+              }),
+            ],
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
           }),
           new Paragraph({
-            text: `Generated on ${new Date().toLocaleDateString()}`,
-            alignment: AlignmentType.CENTER,
-          }),
-          new Paragraph({ text: "" }), // Empty line
-          
-          // Create table for products
-          new Table({
-            width: {
-              size: 100,
-              type: WidthType.PERCENTAGE,
-            },
-            rows: [
-              // Header row
-              new TableRow({
-                children: [
-                  new TableCell({
-                    children: [new Paragraph({ text: "Image", alignment: AlignmentType.CENTER })],
-                    width: { size: 15, type: WidthType.PERCENTAGE },
-                  }),
-                  new TableCell({
-                    children: [new Paragraph({ text: "Product Details", alignment: AlignmentType.CENTER })],
-                    width: { size: 85, type: WidthType.PERCENTAGE },
-                  }),
-                ],
+            children: [
+              new TextRun({
+                text: `Generated on ${new Date().toLocaleDateString()}`,
+                size: 20,
+                color: "7F8C8D",
               }),
-              // Product rows
-              ...items.map(item => createProductRow(item)),
             ],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 600 },
           }),
+          
+          // Products
+          ...items.map((item, index) => createProductSection(item, index + 1)),
         ],
       }],
     });
@@ -74,43 +67,225 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function createProductRow(item: Item): TableRow {
+function createProductSection(item: Item, index: number) {
+  const elements = [
+    // Product number and title
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `${index}. `,
+          bold: true,
+          size: 24,
+          color: "34495E",
+        }),
+        new TextRun({
+          text: item.title,
+          bold: true,
+          size: 24,
+          color: "2C3E50",
+        }),
+      ],
+      spacing: { after: 200 },
+    }),
+
+    // Subtitle
+    ...(item.subtitle ? [new Paragraph({
+      children: [
+        new TextRun({
+          text: item.subtitle,
+          italic: true,
+          size: 20,
+          color: "7F8C8D",
+        }),
+      ],
+      spacing: { after: 200 },
+    })] : []),
+
+    // Description
+    ...(item.description ? [new Paragraph({
+      children: [
+        new TextRun({
+          text: item.description,
+          size: 18,
+          color: "34495E",
+        }),
+      ],
+      spacing: { after: 300 },
+    })] : []),
+
+    // Product details table
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        // Image and basic info row
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.imageUrl ? "📖" : "📚",
+                      size: 32,
+                    }),
+                  ],
+                  alignment: AlignmentType.CENTER,
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.imageUrl ? "Product Image" : "No Image Available",
+                      size: 14,
+                      color: "7F8C8D",
+                    }),
+                  ],
+                  alignment: AlignmentType.CENTER,
+                }),
+              ],
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              verticalAlign: "center",
+            }),
+            new TableCell({
+              children: [
+                // Author
+                ...(item.author ? [new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "👤 Author: ",
+                      bold: true,
+                      size: 16,
+                      color: "2C3E50",
+                    }),
+                    new TextRun({
+                      text: item.author,
+                      size: 16,
+                      color: "34495E",
+                    }),
+                  ],
+                  spacing: { after: 100 },
+                })] : []),
+                
+                // Price
+                ...(item.price ? [new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "💰 Price: ",
+                      bold: true,
+                      size: 16,
+                      color: "2C3E50",
+                    }),
+                    new TextRun({
+                      text: `AUD$ ${item.price}`,
+                      bold: true,
+                      size: 18,
+                      color: "E74C3C",
+                    }),
+                  ],
+                  spacing: { after: 100 },
+                })] : []),
+                
+                // Binding and Pages
+                ...(item.binding || item.pages ? [new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "📖 ",
+                      size: 16,
+                    }),
+                    new TextRun({
+                      text: [item.binding, item.pages && `${item.pages} pages`].filter(Boolean).join(" • "),
+                      size: 16,
+                      color: "34495E",
+                    }),
+                  ],
+                  spacing: { after: 100 },
+                })] : []),
+              ],
+              width: { size: 80, type: WidthType.PERCENTAGE },
+            }),
+          ],
+        }),
+        
+        // Additional details row
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "📋 Additional Details",
+                      bold: true,
+                      size: 16,
+                      color: "2C3E50",
+                    }),
+                  ],
+                  spacing: { after: 200 },
+                }),
+                ...getDetailParagraphs(item),
+              ],
+              colSpan: 2,
+            }),
+          ],
+        }),
+      ],
+    }),
+
+    // Product URL
+    new Paragraph({
+      children: [
+        new ExternalHyperlink({
+          children: [
+            new TextRun({
+              text: `🔗 View Product: ${SITE}/products/${item.handle}`,
+              size: 16,
+              color: "3498DB",
+              underline: {},
+            }),
+          ],
+          link: `${SITE}/products/${item.handle}`,
+        }),
+      ],
+      spacing: { after: 400 },
+    }),
+
+    // Separator line
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: "─".repeat(50),
+          size: 16,
+          color: "BDC3C7",
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 },
+    }),
+  ];
+
+  return elements;
+}
+
+function getDetailParagraphs(item: Item): Paragraph[] {
   const details = [
-    item.title,
-    item.subtitle ? `Subtitle: ${item.subtitle}` : "",
-    item.author ? `Author: ${item.author}` : "",
-    item.binding ? `Binding: ${item.binding}` : "",
-    item.pages ? `Pages: ${item.pages}` : "",
-    item.dimensions ? `Dimensions: ${item.dimensions}` : "",
-    item.releaseDate ? `Release Date: ${item.releaseDate}` : "",
-    item.imprint ? `Imprint: ${item.imprint}` : "",
-    item.weight ? `Weight: ${item.weight}` : "",
-    item.illustrations ? `Illustrations: ${item.illustrations}` : "",
-    item.edition ? `Edition: ${item.edition}` : "",
-    item.price ? `Price: AUD$ ${item.price}` : "",
-    `URL: ${SITE}/products/${item.handle}`,
+    item.dimensions && `📏 Dimensions: ${item.dimensions}`,
+    item.releaseDate && `📅 Release Date: ${item.releaseDate}`,
+    item.imprint && `🏢 Imprint: ${item.imprint}`,
+    item.weight && `⚖️ Weight: ${item.weight}`,
+    item.illustrations && `🎨 Illustrations: ${item.illustrations}`,
+    item.edition && `📚 Edition: ${item.edition}`,
+    item.authorBio && `👨‍💼 Author Bio: ${item.authorBio}`,
   ].filter(Boolean);
 
-  return new TableRow({
-    children: [
-      new TableCell({
-        children: [
-          new Paragraph({
-            text: item.imageUrl ? "[Product Image]" : "[No Image]",
-            alignment: AlignmentType.CENTER,
-          }),
-        ],
-        width: { size: 15, type: WidthType.PERCENTAGE },
-      }),
-      new TableCell({
-        children: details.map(detail => 
-          new Paragraph({
-            children: [new TextRun({ text: detail })],
-            spacing: { after: 100 },
-          })
-        ),
-        width: { size: 85, type: WidthType.PERCENTAGE },
-      }),
-    ],
-  });
+  return details.map(detail => 
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: detail!,
+          size: 14,
+          color: "34495E",
+        }),
+      ],
+      spacing: { after: 100 },
+    })
+  );
 }
