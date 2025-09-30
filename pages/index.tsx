@@ -95,7 +95,20 @@ export default function Home() {
       if (w) { 
         w.document.open(); 
         w.document.write(html); 
-        w.document.close(); 
+        w.document.close();
+        w.focus();
+      } else {
+        // Fallback: create a blob URL and download
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-${layout}-per-page-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead.");
       }
     } catch (error) {
       alert("Error generating HTML: " + (error instanceof Error ? error.message : "Unknown error"));
