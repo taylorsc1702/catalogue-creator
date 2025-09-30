@@ -118,23 +118,26 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
   .page { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
-    gap: 20mm; 
+    grid-template-rows: 1fr 1fr;
+    gap: 15mm; 
     page-break-after: always; 
     padding: 0;
+    height: 100vh;
   }
   .product-card {
     display: flex;
-    gap: 12px;
-    margin-bottom: 25mm;
+    gap: 8px;
+    margin-bottom: 0;
     page-break-inside: avoid;
+    height: fit-content;
   }
   .product-image {
     flex-shrink: 0;
-    width: 80px;
+    width: 60px;
   }
   .book-cover {
-    width: 80px;
-    height: 120px;
+    width: 60px;
+    height: 90px;
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -147,29 +150,29 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     gap: 4px;
   }
   .product-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     color: #000;
     line-height: 1.2;
     margin-bottom: 2px;
   }
   .product-subtitle {
-    font-size: 11px;
+    font-size: 10px;
     color: #666;
     font-style: italic;
     margin-bottom: 2px;
   }
   .product-author {
-    font-size: 11px;
+    font-size: 10px;
     color: #000;
     font-weight: 500;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   .product-description {
-    font-size: 10px;
+    font-size: 9px;
     color: #333;
     line-height: 1.3;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     text-align: justify;
   }
   .product-specs {
