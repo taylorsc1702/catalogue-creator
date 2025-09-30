@@ -142,34 +142,78 @@ export default function Home() {
     }
   }
 
-      async function downloadDocx() {
-        if (!items.length) { alert("Fetch products first."); return; }
-        try {
-          const resp = await fetch("/api/render/docx", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              items, 
-              layout,
-              title: `Catalogue - ${new Date().toLocaleDateString()}` 
-            })
-          });
-          
-          if (!resp.ok) throw new Error("Failed to generate DOCX");
-          
-          const blob = await resp.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `catalogue-${layout}-per-page-${new Date().toISOString().split('T')[0]}.docx`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        } catch (error) {
-          alert("Error generating DOCX: " + (error instanceof Error ? error.message : "Unknown error"));
-        }
+  async function downloadDocx() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/docx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          layout,
+          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+        })
+      });
+      
+      if (!resp.ok) throw new Error("Failed to generate DOCX");
+      
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `catalogue-${layout}-per-page-${new Date().toISOString().split('T')[0]}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Error generating DOCX: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
+  async function openGoogleDocs() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/googledocs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          layout,
+          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating Google Docs HTML: ${error}`);
+        return;
       }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close();
+        w.focus();
+      } else {
+        // Fallback: create a blob URL and download
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-google-docs-${layout}-per-page-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead. Import this into Google Docs.");
+      }
+    } catch (error) {
+      alert("Error generating Google Docs HTML: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
 
   return (
     <div style={{ 
@@ -329,11 +373,12 @@ export default function Home() {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-        <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
-        <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
-      </div>
+          <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
+            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
+            <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
+            <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
+          </div>
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} />
