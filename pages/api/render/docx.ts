@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               children: [
                 new TextRun({
                   text: item.subtitle,
-                  italic: true,
+                  italics: true,
                   size: 20,
                   color: "7F8C8D",
                 }),
