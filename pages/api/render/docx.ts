@@ -32,6 +32,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 2-per-page layout (side by side)
         const pageTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
           rows: [
             new TableRow({
               children: [
@@ -39,11 +47,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   children: createProductCell(pageItems[0], i + 1, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
                 new TableCell({
                   children: createProductCell(pageItems[1], i + 2, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
               ],
             }),
@@ -54,6 +74,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 4-per-page layout (2x2 grid)
         const pageTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
           rows: [
             // Top row - 2 products
             new TableRow({
@@ -62,11 +90,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   children: createProductCell(pageItems[0], i + 1, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
                 new TableCell({
                   children: createProductCell(pageItems[1], i + 2, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
               ],
             }),
@@ -77,11 +117,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   children: createProductCell(pageItems[2], i + 3, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
                 new TableCell({
                   children: createProductCell(pageItems[3], i + 4, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
                 }),
               ],
             }),

@@ -36,14 +36,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
   const pagesHtml = chunks.map(page => {
-    const cards = page.map(it => {
-      const lineParts: string[] = [];
-      if (it.binding) lineParts.push(esc(it.binding));
-      if (it.pages) lineParts.push(esc(`${it.pages} pages`));
-      if (it.dimensions) lineParts.push(esc(it.dimensions));
-      if (it.edition) lineParts.push(esc(`Edition: ${it.edition}`));
-      const line = lineParts.join(" • ");
-
+    const createProductCard = (it: Item) => {
       return [
         '<div class="product-card">',
           '<div class="product-image">',
@@ -71,10 +64,27 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
           '</div>',
         '</div>',
       ].join("");
-    }).join("");
+    };
 
-        const layoutClass = layout === 2 ? " layout-2" : "";
-        return `<div class="page${layoutClass}">${cards}</div>`;
+    // Create product slots based on layout
+    let productsHtml = '';
+    
+    if (layout === 2) {
+      // 2-per-page: only 2 products
+      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
+      productsHtml = `${product1}${product2}`;
+    } else {
+      // 4-per-page: 4 products
+      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
+      const product3 = page[2] ? createProductCard(page[2]) : '<div class="product-card empty"></div>';
+      const product4 = page[3] ? createProductCard(page[3]) : '<div class="product-card empty"></div>';
+      productsHtml = `${product1}${product2}${product3}${product4}`;
+    }
+
+    const layoutClass = layout === 2 ? " layout-2" : "";
+    return `<div class="page${layoutClass}">${productsHtml}</div>`;
   }).join("");
 
   return `<!doctype html>
@@ -135,6 +145,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     margin-bottom: 0;
     page-break-inside: avoid;
     height: fit-content;
+  }
+  .product-card.empty {
+    visibility: hidden;
   }
   .product-image {
     flex-shrink: 0;
