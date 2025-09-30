@@ -6,6 +6,7 @@ export type ShopifyProduct = {
   handle: string;
   vendor: string;
   tags: string[];
+  description?: string;
   featuredImageUrl?: string;
   price?: string;
   metafields: Record<string, string | undefined>;
