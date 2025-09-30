@@ -33,7 +33,7 @@ const IDENTIFIERS = [
   { namespace: "my_fields", key: "Edition" },
 ] as const;
 
-// Shopify GraphQL
+// Shopify GraphQL - with essential metafields for book catalogues
 const query = `
   query CatalogueProducts($query: String, $first: Int = 250, $after: String) {
     products(first: $first, after: $after, query: $query) {
@@ -48,9 +48,15 @@ const query = `
           featuredImage { url altText }
           images(first: 1) { edges { node { url altText } } }
           variants(first: 1) { edges { node { price } } }
-          metafields(identifiers: [
-            ${IDENTIFIERS.map(i => `{namespace:"${i.namespace}", key:"${i.key}"}`).join(",")}
-          ]) { key namespace value }
+          metafields(first: 10) { 
+            edges { 
+              node { 
+                key 
+                namespace 
+                value 
+              } 
+            } 
+          }
         }
       }
       pageInfo { hasNextPage endCursor }
@@ -68,7 +74,15 @@ type ProductNode = {
   featuredImage?: { url?: string | null } | null;
   images?: { edges?: Array<{ node?: { url?: string | null } | null }> | null } | null;
   variants?: { edges?: Array<{ node?: { price?: string | null } | null }> | null } | null;
-  metafields?: Array<{ key: string; value?: string | null }> | null;
+  metafields?: { 
+    edges?: Array<{ 
+      node?: { 
+        key?: string | null; 
+        namespace?: string | null; 
+        value?: string | null; 
+      } | null; 
+    }> | null; 
+  } | null;
 };
 type Edge = { cursor: string; node: ProductNode };
 type Gql = {
@@ -93,7 +107,8 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
 
   while (true) {
     const variables: Record<string, unknown> = { first: 250, after };
-    if (trimmed.length > 0) variables.query = trimmed;
+    // Always provide a query - if none specified, get all products
+    variables.query = trimmed.length > 0 ? trimmed : "*";
 
     const init: RequestInit = {
       method: "POST",
@@ -113,13 +128,20 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
     const data = (await response.json()) as Gql;
     const edges: Edge[] = data?.data?.products?.edges ?? [];
 
-    console.log("Shopify edges:", edges.length, "so far:", out.length);
+    // Debug logging (can be removed in production)
+    // console.log("Shopify query:", variables.query);
+    // console.log("Shopify edges:", edges.length, "so far:", out.length);
 
     for (const e of edges) {
       const n = e.node;
       const mf: Record<string, string | undefined> = {};
-      for (const m of n.metafields ?? []) {
-        mf[m.key] = m.value ?? undefined;
+      
+      // Process metafields
+      for (const edge of n.metafields?.edges ?? []) {
+        const node = edge?.node;
+        if (node?.key) {
+          mf[node.key] = node.value ?? undefined;
+        }
       }
 
       out.push({
@@ -184,7 +206,8 @@ export function buildShopifyQuery(opts: {
 
   if (opts.freeText?.trim()) p.push(opts.freeText.trim());
 
-  return p.join(" AND ");
+  // If no filters provided, return a default query to get all products
+  return p.length > 0 ? p.join(" AND ") : "*";
 }
 
 function escapeVal(v: string) {

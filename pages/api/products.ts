@@ -16,9 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
 
-    const query = buildShopifyQuery(parsed);
-    console.log("Shopify search query:", query || "(none)");
-
+    const query = buildShopifyQuery(parsed);         // <- the exact string we send to Shopify
     const products = await fetchProductsByQuery(query);
 
     const items = products.map((p) => {
@@ -46,7 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     });
 
-    res.status(200).json({ items });
+    // include the query so the UI can display it
+    res.status(200).json({ items, query });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Invalid request";
     res.status(400).json({ error: message });

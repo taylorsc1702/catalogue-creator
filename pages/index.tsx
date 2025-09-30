@@ -9,6 +9,12 @@ type Item = {
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
+// Matches what /api/products now returns: { items, query }
+type ProductsResponse = {
+  items: Item[];
+  query?: string; // the final server-side Shopify search string
+};
+
 export default function Home() {
   const [tag, setTag] = useState("");
   const [vendor, setVendor] = useState("");
@@ -19,6 +25,7 @@ export default function Home() {
   const [layout, setLayout] = useState<1|2|4|8>(4);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
+  const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
 
   const queryPreview = useMemo(() => {
     const parts: string[] = [];
@@ -41,12 +48,17 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tag, vendor, collectionId, metafieldKey, metafieldContains, freeText }),
       });
-      const data = await resp.json();
+
+      const data: ProductsResponse & { error?: string } = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed");
-      setItems(data.items);
+
+      setItems(data.items || []);
+      setServerQuery(data.query || ""); // <— NEW: capture the server-side query
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       alert(msg);
+      setItems([]);
+      setServerQuery("");
     } finally {
       setLoading(false);
     }
@@ -64,10 +76,50 @@ export default function Home() {
     if (w) { w.document.open(); w.document.write(html); w.document.close(); }
   }
 
+  async function openBarcodeView() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    const resp = await fetch("/api/render/barcode", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items, layout, includeBarcodes: true })
+    });
+    const html = await resp.text();
+    const w = window.open("", "_blank", "noopener,noreferrer");
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+  }
+
+  async function downloadDocx() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/docx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+        })
+      });
+      
+      if (!resp.ok) throw new Error("Failed to generate DOCX");
+      
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `catalogue-${new Date().toISOString().split('T')[0]}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Error generating DOCX: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   return (
     <div style={{ padding: 24, fontFamily: "system-ui, Arial" }}>
       <h1>Catalogue Creator</h1>
-      <p style={{ color: "#656F91" }}>Filter by Tag/Vendor/Collection/Metafield, preview, then open a print-ready page.</p>
+      <p style={{ color: "#656F91" }}>Filter by Tag/Vendor/Collection/Metafield, preview, then generate HTML, DOCX, or QR code catalogues.</p>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
         <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
@@ -75,18 +127,33 @@ export default function Home() {
         <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
         <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
         <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
-        <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="status:active" /></Field>
+        <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
       </div>
 
-      <div style={{ marginTop: 8, color: "#656F91", fontSize: 12 }}>Query: {queryPreview}</div>
+      {/* Local preview of what YOU typed */}
+      <div style={{ marginTop: 8, color: "#656F91", fontSize: 12 }}>
+        <strong>Local preview</strong>: {queryPreview}
+      </div>
 
-      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center" }}>
+      {/* What the SERVER really used (from /api/products) */}
+      {serverQuery !== "" && (
+        <div style={{ marginTop: 4, color: "#656F91", fontSize: 12 }}>
+          <strong>Server query</strong>: {serverQuery}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         <button onClick={fetchItems} disabled={loading} style={btn()}>{loading ? "Loading..." : "Fetch Products"}</button>
         <span>Layout:</span>
         {[1,2,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
-        <button onClick={openPrintView} disabled={!items.length} style={btn()}>Open Print View (HTML)</button>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
+        <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
+        <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
       </div>
 
       <hr style={{ margin: "20px 0" }} />
@@ -104,9 +171,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
 function btn(active = false): React.CSSProperties {
   return { border:"1px solid #e7eef3", background: active?"#A8DCF6":"#F1F6F7", color:"#192C6B", padding:"8px 12px", borderRadius:8, cursor:"pointer", fontWeight:600 };
 }
+
 function Preview({ items, layout }: { items: Item[]; layout: 1|2|4|8 }) {
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
   return (
