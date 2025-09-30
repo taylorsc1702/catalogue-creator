@@ -1,7 +1,23 @@
 {
   "name": "catalogue-creator",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "A powerful Next.js application for creating professional product catalogues from Shopify stores with HTML, DOCX, and QR code export options.",
   "private": true,
+  "keywords": [
+    "shopify",
+    "catalogue",
+    "catalog",
+    "products",
+    "export",
+    "docx",
+    "qr-code",
+    "nextjs",
+    "typescript",
+    "b2b",
+    "b2c"
+  ],
+  "author": "Taylor SC",
+  "license": "Private",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
