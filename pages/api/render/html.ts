@@ -45,20 +45,28 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
       const line = lineParts.join(" • ");
 
       return [
-        '<div class="card">',
-          `<img class="thumb" src="${esc(it.imageUrl)}" alt="${esc(it.title)}">`,
-          '<div class="content">',
-            `<h3 class="title">${esc(it.title)}</h3>`,
-            it.subtitle ? `<div class="subtitle">${esc(it.subtitle)}</div>` : "",
-            it.author ? `<div class="author">👤 ${esc(it.author)}</div>` : "",
-            it.description ? `<div class="description">${esc(it.description)}</div>` : "",
-            `<div class="details">${line}</div>`,
-            it.imprint ? `<div class="meta">🏢 Imprint: ${esc(it.imprint)}</div>` : "",
-            it.releaseDate ? `<div class="meta">📅 Release: ${esc(it.releaseDate)}</div>` : "",
-            it.weight ? `<div class="meta">⚖️ Weight: ${esc(it.weight)}</div>` : "",
-            it.illustrations ? `<div class="meta">🎨 Illustrations: ${esc(it.illustrations)}</div>` : "",
-            it.price ? `<div class="price">💰 AUD$ ${esc(it.price)}</div>` : "",
-            `<div class="url">${esc(`${SITE}/products/${it.handle}`)}</div>`,
+        '<div class="product-card">',
+          '<div class="product-image">',
+            `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
+          '</div>',
+          '<div class="product-details">',
+            `<h2 class="product-title">${esc(it.title)}</h2>`,
+            it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
+            it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
+            it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
+            '<div class="product-specs">',
+              it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : "",
+              it.pages ? `<span class="spec-item">${esc(it.pages)} pages</span>` : "",
+              it.dimensions ? `<span class="spec-item">${esc(it.dimensions)}</span>` : "",
+            '</div>',
+            '<div class="product-meta">',
+              it.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(it.imprint)}</div>` : "",
+              it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(it.releaseDate)}</div>` : "",
+              it.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(it.weight)}</div>` : "",
+              it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : "",
+            '</div>',
+            it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
+            `<div class="product-isbn">ISBN: ${esc(it.handle)}</div>`,
             show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
           '</div>',
         '</div>',
@@ -76,151 +84,146 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
 <style>
   @page { 
     size: A4; 
-    margin: 20mm; 
+    margin: 15mm; 
   }
   * { 
     box-sizing: border-box; 
+    margin: 0;
+    padding: 0;
   }
   body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; 
-    color: #2C3E50;
-    line-height: 1.6;
-    background: #F8F9FA;
-  }
-  h1, h2, h3, p { 
-    margin: 0; 
-  }
-  .muted { 
-    color: #6C757D; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    color: #333;
+    line-height: 1.4;
+    background: white;
+    font-size: 12px;
   }
   .noprint { 
     margin-bottom: 20px; 
     text-align: center;
     padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #f8f9fa;
+    border-radius: 8px;
   }
   .noprint button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #007bff;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 4px;
     font-weight: 600;
     cursor: pointer;
     margin-right: 16px;
   }
   .page { 
     display: grid; 
-    grid-template-columns: ${cols}; 
-    gap: 24px; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20mm; 
     page-break-after: always; 
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 0;
   }
-  .card { 
-    border: 2px solid #E9ECEF; 
-    border-radius: 16px; 
-    padding: 20px; 
-    display: grid; 
-    grid-template-columns: 120px 1fr; 
-    gap: 16px;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
+  .product-card {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25mm;
+    page-break-inside: avoid;
   }
-  .thumb { 
-    width: 120px; 
-    height: 180px; 
-    object-fit: cover; 
-    border-radius: 12px; 
-    background: #F8F9FA;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  .product-image {
+    flex-shrink: 0;
+    width: 80px;
   }
-  .content {
+  .book-cover {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .product-details {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
-  .title { 
-    font-weight: 700; 
-    font-size: 18px;
-    line-height: 1.3; 
-    margin: 0 0 8px 0;
-    color: #2C3E50;
+  .product-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    line-height: 1.2;
+    margin-bottom: 2px;
   }
-  .subtitle { 
-    font-size: 14px; 
-    color: #7F8C8D; 
-    margin: 0 0 8px 0;
+  .product-subtitle {
+    font-size: 11px;
+    color: #666;
     font-style: italic;
+    margin-bottom: 2px;
   }
-  .author {
-    font-size: 13px; 
-    color: #667eea;
-    font-weight: 600;
-    margin: 0 0 8px 0;
+  .product-author {
+    font-size: 11px;
+    color: #000;
+    font-weight: 500;
+    margin-bottom: 4px;
   }
-  .description {
+  .product-description {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    text-align: justify;
+  }
+  .product-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .spec-item {
+    font-size: 9px;
+    color: #666;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .product-meta {
+    margin-bottom: 4px;
+  }
+  .meta-item {
+    font-size: 9px;
+    color: #666;
+    margin-bottom: 1px;
+  }
+  .meta-item strong {
+    color: #000;
+  }
+  .product-price {
     font-size: 13px;
-    color: #495057;
-    line-height: 1.5;
-    margin: 0 0 8px 0;
-    background: #F8F9FA;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
+    font-weight: bold;
+    color: #d63384;
+    margin: 4px 0;
   }
-  .details { 
-    font-size: 12px; 
-    color: #6C757D; 
-    margin: 0 0 8px 0;
-    line-height: 1.4;
-  }
-  .meta { 
-    font-size: 12px; 
-    color: #6C757D; 
-    margin: 2px 0; 
-  }
-  .price { 
-    font-weight: 700; 
-    font-size: 16px;
-    color: #E74C3C;
-    margin: 8px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .url { 
-    margin-top: auto;
-    font-size: 11px; 
-    color: #ADB5BD; 
-    word-break: break-all;
+  .product-isbn {
+    font-size: 9px;
+    color: #666;
     font-family: monospace;
+    margin-top: auto;
   }
   .author-bio {
-    font-size: 12px;
-    color: #495057;
-    margin-top: 8px;
-    padding: 8px 12px;
-    background: #F8F9FA;
-    border-radius: 8px;
+    font-size: 9px;
+    color: #333;
     font-style: italic;
+    margin-top: 4px;
+    line-height: 1.2;
   }
   @media print { 
     .noprint { 
       display: none !important; 
     }
     .page {
-      box-shadow: none;
-      border: 1px solid #E9ECEF;
+      gap: 15mm;
     }
-    .card {
-      box-shadow: none;
-      border: 1px solid #E9ECEF;
+    .product-card {
+      margin-bottom: 20mm;
     }
   }
 </style>
@@ -228,7 +231,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
 <body>
   <div class="noprint">
     <button onclick="window.print()">🖨️ Print / Save as PDF</button>
-    <span class="muted">Use A4 paper, 20mm margins, hide headers/footers for best results.</span>
+    <span style="color: #666;">Use A4 paper, 15mm margins, hide headers/footers for best results.</span>
   </div>
   ${pagesHtml}
 </body>
