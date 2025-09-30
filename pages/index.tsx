@@ -77,26 +77,56 @@ export default function Home() {
 
   async function openPrintView() {
     if (!items.length) { alert("Fetch products first."); return; }
-    const resp = await fetch("/api/render/html", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, layout, showFields: { authorBio: false } })
-    });
-    const html = await resp.text();
-    const w = window.open("", "_blank", "noopener,noreferrer");
-    if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+    try {
+      const resp = await fetch("/api/render/html", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, layout, showFields: { authorBio: false } })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating HTML: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close(); 
+      }
+    } catch (error) {
+      alert("Error generating HTML: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
   }
 
   async function openBarcodeView() {
     if (!items.length) { alert("Fetch products first."); return; }
-    const resp = await fetch("/api/render/barcode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, layout, includeBarcodes: true })
-    });
-    const html = await resp.text();
-    const w = window.open("", "_blank", "noopener,noreferrer");
-    if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+    try {
+      const resp = await fetch("/api/render/barcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, layout, includeBarcodes: true })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating QR codes: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close(); 
+      }
+    } catch (error) {
+      alert("Error generating QR codes: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
   }
 
   async function downloadDocx() {
