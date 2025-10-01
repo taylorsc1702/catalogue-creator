@@ -141,6 +141,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     gap: 20mm;
     padding: 15mm;
     align-items: start;
+    height: 100vh;
+    box-sizing: border-box;
   }
   .product-card {
     display: flex;
@@ -155,6 +157,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     flex-direction: column;
     gap: 15px;
     align-items: flex-start;
+    max-height: 100%;
+    overflow: hidden;
   }
   .product-card.empty {
     visibility: hidden;
@@ -236,6 +240,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     font-size: 11px;
     line-height: 1.5;
     margin-bottom: 8px;
+    max-height: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 12;
+    -webkit-box-orient: vertical;
   }
   .product-specs {
     display: flex;
