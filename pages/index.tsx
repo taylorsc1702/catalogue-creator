@@ -29,6 +29,7 @@ export default function Home() {
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
+  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|4|8}>({});
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -280,6 +281,62 @@ export default function Home() {
     setItems(newItems);
   }
 
+  function setItemLayout(index: number, layout: 1|2|4|8) {
+    setItemLayouts({...itemLayouts, [index]: layout});
+  }
+
+  function clearItemLayout(index: number) {
+    const newLayouts = {...itemLayouts};
+    delete newLayouts[index];
+    setItemLayouts(newLayouts);
+  }
+
+  async function openMixedLayout() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      // Create layout assignments array
+      const layoutAssignments = items.map((_, i) => itemLayouts[i] || layout);
+      
+      const resp = await fetch("/api/render/mixed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items,
+          layoutAssignments,
+          showFields: { authorBio: false }
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating mixed layout: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close();
+        w.focus();
+      } else {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-mixed-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead.");
+      }
+    } catch (error) {
+      alert("Error generating mixed layout: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   return (
     <div style={{ 
       padding: 32, 
@@ -447,23 +504,26 @@ export default function Home() {
           </div>
 
           {items.length > 0 && (
-            <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
               <button 
                 onClick={() => setShowOrderEditor(!showOrderEditor)} 
                 style={btn(showOrderEditor)}
               >
                 {showOrderEditor ? '✓ Reordering Mode' : '🔀 Reorder Items'}
               </button>
+              <button onClick={openMixedLayout} disabled={!items.length} style={btn()}>
+                🎨 Mixed Layout View
+              </button>
               {showOrderEditor && (
                 <span style={{ fontSize: 13, color: '#656F91' }}>
-                  💡 Use arrows to reorder items or enter position numbers
+                  💡 Use arrows to reorder items, assign layouts, or enter position numbers
                 </span>
               )}
             </div>
           )}
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} />
       </div>
     </div>
   );
@@ -533,13 +593,16 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout }: { 
   items: Item[]; 
   layout: 1|2|4|8; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
   moveItemToPosition: (index: number, newPosition: number) => void;
+  itemLayouts: {[key: number]: 1|2|4|8};
+  setItemLayout: (index: number, layout: 1|2|4|8) => void;
+  clearItemLayout: (index: number) => void;
 }) {
   const [positionInputs, setPositionInputs] = React.useState<{[key: number]: string}>({});
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
@@ -665,9 +728,23 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 alignItems: "center",
                 flexWrap: "wrap"
               }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#495057" }}>
-                  Position: {i + 1}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 8, paddingRight: 8, borderRight: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#495057" }}>
+                    Position: {i + 1}
+                  </span>
+                  {itemLayouts[i] && (
+                    <span style={{ 
+                      fontSize: 10, 
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      color: "white",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      fontWeight: 600
+                    }}>
+                      {itemLayouts[i]}-up
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => moveItemUp(i)}
                   disabled={i === 0}
@@ -747,6 +824,46 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 >
                   Go
                 </button>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 11, color: "#6C757D", fontWeight: 600 }}>Layout:</span>
+                  {[1, 2, 4, 8].map(l => (
+                    <button
+                      key={l}
+                      onClick={() => setItemLayout(i, l as 1|2|4|8)}
+                      style={{
+                        border: "1px solid",
+                        borderColor: itemLayouts[i] === l ? "#667eea" : "#E9ECEF",
+                        background: itemLayouts[i] === l ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "white",
+                        color: itemLayouts[i] === l ? "white" : "#495057",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                  {itemLayouts[i] && (
+                    <button
+                      onClick={() => clearItemLayout(i)}
+                      style={{
+                        border: "none",
+                        background: "#E9ECEF",
+                        color: "#6C757D",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
