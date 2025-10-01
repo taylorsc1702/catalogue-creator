@@ -12,11 +12,14 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields } = req.body as {
-      items: Item[]; layout: 1 | 2 | 4 | 8; showFields?: Record<string, boolean>;
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane' } = req.body as {
+      items: Item[]; 
+      layout: 1 | 2 | 3 | 4 | 8; 
+      showFields?: Record<string, boolean>;
+      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = renderHtml(items, layout, showFields || {});
+    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -25,9 +28,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>) {
+function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress') {
   const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
   const perPage = layout;
+
+  const generateProductUrl = (handle: string): string => {
+    const baseUrls = {
+      woodslane: 'https://woodslane.com.au',
+      woodslanehealth: 'https://www.woodslanehealth.com.au',
+      woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+      woodslanepress: 'https://www.woodslanepress.com.au'
+    };
+    return `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+  };
 
   const chunks: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) chunks.push(items.slice(i, i + perPage));
@@ -43,7 +56,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
             `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
           '</div>',
           '<div class="product-details">',
-            `<h2 class="product-title">${esc(it.title)}</h2>`,
+            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
             it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
             it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
             it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",

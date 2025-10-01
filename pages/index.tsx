@@ -30,6 +30,7 @@ export default function Home() {
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
+  const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -80,11 +81,11 @@ export default function Home() {
   async function openPrintView() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
-      const resp = await fetch("/api/render/html", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, layout, showFields: { authorBio: false } })
-      });
+    const resp = await fetch("/api/render/html", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items, layout, showFields: { authorBio: false }, hyperlinkToggle })
+    });
       
       if (!resp.ok) {
         const error = await resp.text();
@@ -123,7 +124,7 @@ export default function Home() {
       const resp = await fetch("/api/render/barcode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, layout, includeBarcodes: true })
+        body: JSON.stringify({ items, layout, includeBarcodes: true, hyperlinkToggle })
       });
       
       if (!resp.ok) {
@@ -153,7 +154,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout,
-          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          hyperlinkToggle
         })
       });
       
@@ -182,7 +184,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout,
-          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          hyperlinkToggle
         })
       });
       
@@ -225,7 +228,8 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items,
-          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          hyperlinkToggle
         })
       });
       
@@ -267,7 +271,8 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items,
-          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          hyperlinkToggle
         })
       });
       
@@ -333,6 +338,16 @@ export default function Home() {
     setItemLayouts(newLayouts);
   }
 
+  function generateProductUrl(handle: string): string {
+    const baseUrls = {
+      woodslane: 'https://woodslane.com.au',
+      woodslanehealth: 'https://www.woodslanehealth.com.au',
+      woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+      woodslanepress: 'https://www.woodslanepress.com.au'
+    };
+    return `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+  }
+
   async function openMixedLayout() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
@@ -345,7 +360,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items,
           layoutAssignments,
-          showFields: { authorBio: false }
+          showFields: { authorBio: false },
+          hyperlinkToggle
         })
       });
       
@@ -355,8 +371,8 @@ export default function Home() {
         return;
       }
       
-      const html = await resp.text();
-      const w = window.open("", "_blank", "noopener,noreferrer");
+    const html = await resp.text();
+    const w = window.open("", "_blank", "noopener,noreferrer");
       if (w) { 
         w.document.open(); 
         w.document.write(html); 
@@ -484,14 +500,14 @@ export default function Home() {
       </div>
 
       {!useHandleList ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
-          <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
-          <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
-          <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
-          <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
-          <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
-          <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
-        </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+        <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
+        <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
+        <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
+        <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
+        <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
+        <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
+      </div>
       ) : (
         <div style={{ marginBottom: 16 }}>
           <Field label="ISBN/Handle List (one per line)">
@@ -537,6 +553,28 @@ export default function Home() {
         ))}
       </div>
 
+      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Hyperlink Domain:</span>
+        {[
+          { key: 'woodslane', label: 'Woodslane' },
+          { key: 'woodslanehealth', label: 'Woodslane Health' },
+          { key: 'woodslaneeducation', label: 'Woodslane Education' },
+          { key: 'woodslanepress', label: 'Woodslane Press' }
+        ].map(option => (
+          <button 
+            key={option.key}
+            onClick={() => setHyperlinkToggle(option.key as 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress')}
+            style={{
+              ...btn(hyperlinkToggle === option.key),
+              fontSize: 12,
+              padding: "6px 12px"
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
             <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
@@ -566,7 +604,7 @@ export default function Home() {
           )}
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
     </div>
   );
@@ -636,7 +674,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8; 
   showOrderEditor: boolean;
@@ -646,6 +684,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   itemLayouts: {[key: number]: 1|2|3|4|8};
   setItemLayout: (index: number, layout: 1|2|3|4|8) => void;
   clearItemLayout: (index: number) => void;
+  hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+  generateProductUrl: (handle: string) => string;
 }) {
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
@@ -700,14 +740,22 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ 
-              fontWeight: 700, 
-              fontSize: 16,
-              color: "#2C3E50",
-              lineHeight: 1.3
-            }}>
+            <a 
+              href={generateProductUrl(it.handle)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                fontWeight: 700, 
+                fontSize: 16,
+                color: "#2C3E50",
+                lineHeight: 1.3,
+                textDecoration: "none"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
+            >
               {it.title}
-            </div>
+            </a>
             {it.subtitle && (
               <div style={{ 
                 fontSize: 14, 
