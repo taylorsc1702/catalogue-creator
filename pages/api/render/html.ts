@@ -137,14 +137,24 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
   }
   .page.layout-2 {
     grid-template-rows: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20mm;
+    padding: 15mm;
+    align-items: start;
   }
   .product-card {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 0;
     page-break-inside: avoid;
     height: fit-content;
+  }
+  .page.layout-2 .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
   }
   .product-card.empty {
     visibility: hidden;
@@ -152,6 +162,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
   .product-image {
     flex-shrink: 0;
     width: 60px;
+  }
+  .page.layout-2 .product-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
   }
   .book-cover {
     width: 60px;
@@ -161,11 +178,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
+  .page.layout-2 .book-cover {
+    width: 120px;
+    height: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
   .product-details {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+  .page.layout-2 .product-details {
+    width: 100%;
+    gap: 8px;
   }
   .product-title {
     font-size: 12px;
@@ -174,11 +200,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     line-height: 1.2;
     margin-bottom: 2px;
   }
+  .page.layout-2 .product-title {
+    font-size: 16px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
   .product-subtitle {
     font-size: 10px;
     color: #666;
     font-style: italic;
     margin-bottom: 2px;
+  }
+  .page.layout-2 .product-subtitle {
+    font-size: 13px;
+    margin-bottom: 6px;
   }
   .product-author {
     font-size: 10px;
@@ -186,12 +221,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     font-weight: 500;
     margin-bottom: 3px;
   }
+  .page.layout-2 .product-author {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
   .product-description {
     font-size: 9px;
     color: #333;
     line-height: 1.3;
     margin-bottom: 4px;
     text-align: justify;
+  }
+  .page.layout-2 .product-description {
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 8px;
   }
   .product-specs {
     display: flex;
@@ -236,6 +280,31 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     margin-top: 4px;
     line-height: 1.2;
   }
+  
+  /* 2-per-page layout specific styles */
+  .page.layout-2 .product-price {
+    font-size: 16px;
+    margin: 8px 0;
+  }
+  .page.layout-2 .product-isbn {
+    font-size: 11px;
+  }
+  .page.layout-2 .product-specs {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .page.layout-2 .spec-item {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .page.layout-2 .product-meta {
+    margin-bottom: 10px;
+  }
+  .page.layout-2 .meta-item {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+  
   @media print { 
     .noprint { 
       display: none !important; 
