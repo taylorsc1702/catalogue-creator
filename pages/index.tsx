@@ -28,6 +28,7 @@ export default function Home() {
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
+  const [showOrderEditor, setShowOrderEditor] = useState(false);
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -215,6 +216,70 @@ export default function Home() {
     }
   }
 
+  async function openListView() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items,
+          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating list view: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close();
+        w.focus();
+      } else {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-list-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead.");
+      }
+    } catch (error) {
+      alert("Error generating list view: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
+  function moveItemUp(index: number) {
+    if (index === 0) return;
+    const newItems = [...items];
+    [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+    setItems(newItems);
+  }
+
+  function moveItemDown(index: number) {
+    if (index === items.length - 1) return;
+    const newItems = [...items];
+    [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+    setItems(newItems);
+  }
+
+  function moveItemToPosition(index: number, newPosition: number) {
+    if (newPosition < 1 || newPosition > items.length) return;
+    const newItems = [...items];
+    const [item] = newItems.splice(index, 1);
+    newItems.splice(newPosition - 1, 0, item);
+    setItems(newItems);
+  }
+
   return (
     <div style={{ 
       padding: 32, 
@@ -378,10 +443,27 @@ export default function Home() {
             <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
+            <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
           </div>
 
+          {items.length > 0 && (
+            <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center" }}>
+              <button 
+                onClick={() => setShowOrderEditor(!showOrderEditor)} 
+                style={btn(showOrderEditor)}
+              >
+                {showOrderEditor ? '✓ Reordering Mode' : '🔀 Reorder Items'}
+              </button>
+              {showOrderEditor && (
+                <span style={{ fontSize: 13, color: '#656F91' }}>
+                  💡 Use arrows to reorder items or enter position numbers
+                </span>
+              )}
+            </div>
+          )}
+
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} />
       </div>
     </div>
   );
@@ -451,7 +533,15 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout }: { items: Item[]; layout: 1|2|4|8 }) {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition }: { 
+  items: Item[]; 
+  layout: 1|2|4|8; 
+  showOrderEditor: boolean;
+  moveItemUp: (index: number) => void;
+  moveItemDown: (index: number) => void;
+  moveItemToPosition: (index: number, newPosition: number) => void;
+}) {
+  const [positionInputs, setPositionInputs] = React.useState<{[key: number]: string}>({});
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
@@ -462,14 +552,14 @@ function Preview({ items, layout }: { items: Item[]; layout: 1|2|4|8 }) {
     }}>
       {items.map((it, i) => (
         <div key={i} style={{ 
-          border: "2px solid #E9ECEF", 
+          border: showOrderEditor ? "2px solid #667eea" : "2px solid #E9ECEF", 
           borderRadius: 16, 
           padding: 20, 
           display: "grid", 
           gridTemplateColumns: "120px 1fr", 
           gap: 16,
           background: "white",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "0 4px 12px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden"
@@ -563,6 +653,102 @@ function Preview({ items, layout }: { items: Item[]; layout: 1|2|4|8 }) {
             }}>
               /products/{it.handle}
             </div>
+            
+            {showOrderEditor && (
+              <div style={{ 
+                marginTop: 12,
+                padding: 12,
+                background: "#F8F9FA",
+                borderRadius: 8,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                flexWrap: "wrap"
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#495057" }}>
+                  Position: {i + 1}
+                </span>
+                <button
+                  onClick={() => moveItemUp(i)}
+                  disabled={i === 0}
+                  style={{
+                    border: "none",
+                    background: i === 0 ? "#E9ECEF" : "#667eea",
+                    color: i === 0 ? "#ADB5BD" : "white",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    cursor: i === 0 ? "not-allowed" : "pointer",
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => moveItemDown(i)}
+                  disabled={i === items.length - 1}
+                  style={{
+                    border: "none",
+                    background: i === items.length - 1 ? "#E9ECEF" : "#667eea",
+                    color: i === items.length - 1 ? "#ADB5BD" : "white",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    cursor: i === items.length - 1 ? "not-allowed" : "pointer",
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                >
+                  ↓
+                </button>
+                <span style={{ fontSize: 11, color: "#6C757D" }}>Move to:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={items.length}
+                  placeholder="#"
+                  value={positionInputs[i] || ""}
+                  onChange={(e) => setPositionInputs({...positionInputs, [i]: e.target.value})}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const newPos = parseInt(positionInputs[i]);
+                      if (newPos) {
+                        moveItemToPosition(i, newPos);
+                        setPositionInputs({...positionInputs, [i]: ""});
+                      }
+                    }
+                  }}
+                  style={{
+                    width: 50,
+                    padding: "6px 8px",
+                    border: "1px solid #E9ECEF",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    textAlign: "center"
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const newPos = parseInt(positionInputs[i]);
+                    if (newPos) {
+                      moveItemToPosition(i, newPos);
+                      setPositionInputs({...positionInputs, [i]: ""});
+                    }
+                  }}
+                  style={{
+                    border: "none",
+                    background: "#667eea",
+                    color: "white",
+                    padding: "6px 12px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    fontWeight: 600
+                  }}
+                >
+                  Go
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ))}
