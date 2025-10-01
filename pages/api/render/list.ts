@@ -43,12 +43,16 @@ function renderListView(items: Item[], title: string) {
       <td class="col-title">
         <div class="title">${esc(item.title)}</div>
         ${item.subtitle ? `<div class="subtitle">${esc(item.subtitle)}</div>` : ''}
+        ${item.releaseDate ? `<div class="release-date">Release: ${esc(item.releaseDate)}</div>` : ''}
       </td>
-      <td class="col-binding">${esc(item.binding || '-')}</td>
-      <td class="col-pages">${esc(item.pages || '-')}</td>
       <td class="col-price">${item.price ? `$${esc(item.price)}` : '-'}</td>
       <td class="col-publisher">${esc(item.imprint || '-')}</td>
-      <td class="col-date">${esc(item.releaseDate || '-')}</td>
+      <td class="col-barcode">
+        <svg class="barcode" id="barcode-${index}"></svg>
+      </td>
+      <td class="col-qty">
+        <div class="qty-box"></div>
+      </td>
     </tr>
   `).join('');
 
@@ -190,30 +194,27 @@ function renderListView(items: Item[], title: string) {
     }
     
     .col-title {
-      min-width: 200px;
+      min-width: 250px;
+      max-width: 350px;
     }
     
     .title {
       font-weight: 600;
       color: #2C3E50;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     
     .subtitle {
       font-size: 8pt;
       color: #7F8C8D;
       font-style: italic;
+      margin-bottom: 2px;
     }
     
-    .col-binding {
-      width: 100px;
+    .release-date {
+      font-size: 8pt;
       color: #666;
-    }
-    
-    .col-pages {
-      width: 70px;
-      text-align: center;
-      color: #666;
+      margin-top: 3px;
     }
     
     .col-price {
@@ -228,9 +229,29 @@ function renderListView(items: Item[], title: string) {
       color: #666;
     }
     
-    .col-date {
-      width: 100px;
-      color: #666;
+    .col-barcode {
+      width: 120px;
+      text-align: center;
+      padding: 5px;
+    }
+    
+    .barcode {
+      width: 110px;
+      height: 50px;
+    }
+    
+    .col-qty {
+      width: 60px;
+      text-align: center;
+    }
+    
+    .qty-box {
+      width: 50px;
+      height: 30px;
+      border: 2px solid #333;
+      border-radius: 4px;
+      margin: 0 auto;
+      background: white;
     }
     
     .summary {
@@ -284,12 +305,11 @@ function renderListView(items: Item[], title: string) {
         <th>ISBN</th>
         <th>Image</th>
         <th>Author</th>
-        <th>Title</th>
-        <th>Binding</th>
-        <th>Pages</th>
+        <th>Title / Release</th>
         <th>Price</th>
         <th>Publisher</th>
-        <th>Release Date</th>
+        <th>Barcode</th>
+        <th>Qty</th>
       </tr>
     </thead>
     <tbody>
@@ -301,10 +321,48 @@ function renderListView(items: Item[], title: string) {
     Total Items: ${items.length}
   </div>
   
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
+    // Generate barcodes for all ISBNs
+    window.addEventListener('load', function() {
+      const items = ${JSON.stringify(items.map((item, index) => ({ index, isbn: item.handle })))};
+      
+      items.forEach(item => {
+        try {
+          const isbn = item.isbn.replace(/[^0-9]/g, ''); // Remove any non-numeric characters
+          const barcodeElement = document.getElementById('barcode-' + item.index);
+          
+          if (barcodeElement && isbn.length >= 12) {
+            // Try EAN-13 format (13 digits) or UPC-A (12 digits)
+            const format = isbn.length === 13 ? 'EAN13' : isbn.length === 12 ? 'UPC' : 'CODE128';
+            JsBarcode(barcodeElement, isbn, {
+              format: format,
+              width: 1.5,
+              height: 40,
+              displayValue: true,
+              fontSize: 10,
+              margin: 2
+            });
+          } else if (barcodeElement) {
+            // Fallback to CODE128 for non-standard ISBNs
+            JsBarcode(barcodeElement, item.isbn, {
+              format: 'CODE128',
+              width: 1.5,
+              height: 40,
+              displayValue: true,
+              fontSize: 10,
+              margin: 2
+            });
+          }
+        } catch (e) {
+          console.error('Error generating barcode for', item.isbn, e);
+        }
+      });
+    });
+    
     function exportToCSV() {
       const rows = [
-        ['#', 'ISBN', 'Author', 'Title', 'Subtitle', 'Binding', 'Pages', 'Price', 'Publisher', 'Release Date']
+        ['#', 'ISBN', 'Author', 'Title', 'Subtitle', 'Release Date', 'Price', 'Publisher', 'Qty']
       ];
       
       const items = ${JSON.stringify(items.map((item, index) => ({
@@ -313,11 +371,9 @@ function renderListView(items: Item[], title: string) {
         author: item.author || '-',
         title: item.title,
         subtitle: item.subtitle || '',
-        binding: item.binding || '-',
-        pages: item.pages || '-',
+        releaseDate: item.releaseDate || '-',
         price: item.price || '-',
-        imprint: item.imprint || '-',
-        releaseDate: item.releaseDate || '-'
+        imprint: item.imprint || '-'
       })))};
       
       items.forEach(item => {
@@ -327,11 +383,10 @@ function renderListView(items: Item[], title: string) {
           item.author,
           item.title,
           item.subtitle,
-          item.binding,
-          item.pages,
+          item.releaseDate,
           item.price,
           item.imprint,
-          item.releaseDate
+          '' // Empty Qty column for manual entry
         ]);
       });
       
