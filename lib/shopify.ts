@@ -17,22 +17,22 @@ const TOKEN = process.env.SHOPIFY_ADMIN_TOKEN!;
 const API_URL = `https://${STORE}/admin/api/2024-07/graphql.json`;
 
 // Metafields you listed
-const IDENTIFIERS = [
-  { namespace: "custom", key: "weight" },
-  { namespace: "my_fields", key: "Dimensions" },
-  { namespace: "my_fields", key: "Author_Bio" },
-  { namespace: "my_fields", key: "Subtitle" },
-  { namespace: "my_fields", key: "Imprint" },
-  { namespace: "my_fields", key: "Release_date" },
-  { namespace: "my_fields", key: "Binding" },
-  { namespace: "my_fields", key: "pages" },
-  { namespace: "my_fields", key: "author" },
-  { namespace: "my_fields", key: "ICRKDT" },
-  { namespace: "my_fields", key: "icillus" },
-  { namespace: "my_fields", key: "ICAUTH" },
-  { namespace: "my_fields", key: "Illlustrations" },
-  { namespace: "my_fields", key: "Edition" },
-] as const;
+// const IDENTIFIERS = [
+//   { namespace: "custom", key: "weight" },
+//   { namespace: "my_fields", key: "Dimensions" },
+//   { namespace: "my_fields", key: "Author_Bio" },
+//   { namespace: "my_fields", key: "Subtitle" },
+//   { namespace: "my_fields", key: "Imprint" },
+//   { namespace: "my_fields", key: "Release_date" },
+//   { namespace: "my_fields", key: "Binding" },
+//   { namespace: "my_fields", key: "pages" },
+//   { namespace: "my_fields", key: "author" },
+//   { namespace: "my_fields", key: "ICRKDT" },
+//   { namespace: "my_fields", key: "icillus" },
+//   { namespace: "my_fields", key: "ICAUTH" },
+//   { namespace: "my_fields", key: "Illlustrations" },
+//   { namespace: "my_fields", key: "Edition" },
+// ] as const;
 
 // Shopify GraphQL - with essential metafields for book catalogues
 const query = `

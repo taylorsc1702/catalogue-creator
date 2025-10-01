@@ -29,7 +29,7 @@ export default function Home() {
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
-  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|4|8}>({});
+  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -323,7 +323,7 @@ export default function Home() {
     setItems(newItems);
   }
 
-  function setItemLayout(index: number, layout: 1|2|4|8) {
+  function setItemLayout(index: number, layout: 1|2|3|4|8) {
     setItemLayouts({...itemLayouts, [index]: layout});
   }
 
@@ -638,17 +638,17 @@ function btn(active = false): React.CSSProperties {
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout }: { 
   items: Item[]; 
-  layout: 1|2|4|8; 
+  layout: 1|2|3|4|8; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
   moveItemToPosition: (index: number, newPosition: number) => void;
-  itemLayouts: {[key: number]: 1|2|4|8};
-  setItemLayout: (index: number, layout: 1|2|4|8) => void;
+  itemLayouts: {[key: number]: 1|2|3|4|8};
+  setItemLayout: (index: number, layout: 1|2|3|4|8) => void;
   clearItemLayout: (index: number) => void;
 }) {
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
-  const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
+  const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
       display: "grid", 
@@ -870,10 +870,10 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
                   <span style={{ fontSize: 11, color: "#6C757D", fontWeight: 600 }}>Layout:</span>
-                  {[1, 2, 4, 8].map(l => (
+                  {[1, 2, 3, 4, 8].map(l => (
                     <button
                       key={l}
-                      onClick={() => setItemLayout(i, l as 1|2|4|8)}
+                      onClick={() => setItemLayout(i, l as 1|2|3|4|8)}
                       style={{
                         border: "1px solid",
                         borderColor: itemLayouts[i] === l ? "#667eea" : "#E9ECEF",
