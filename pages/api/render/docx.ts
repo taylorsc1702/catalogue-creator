@@ -20,9 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (!items?.length) throw new Error("No items provided");
 
-    // Create pages with 2 or 4 products each based on layout
+    // Create pages with 2, 3, or 4 products each based on layout
     const layout = req.body.layout || 4; // Default to 4-per-page
-    const productsPerPage = layout === 2 ? 2 : 4;
+    const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
     
     for (let i = 0; i < items.length; i += productsPerPage) {
@@ -57,6 +57,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 new TableCell({
                   children: createProductCell(pageItems[1], i + 2, layout),
                   width: { size: 50, type: WidthType.PERCENTAGE },
+                  verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
+                }),
+              ],
+            }),
+          ],
+        });
+        pages.push(pageTable);
+      } else if (layout === 3) {
+        // 3-per-page layout (3 columns)
+        const pageTable = new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: createProductCell(pageItems[0], i + 1, layout),
+                  width: { size: 33.33, type: WidthType.PERCENTAGE },
+                  verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
+                }),
+                new TableCell({
+                  children: createProductCell(pageItems[1], i + 2, layout),
+                  width: { size: 33.33, type: WidthType.PERCENTAGE },
+                  verticalAlign: "top",
+                  borders: {
+                    top: { style: BorderStyle.NONE },
+                    bottom: { style: BorderStyle.NONE },
+                    left: { style: BorderStyle.NONE },
+                    right: { style: BorderStyle.NONE },
+                  },
+                }),
+                new TableCell({
+                  children: createProductCell(pageItems[2], i + 3, layout),
+                  width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
                     top: { style: BorderStyle.NONE },
@@ -197,14 +250,15 @@ function createProductCell(item: Item | undefined, index: number, layout: number
 
   // Adjust font sizes based on layout
   const is2PerPage = layout === 2;
-  const titleSize = is2PerPage ? 18 : 14;
-  const subtitleSize = is2PerPage ? 14 : 12;
-  const authorSize = is2PerPage ? 13 : 11;
-  const descSize = is2PerPage ? 12 : 10;
-  const specSize = is2PerPage ? 11 : 9;
-  const metaSize = is2PerPage ? 10 : 9;
-  const priceSize = is2PerPage ? 14 : 12;
-  const isbnSize = is2PerPage ? 10 : 9;
+  const is3PerPage = layout === 3;
+  const titleSize = is2PerPage ? 18 : is3PerPage ? 16 : 14;
+  const subtitleSize = is2PerPage ? 14 : is3PerPage ? 12 : 12;
+  const authorSize = is2PerPage ? 13 : is3PerPage ? 12 : 11;
+  const descSize = is2PerPage ? 12 : is3PerPage ? 11 : 10;
+  const specSize = is2PerPage ? 11 : is3PerPage ? 10 : 9;
+  const metaSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
+  const priceSize = is2PerPage ? 14 : is3PerPage ? 13 : 12;
+  const isbnSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
 
   return [
     // Title

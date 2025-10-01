@@ -23,7 +23,7 @@ export default function Home() {
   const [metafieldContains, setMetafieldContains] = useState("");
   const [freeText, setFreeText] = useState("");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|2|4|8>(4);
+  const [layout, setLayout] = useState<1|2|3|4|8>(4);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
@@ -532,8 +532,8 @@ export default function Home() {
       <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         <button onClick={fetchItems} disabled={loading} style={btn()}>{loading ? "Loading..." : "Fetch Products"}</button>
         <span>Layout:</span>
-        {[1,2,4,8].map(n => (
-          <button key={n} onClick={()=>setLayout(n as 1|2|4|8)} style={btn(n===layout)}>{n}-up</button>
+        {[1,2,3,4,8].map(n => (
+          <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
       </div>
 

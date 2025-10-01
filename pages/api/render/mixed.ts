@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layoutAssignments, showFields } = req.body as {
       items: Item[]; 
-      layoutAssignments: (1|2|4|8)[]; 
+      layoutAssignments: (1|2|3|4|8)[]; 
       showFields: Record<string, boolean>;
     };
     
@@ -29,12 +29,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Record<string, boolean>) {
+function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>) {
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
   // Group items by their layout requirements
-  const pages: { items: Item[]; layout: 1|2|4|8 }[] = [];
+  const pages: { items: Item[]; layout: 1|2|3|4|8 }[] = [];
   let currentPage: Item[] = [];
   let currentLayout = layoutAssignments[0];
   let itemsInPage = 0;
@@ -93,7 +93,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
     };
 
     const layout = page.layout;
-    const layoutClass = layout === 2 ? "layout-2" : layout === 1 ? "layout-1" : layout === 8 ? "layout-8" : "";
+    const layoutClass = layout === 2 ? "layout-2" : layout === 3 ? "layout-3" : layout === 1 ? "layout-1" : layout === 8 ? "layout-8" : "";
     const cards = page.items.map(createProductCard).join("");
     
     // Fill empty slots for proper grid layout
@@ -142,6 +142,12 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
     grid-template-rows: 1fr;
     gap: 20mm;
   }
+  .page.layout-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 15mm;
+    padding: 15mm;
+  }
   .page.layout-8 {
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -167,6 +173,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   .page.layout-2 .product-image {
     width: 100px;
   }
+  .page.layout-3 .product-image {
+    width: 80px;
+  }
   .page.layout-8 .product-image {
     width: 40px;
   }
@@ -185,6 +194,10 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   .page.layout-2 .book-cover {
     width: 100px;
     height: 150px;
+  }
+  .page.layout-3 .book-cover {
+    width: 80px;
+    height: 120px;
   }
   .page.layout-8 .book-cover {
     width: 40px;
@@ -209,6 +222,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   .page.layout-2 .product-title {
     font-size: 16px;
   }
+  .page.layout-3 .product-title {
+    font-size: 14px;
+  }
   .page.layout-8 .product-title {
     font-size: 10px;
   }
@@ -223,6 +239,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   }
   .page.layout-2 .product-subtitle {
     font-size: 12px;
+  }
+  .page.layout-3 .product-subtitle {
+    font-size: 11px;
   }
   .page.layout-8 .product-subtitle {
     font-size: 8px;
@@ -239,6 +258,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   .page.layout-2 .product-author {
     font-size: 12px;
   }
+  .page.layout-3 .product-author {
+    font-size: 11px;
+  }
   .page.layout-8 .product-author {
     font-size: 8px;
   }
@@ -254,6 +276,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   }
   .page.layout-2 .product-description {
     font-size: 11px;
+  }
+  .page.layout-3 .product-description {
+    font-size: 10px;
   }
   .page.layout-8 .product-description {
     font-size: 7px;
@@ -290,6 +315,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|4|8)[], show: Re
   }
   .page.layout-2 .product-price {
     font-size: 14px;
+  }
+  .page.layout-3 .product-price {
+    font-size: 13px;
   }
   .page.layout-8 .product-price {
     font-size: 9px;

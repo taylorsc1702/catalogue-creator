@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderGoogleDocsHtml(items: Item[], layout: 1 | 2 | 4 | 8, title: string) {
+function renderGoogleDocsHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, title: string) {
   const perPage = layout;
   const chunks: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) {

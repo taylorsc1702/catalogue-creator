@@ -25,8 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, boolean>) {
-  const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
+function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>) {
+  const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
   const perPage = layout;
 
   const chunks: Item[][] = [];
@@ -74,6 +74,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
       const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
       const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}`;
+    } else if (layout === 3) {
+      // 3-per-page: 3 products
+      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
+      const product3 = page[2] ? createProductCard(page[2]) : '<div class="product-card empty"></div>';
+      productsHtml = `${product1}${product2}${product3}`;
     } else {
       // 4-per-page: 4 products
       const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
@@ -83,7 +89,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
       productsHtml = `${product1}${product2}${product3}${product4}`;
     }
 
-    const layoutClass = layout === 2 ? " layout-2" : "";
+    const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : "";
     return `<div class="page${layoutClass}">${productsHtml}</div>`;
   }).join("");
 
@@ -144,6 +150,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     height: 100vh;
     box-sizing: border-box;
   }
+  .page.layout-3 {
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 columns */
+    gap: 15mm;
+    padding: 15mm; /* Even margins */
+    align-items: start;
+    height: 100vh; /* Ensure page height */
+    box-sizing: border-box; /* Include padding in height */
+  }
   .product-card {
     display: flex;
     flex-direction: column;
@@ -156,6 +171,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     display: flex;
     flex-direction: column;
     gap: 15px;
+    align-items: flex-start;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .page.layout-3 .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     align-items: flex-start;
     max-height: 100%;
     overflow: hidden;
@@ -174,6 +197,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     align-items: center;
     margin-bottom: 12px;
   }
+  .page.layout-3 .product-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
   .book-cover {
     width: 60px;
     height: 90px;
@@ -186,6 +216,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     width: 120px;
     height: 180px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .page.layout-3 .book-cover {
+    width: 80px;
+    height: 120px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
   }
   .product-details {
     flex: 1;
@@ -209,6 +244,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     line-height: 1.3;
     margin-bottom: 6px;
   }
+  .page.layout-3 .product-title {
+    font-size: 14px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
   .product-subtitle {
     font-size: 10px;
     color: #666;
@@ -219,6 +259,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     font-size: 13px;
     margin-bottom: 6px;
   }
+  .page.layout-3 .product-subtitle {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
   .product-author {
     font-size: 10px;
     color: #000;
@@ -228,6 +272,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
   .page.layout-2 .product-author {
     font-size: 12px;
     margin-bottom: 6px;
+  }
+  .page.layout-3 .product-author {
+    font-size: 11px;
+    margin-bottom: 4px;
   }
   .product-description {
     font-size: 9px;
@@ -245,6 +293,17 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 12;
+    -webkit-box-orient: vertical;
+  }
+  .page.layout-3 .product-description {
+    font-size: 10px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    max-height: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
     -webkit-box-orient: vertical;
   }
   .product-specs {
@@ -296,8 +355,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
     font-size: 16px;
     margin: 8px 0;
   }
+  .page.layout-3 .product-price {
+    font-size: 14px;
+    margin: 6px 0;
+  }
   .page.layout-2 .product-isbn {
     font-size: 11px;
+  }
+  .page.layout-3 .product-isbn {
+    font-size: 10px;
   }
   .page.layout-2 .product-specs {
     gap: 10px;
@@ -306,6 +372,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 4 | 8, show: Record<string, b
   .page.layout-2 .spec-item {
     font-size: 11px;
     padding: 4px 8px;
+  }
+  .page.layout-3 .product-specs {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .page.layout-3 .spec-item {
+    font-size: 10px;
+    padding: 3px 6px;
   }
   .page.layout-2 .product-meta {
     margin-bottom: 10px;
