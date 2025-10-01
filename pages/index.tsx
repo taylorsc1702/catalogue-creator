@@ -259,6 +259,48 @@ export default function Home() {
     }
   }
 
+  async function openCompactListView() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/list-compact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items,
+          title: `Catalogue - ${new Date().toLocaleDateString()}` 
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating compact list view: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close();
+        w.focus();
+      } else {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-compact-list-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead.");
+      }
+    } catch (error) {
+      alert("Error generating compact list view: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   function moveItemUp(index: number) {
     if (index === 0) return;
     const newItems = [...items];
@@ -501,6 +543,7 @@ export default function Home() {
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
+            <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
           </div>
 
           {items.length > 0 && (
