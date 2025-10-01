@@ -177,8 +177,11 @@ function renderCompactListView(items: Item[], title: string) {
     }
     
     .col-title {
-      min-width: 200px;
-      max-width: 300px;
+      width: 150px;
+      max-width: 150px;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
     }
     
     .title {
@@ -186,6 +189,8 @@ function renderCompactListView(items: Item[], title: string) {
       color: #2C3E50;
       margin-bottom: 2px;
       line-height: 1.2;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
     
     .subtitle {
@@ -194,12 +199,15 @@ function renderCompactListView(items: Item[], title: string) {
       font-style: italic;
       margin-bottom: 1px;
       line-height: 1.2;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
     
     .release-date {
       font-size: 7pt;
       color: #666;
       margin-top: 2px;
+      white-space: nowrap;
     }
     
     .col-price {
