@@ -604,7 +604,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   setItemLayout: (index: number, layout: 1|2|4|8) => void;
   clearItemLayout: (index: number) => void;
 }) {
-  const [positionInputs, setPositionInputs] = React.useState<{[key: number]: string}>({});
+  const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
