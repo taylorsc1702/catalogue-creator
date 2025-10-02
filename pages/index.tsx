@@ -701,35 +701,37 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
       {items.map((it, i) => (
         <div key={i} style={{ 
           border: showOrderEditor ? "2px solid #667eea" : "2px solid #E9ECEF", 
-          borderRadius: 16, 
-          padding: 20, 
+          borderRadius: 12, 
+          padding: 16, 
           display: "grid", 
-          gridTemplateColumns: "120px 1fr", 
-          gap: 16,
+          gridTemplateColumns: "100px 1fr", 
+          gap: 12,
           background: "white",
-          boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "0 4px 12px rgba(0,0,0,0.05)",
+          boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
           position: "relative",
-          overflow: "hidden"
+          overflow: "hidden",
+          height: "fit-content",
+          maxHeight: "200px"
         }}>
           <div style={{ position: "relative" }}>
             <img 
-              src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
+              src={it.imageUrl || "https://via.placeholder.com/100x150?text=No+Image"} 
               alt={it.title}
               style={{ 
-                width: 120, 
-                height: 180, 
+                width: 100, 
+                height: 150, 
                 objectFit: "cover", 
-                borderRadius: 12, 
+                borderRadius: 8, 
                 background: "#F8F9FA",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
               }}
             />
             {layout === 1 && it.additionalImages && it.additionalImages.length > 0 && (
               <div style={{ 
                 display: "flex", 
-                gap: 8, 
-                marginTop: 8, 
+                gap: 4, 
+                marginTop: 4, 
                 flexWrap: "wrap",
                 justifyContent: "center"
               }}>
@@ -739,12 +741,12 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     src={img} 
                     alt={`${it.title} - Internal ${idx + 2}`}
                     style={{ 
-                      width: 50, 
-                      height: 75, 
+                      width: 30, 
+                      height: 45, 
                       objectFit: "cover", 
-                      borderRadius: 6, 
+                      borderRadius: 4, 
                       background: "#F8F9FA",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
                     }}
                   />
                 ))}
@@ -765,16 +767,16 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 ${it.price}
               </div>
             )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <a 
               href={generateProductUrl(it.handle)}
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
                 fontWeight: 700, 
-                fontSize: 16,
+                fontSize: 14,
                 color: "#2C3E50",
-                lineHeight: 1.3,
+                lineHeight: 1.2,
                 textDecoration: "none"
               }}
               onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
@@ -784,17 +786,17 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             </a>
             {it.subtitle && (
               <div style={{ 
-                fontSize: 14, 
+                fontSize: 12, 
                 color: "#7F8C8D",
                 fontStyle: "italic",
-                lineHeight: 1.3
+                lineHeight: 1.2
               }}>
                 {it.subtitle}
               </div>
             )}
             {it.author && (
               <div style={{ 
-                fontSize: 13, 
+                fontSize: 11, 
                 color: "#667eea",
                 fontWeight: 600
               }}>
@@ -803,47 +805,39 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             )}
             {it.description && (
               <div style={{ 
-                fontSize: 12, 
-                color: "#333",
-                lineHeight: 1.4,
-                textAlign: "justify"
+                fontSize: 11, 
+                color: "#666",
+                lineHeight: 1.3,
+                textAlign: "justify",
+                maxHeight: "60px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical"
               }}>
                 {it.description}
               </div>
             )}
             
             <div style={{ 
-              fontSize: 12, 
+              fontSize: 10, 
               color: "#6C757D",
-              lineHeight: 1.4
+              lineHeight: 1.2,
+              marginTop: 4
             }}>
-              {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
+              {[it.binding, it.pages && `${it.pages} pages`].filter(Boolean).join(" • ")}
             </div>
-            {it.imprint && (
+            {it.price && (
               <div style={{ 
-                fontSize: 12, 
-                color: "#6C757D"
+                fontSize: 13, 
+                color: "#D63384",
+                fontWeight: 600,
+                marginTop: 4
               }}>
-                🏢 {it.imprint}
+                ${it.price}
               </div>
             )}
-            {it.releaseDate && (
-              <div style={{ 
-                fontSize: 12, 
-                color: "#6C757D"
-              }}>
-                📅 {it.releaseDate}
-              </div>
-            )}
-            <div style={{ 
-              fontSize: 11, 
-              color: "#ADB5BD", 
-              marginTop: "auto",
-              wordBreak: "break-all",
-              fontFamily: "monospace"
-            }}>
-              /products/{it.handle}
-            </div>
             
             {showOrderEditor && (
               <div style={{ 
