@@ -712,42 +712,63 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           position: "relative",
           overflow: "hidden"
         }}>
-          <div style={{ position: "relative" }}>
-            <img 
-              src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
-              alt={it.title}
-              style={{ 
-                width: 120, 
-                height: 180, 
-                objectFit: "cover", 
-                borderRadius: 12, 
-                background: "#F8F9FA",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-              }}
-            />
-            {layout === 1 && it.additionalImages && it.additionalImages.length > 0 && (
-              <div style={{ 
-                display: "flex", 
-                gap: 8, 
-                marginTop: 12, 
-                flexWrap: "wrap",
-                justifyContent: "center"
-              }}>
-                {it.additionalImages.slice(0, 3).map((img, idx) => (
-                  <img 
-                    key={idx}
-                    src={img} 
-                    alt={`${it.title} - Image ${idx + 2}`}
-                    style={{ 
-                      width: 60, 
-                      height: 90, 
-                      objectFit: "cover", 
-                      borderRadius: 8, 
-                      background: "#F8F9FA",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                    }}
-                  />
-                ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {layout === 1 ? (
+              // 1-per-page layout: Large image with thumbnails below
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <img 
+                  src={it.imageUrl || "https://via.placeholder.com/200x300?text=No+Image"} 
+                  alt={it.title}
+                  style={{ 
+                    width: 200, 
+                    height: 300, 
+                    objectFit: "cover", 
+                    borderRadius: 12, 
+                    background: "#F8F9FA",
+                    boxShadow: "0 6px 16px rgba(0,0,0,0.15)"
+                  }}
+                />
+                {it.additionalImages && it.additionalImages.length > 0 && (
+                  <div style={{ 
+                    display: "flex", 
+                    gap: 12, 
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    maxWidth: "100%"
+                  }}>
+                    {it.additionalImages.slice(0, 4).map((img, idx) => (
+                      <img 
+                        key={idx}
+                        src={img} 
+                        alt={`${it.title} - Internal ${idx + 2}`}
+                        style={{ 
+                          width: 80, 
+                          height: 120, 
+                          objectFit: "cover", 
+                          borderRadius: 8, 
+                          background: "#F8F9FA",
+                          boxShadow: "0 3px 8px rgba(0,0,0,0.1)"
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Other layouts: Standard image
+              <div style={{ position: "relative" }}>
+                <img 
+                  src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
+                  alt={it.title}
+                  style={{ 
+                    width: 120, 
+                    height: 180, 
+                    objectFit: "cover", 
+                    borderRadius: 12, 
+                    background: "#F8F9FA",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+                  }}
+                />
               </div>
             )}
             {it.price && (
@@ -765,18 +786,18 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 ${it.price}
               </div>
             )}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: layout === 1 ? 12 : 8 }}>
             <a 
               href={generateProductUrl(it.handle)}
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
                 fontWeight: 700, 
-                fontSize: 16,
+                fontSize: layout === 1 ? 24 : 16,
                 color: "#2C3E50",
                 lineHeight: 1.3,
-                textDecoration: "none"
+                textDecoration: "none",
+                textAlign: layout === 1 ? "center" : "left"
               }}
               onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
               onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
@@ -785,55 +806,146 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             </a>
             {it.subtitle && (
               <div style={{ 
-                fontSize: 14, 
+                fontSize: layout === 1 ? 18 : 14, 
                 color: "#7F8C8D",
                 fontStyle: "italic",
-                lineHeight: 1.3
+                lineHeight: 1.3,
+                textAlign: layout === 1 ? "center" : "left"
               }}>
                 {it.subtitle}
               </div>
             )}
             {it.author && (
               <div style={{ 
-                fontSize: 13, 
+                fontSize: layout === 1 ? 16 : 13, 
                 color: "#667eea",
-                fontWeight: 600
+                fontWeight: 600,
+                textAlign: layout === 1 ? "center" : "left"
               }}>
                 👤 {it.author}
               </div>
             )}
-            <div style={{ 
-              fontSize: 12, 
-              color: "#6C757D",
-              lineHeight: 1.4
-            }}>
+            {it.description && (
+              <div style={{ 
+                fontSize: layout === 1 ? 14 : 12, 
+                color: "#333",
+                lineHeight: 1.5,
+                textAlign: "justify",
+                maxWidth: layout === 1 ? "600px" : "100%",
+                margin: layout === 1 ? "0 auto" : "0"
+              }}>
+                {it.description}
+              </div>
+            )}
+            
+            {layout === 1 ? (
+              // 1-per-page: Metafields at bottom in organized sections
+              <div style={{ 
+                marginTop: 20,
+                padding: 16,
+                background: "#F8F9FA",
+                borderRadius: 8,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                maxWidth: "600px",
+                margin: "20px auto 0"
+              }}>
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#6C757D",
+                  lineHeight: 1.4,
+                  textAlign: "center"
+                }}>
+                  {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
+                </div>
+                {it.imprint && (
+                  <div style={{ 
+                    fontSize: 12, 
+                    color: "#6C757D",
+                    textAlign: "center"
+                  }}>
+                    🏢 {it.imprint}
+                  </div>
+                )}
+                {it.releaseDate && (
+                  <div style={{ 
+                    fontSize: 12, 
+                    color: "#6C757D",
+                    textAlign: "center"
+                  }}>
+                    📅 {it.releaseDate}
+                  </div>
+                )}
+                {it.publicity && (
+                  <div style={{ 
+                    fontSize: 11, 
+                    color: "#495057",
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    marginTop: 8
+                  }}>
+                    {it.publicity}
+                  </div>
+                )}
+                {it.reviews && (
+                  <div style={{ 
+                    fontSize: 11, 
+                    color: "#6C757D",
+                    textAlign: "center",
+                    marginTop: 4
+                  }}>
+                    {it.reviews}
+                  </div>
+                )}
+                <div style={{ 
+                  fontSize: 10, 
+                  color: "#ADB5BD", 
+                  marginTop: 8,
+                  wordBreak: "break-all",
+                  fontFamily: "monospace",
+                  textAlign: "center"
+                }}>
+                  /products/{it.handle}
+                </div>
+              </div>
+            ) : (
+              // Other layouts: Standard metafields
+              <>
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#6C757D",
+                  lineHeight: 1.4
+                }}>
               {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
             </div>
-            {it.imprint && (
-              <div style={{ 
-                fontSize: 12, 
-                color: "#6C757D"
-              }}>
-                🏢 {it.imprint}
-              </div>
+                {it.imprint && (
+                  <div style={{ 
+                    fontSize: 12, 
+                    color: "#6C757D"
+                  }}>
+                    🏢 {it.imprint}
+                  </div>
+                )}
+                {it.releaseDate && (
+                  <div style={{ 
+                    fontSize: 12, 
+                    color: "#6C757D"
+                  }}>
+                    📅 {it.releaseDate}
+                  </div>
+                )}
+                <div style={{ 
+                  fontSize: 11, 
+                  color: "#ADB5BD", 
+                  marginTop: "auto",
+                  wordBreak: "break-all",
+                  fontFamily: "monospace"
+                }}>
+                  /products/{it.handle}
+                </div>
+              </>
             )}
-            {it.releaseDate && (
-              <div style={{ 
-                fontSize: 12, 
-                color: "#6C757D"
-              }}>
-                📅 {it.releaseDate}
-              </div>
-            )}
-            <div style={{ 
-              fontSize: 11, 
-              color: "#ADB5BD", 
-              marginTop: "auto",
-              wordBreak: "break-all",
-              fontFamily: "monospace"
-            }}>
-              /products/{it.handle}
-            </div>
             
             {showOrderEditor && (
               <div style={{ 
@@ -984,6 +1096,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       ))}

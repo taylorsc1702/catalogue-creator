@@ -54,31 +54,47 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     const createProductCard = (it: Item) => {
       return [
         '<div class="product-card">',
-          '<div class="product-image">',
-            `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
-            layout === 1 && it.additionalImages && it.additionalImages.length > 0 ? 
-              `<div class="additional-images">${it.additionalImages.slice(0, 3).map((img, idx) => 
-                `<img src="${esc(img)}" alt="${esc(it.title)} - Image ${idx + 2}" class="additional-image">`
-              ).join('')}</div>` : '',
-          '</div>',
+          layout === 1 ? 
+            // 1-per-page: Large image with thumbnails
+            `<div class="product-image-large">
+              <img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover-large">
+              ${it.additionalImages && it.additionalImages.length > 0 ? 
+                `<div class="additional-images">${it.additionalImages.slice(0, 4).map((img, idx) => 
+                  `<img src="${esc(img)}" alt="${esc(it.title)} - Internal ${idx + 2}" class="additional-image">`
+                ).join('')}</div>` : ''}
+            </div>` :
+            // Other layouts: Standard image
+            `<div class="product-image">
+              <img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">
+            </div>`,
           '<div class="product-details">',
             `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
             it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
             it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
             it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
-            '<div class="product-specs">',
-              it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : "",
-              it.pages ? `<span class="spec-item">${esc(it.pages)} pages</span>` : "",
-              it.dimensions ? `<span class="spec-item">${esc(it.dimensions)}</span>` : "",
-            '</div>',
-            '<div class="product-meta">',
-              it.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(it.imprint)}</div>` : "",
-              it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(it.releaseDate)}</div>` : "",
-              it.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(it.weight)}</div>` : "",
-              it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : "",
-            '</div>',
+            layout === 1 ? 
+              // 1-per-page: Organized metafields at bottom
+              `<div class="product-meta">
+                <div class="spec-item">${[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}</div>
+                ${it.imprint ? `<div class="meta-item">🏢 ${esc(it.imprint)}</div>` : ""}
+                ${it.releaseDate ? `<div class="meta-item">📅 ${esc(it.releaseDate)}</div>` : ""}
+                ${it.publicity ? `<div class="meta-item" style="font-style: italic; margin-top: 8px;">${esc(it.publicity)}</div>` : ""}
+                ${it.reviews ? `<div class="meta-item" style="margin-top: 4px;">${esc(it.reviews)}</div>` : ""}
+                <div class="product-isbn">/products/${esc(it.handle)}</div>
+              </div>` :
+              // Other layouts: Standard metafields
+              `<div class="product-specs">
+                ${it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : ""}
+                ${it.pages ? `<span class="spec-item">${esc(it.pages)} pages</span>` : ""}
+                ${it.dimensions ? `<span class="spec-item">${esc(it.dimensions)}</span>` : ""}
+              </div>
+              <div class="product-meta">
+                ${it.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(it.imprint)}</div>` : ""}
+                ${it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(it.releaseDate)}</div>` : ""}
+                ${it.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(it.weight)}</div>` : ""}
+                ${it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : ""}
+              </div>`,
             it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
-            `<div class="product-isbn">ISBN: ${esc(it.handle)}</div>`,
             show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
           '</div>',
         '</div>',
@@ -255,6 +271,59 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .product-image-large {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .book-cover-large {
+    width: 200px;
+    height: 300px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  .page.layout-1 .product-title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .page.layout-1 .product-subtitle {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .page.layout-1 .product-author {
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .page.layout-1 .product-description {
+    font-size: 14px;
+    text-align: justify;
+    max-width: 600px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+  }
+  .page.layout-1 .product-meta {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .page.layout-1 .meta-item {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .page.layout-1 .product-isbn {
+    font-size: 10px;
+    margin-top: 8px;
   }
   .product-details {
     flex: 1;
