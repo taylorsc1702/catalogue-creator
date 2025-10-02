@@ -694,7 +694,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   return (
     <div style={{ 
       display: "grid", 
-      gridTemplateColumns: `repeat(${cols}, 1fr)`, 
+      gridTemplateColumns: "1fr 1fr", 
       gap: 20,
       marginTop: 24
     }}>
@@ -747,104 +747,93 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             <div style={{ 
               display: "flex", 
               flexDirection: "column", 
-              gap: 4, 
+              gap: 4,
               flex: 1,
-              minWidth: 0,
-              justifyContent: "space-between",
-              height: "120px"
+              minWidth: 0
             }}>
-          <div>
-                <a 
-                  href={generateProductUrl(it.handle)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ 
-                    fontWeight: 700, 
-                    fontSize: 14,
-                    color: "#2C3E50",
-                    lineHeight: 1.2,
-                    textDecoration: "none",
-                    display: "block",
-                    marginBottom: 2
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
-                  onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
-                >
-                  {it.title}
-                </a>
-                {it.subtitle && (
-                  <div style={{ 
-                    fontSize: 12, 
-                    color: "#7F8C8D",
-                    fontStyle: "italic",
-                    lineHeight: 1.2,
-                    marginBottom: 2
-                  }}>
-                    {it.subtitle}
-                  </div>
-                )}
-                {it.author && (
-                  <div style={{ 
-                    fontSize: 11, 
-                    color: "#667eea",
-                    fontWeight: 600,
-                    marginBottom: 4
-                  }}>
-                    👤 {it.author}
-                  </div>
-                )}
-                
+              <a 
+                href={generateProductUrl(it.handle)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  fontWeight: 700, 
+                  fontSize: 14,
+                  color: "#2C3E50",
+                  lineHeight: 1.2,
+                  textDecoration: "none",
+                  display: "block",
+                  marginBottom: 2
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
+              >
+                {it.title}
+              </a>
+              {it.subtitle && (
                 <div style={{ 
-                  fontSize: 10, 
-                  color: "#6C757D",
+                  fontSize: 12, 
+                  color: "#7F8C8D",
+                  fontStyle: "italic",
                   lineHeight: 1.2,
                   marginBottom: 2
                 }}>
-                  {[it.binding, it.pages && `${it.pages} pages`].filter(Boolean).join(" • ")}
+                  {it.subtitle}
                 </div>
-                {it.imprint && (
-                  <div style={{ 
-                    fontSize: 10, 
-                    color: "#6C757D",
-                    marginBottom: 1
-                  }}>
-                    🏢 {it.imprint}
-                  </div>
-                )}
-                {it.releaseDate && (
-                  <div style={{ 
-                    fontSize: 10, 
-                    color: "#6C757D",
-                    marginBottom: 2
-                  }}>
-                    📅 {it.releaseDate}
-                  </div>
-                )}
-              </div>
+              )}
+              {it.author && (
+                <div style={{ 
+                  fontSize: 11, 
+                  color: "#667eea",
+                  fontWeight: 600,
+                  marginBottom: 4
+                }}>
+                  👤 {it.author}
+                </div>
+              )}
               
               <div style={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                alignItems: "flex-end",
-                marginTop: "auto"
+                fontSize: 10, 
+                color: "#6C757D",
+                lineHeight: 1.2,
+                marginBottom: 2
               }}>
-                {it.price && (
-                  <div style={{ 
-                    fontSize: 13, 
-                    color: "#D63384",
-                    fontWeight: 600
-                  }}>
-                    ${it.price}
-                  </div>
-                )}
+                {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
+              </div>
+              {it.imprint && (
                 <div style={{ 
-                  fontSize: 8, 
-                  color: "#ADB5BD", 
-                  fontFamily: "monospace",
-                  textAlign: "right"
+                  fontSize: 10, 
+                  color: "#6C757D",
+                  marginBottom: 1
                 }}>
-                  {it.handle}
+                  🏢 {it.imprint}
                 </div>
+              )}
+              {it.releaseDate && (
+                <div style={{ 
+                  fontSize: 10, 
+                  color: "#6C757D",
+                  marginBottom: 2
+                }}>
+                  📅 {it.releaseDate}
+                </div>
+              )}
+              {it.price && (
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#D63384",
+                  fontWeight: 600,
+                  marginTop: 4
+                }}>
+                  ${it.price}
+                </div>
+              )}
+              <div style={{ 
+                fontSize: 8, 
+                color: "#ADB5BD", 
+                fontFamily: "monospace",
+                marginTop: 4
+              }}>
+                {it.handle}
               </div>
             
             {showOrderEditor && (
