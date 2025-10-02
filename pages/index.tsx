@@ -729,28 +729,29 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
               }}
             />
-            {it.price && (
-              <div style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                padding: "4px 8px",
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: 600
-              }}>
-                ${it.price}
-              </div>
-            )}
-            <div style={{ 
-              display: "flex", 
-              flexDirection: "column", 
-              gap: 4,
-              flex: 1,
-              minWidth: 0
+          </div>
+          {it.price && (
+            <div style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              padding: "4px 8px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600
             }}>
+              ${it.price}
+            </div>
+          )}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: 4,
+            flex: 1,
+            minWidth: 0
+          }}>
               <a 
                 href={generateProductUrl(it.handle)}
                 target="_blank"
@@ -797,7 +798,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 lineHeight: 1.2,
                 marginBottom: 2
               }}>
-                {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
+              {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
               </div>
               {it.imprint && (
                 <div style={{ 
@@ -985,7 +986,6 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 </div>
               </div>
             )}
-            </div>
           </div>
         </div>
       ))}
