@@ -693,9 +693,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
-      display: "flex", 
-      flexDirection: "column", 
-      gap: 16,
+      display: "grid", 
+      gridTemplateColumns: `repeat(${cols}, 1fr)`, 
+      gap: 20,
       marginTop: 24
     }}>
       {items.map((it, i) => (
@@ -704,29 +704,29 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           borderRadius: 12, 
           padding: 16, 
           display: "flex", 
-          gap: 16,
+          gap: 12,
           background: "white",
           boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          minHeight: "120px"
+          height: "fit-content"
         }}>
           <div style={{ 
             display: "flex", 
             flexDirection: "column", 
-            gap: 8, 
+            gap: 6, 
             flexShrink: 0,
-            width: "120px"
+            width: "100px"
           }}>
             <img 
-              src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
+              src={it.imageUrl || "https://via.placeholder.com/100x150?text=No+Image"} 
               alt={it.title}
               style={{ 
-                width: 120, 
-                height: 180, 
+                width: 100, 
+                height: 150, 
                 objectFit: "cover", 
-                borderRadius: 8, 
+                borderRadius: 6, 
                 background: "#F8F9FA",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
               }}
