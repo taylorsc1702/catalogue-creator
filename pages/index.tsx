@@ -812,17 +812,6 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                   👤 {it.author}
                 </div>
               )}
-              {it.description && (
-                <div style={{ 
-                  fontSize: 12, 
-                  color: "#333",
-                  lineHeight: 1.4,
-                  textAlign: "justify",
-                  marginBottom: 8
-                }}>
-                  {it.description}
-                </div>
-              )}
               
               <div style={{ 
                 fontSize: 12, 
