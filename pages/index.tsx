@@ -6,7 +6,9 @@ type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
-  imageUrl?: string; handle: string; vendor?: string; tags?: string[];
+  publicity?: string; reviews?: string;
+  imageUrl?: string; additionalImages?: string[];
+  handle: string; vendor?: string; tags?: string[];
 };
 
 // Matches what /api/products now returns: { items, query }
@@ -723,6 +725,31 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
               }}
             />
+            {layout === 1 && it.additionalImages && it.additionalImages.length > 0 && (
+              <div style={{ 
+                display: "flex", 
+                gap: 8, 
+                marginTop: 12, 
+                flexWrap: "wrap",
+                justifyContent: "center"
+              }}>
+                {it.additionalImages.slice(0, 3).map((img, idx) => (
+                  <img 
+                    key={idx}
+                    src={img} 
+                    alt={`${it.title} - Image ${idx + 2}`}
+                    style={{ 
+                      width: 60, 
+                      height: 90, 
+                      objectFit: "cover", 
+                      borderRadius: 8, 
+                      background: "#F8F9FA",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                    }}
+                  />
+                ))}
+              </div>
+            )}
             {it.price && (
               <div style={{
                 position: "absolute",

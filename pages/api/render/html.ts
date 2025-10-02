@@ -5,7 +5,9 @@ type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
-  imageUrl?: string; handle: string; vendor?: string; tags?: string[];
+  publicity?: string; reviews?: string;
+  imageUrl?: string; additionalImages?: string[];
+  handle: string; vendor?: string; tags?: string[];
 };
 
 const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
@@ -54,6 +56,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         '<div class="product-card">',
           '<div class="product-image">',
             `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
+            layout === 1 && it.additionalImages && it.additionalImages.length > 0 ? 
+              `<div class="additional-images">${it.additionalImages.slice(0, 3).map((img, idx) => 
+                `<img src="${esc(img)}" alt="${esc(it.title)} - Image ${idx + 2}" class="additional-image">`
+              ).join('')}</div>` : '',
           '</div>',
           '<div class="product-details">',
             `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
@@ -234,6 +240,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     width: 80px;
     height: 120px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  }
+  .additional-images {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .additional-image {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   .product-details {
     flex: 1;
