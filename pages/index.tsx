@@ -693,9 +693,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
-      display: "grid", 
-      gridTemplateColumns: `repeat(${cols}, 1fr)`, 
-      gap: 20,
+      display: "flex", 
+      flexDirection: "column", 
+      gap: 16,
       marginTop: 24
     }}>
       {items.map((it, i) => (
@@ -703,46 +703,49 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           border: showOrderEditor ? "2px solid #667eea" : "2px solid #E9ECEF", 
           borderRadius: 12, 
           padding: 16, 
-          display: "grid", 
-          gridTemplateColumns: "100px 1fr", 
-          gap: 12,
+          display: "flex", 
+          gap: 16,
           background: "white",
           boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          height: "fit-content",
-          maxHeight: "200px"
+          minHeight: "120px"
         }}>
-          <div style={{ position: "relative" }}>
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: 8, 
+            flexShrink: 0,
+            width: "120px"
+          }}>
             <img 
-              src={it.imageUrl || "https://via.placeholder.com/100x150?text=No+Image"} 
+              src={it.imageUrl || "https://via.placeholder.com/120x180?text=No+Image"} 
               alt={it.title}
               style={{ 
-                width: 100, 
-                height: 150, 
+                width: 120, 
+                height: 180, 
                 objectFit: "cover", 
                 borderRadius: 8, 
                 background: "#F8F9FA",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
               }}
             />
-            {layout === 1 && it.additionalImages && it.additionalImages.length > 0 && (
+            {it.additionalImages && it.additionalImages.length > 0 && (
               <div style={{ 
                 display: "flex", 
-                gap: 4, 
-                marginTop: 4, 
+                gap: 6, 
                 flexWrap: "wrap",
                 justifyContent: "center"
               }}>
-                {it.additionalImages.slice(0, 2).map((img, idx) => (
+                {it.additionalImages.slice(0, 3).map((img, idx) => (
                   <img 
                     key={idx}
                     src={img} 
                     alt={`${it.title} - Internal ${idx + 2}`}
                     style={{ 
-                      width: 30, 
-                      height: 45, 
+                      width: 35, 
+                      height: 52, 
                       objectFit: "cover", 
                       borderRadius: 4, 
                       background: "#F8F9FA",
@@ -767,77 +770,105 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 ${it.price}
               </div>
             )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <a 
-              href={generateProductUrl(it.handle)}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                fontWeight: 700, 
-                fontSize: 14,
-                color: "#2C3E50",
-                lineHeight: 1.2,
-                textDecoration: "none"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
-            >
-              {it.title}
-            </a>
-            {it.subtitle && (
+            <div style={{ 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: 6, 
+              flex: 1,
+              minWidth: 0
+            }}>
+              <a 
+                href={generateProductUrl(it.handle)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  fontWeight: 700, 
+                  fontSize: 16,
+                  color: "#2C3E50",
+                  lineHeight: 1.3,
+                  textDecoration: "none"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
+              >
+                {it.title}
+              </a>
+              {it.subtitle && (
+                <div style={{ 
+                  fontSize: 14, 
+                  color: "#7F8C8D",
+                  fontStyle: "italic",
+                  lineHeight: 1.3
+                }}>
+                  {it.subtitle}
+                </div>
+              )}
+              {it.author && (
+                <div style={{ 
+                  fontSize: 13, 
+                  color: "#667eea",
+                  fontWeight: 600
+                }}>
+                  👤 {it.author}
+                </div>
+              )}
+              {it.description && (
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#333",
+                  lineHeight: 1.4,
+                  textAlign: "justify",
+                  marginBottom: 8
+                }}>
+                  {it.description}
+                </div>
+              )}
+              
               <div style={{ 
                 fontSize: 12, 
-                color: "#7F8C8D",
-                fontStyle: "italic",
-                lineHeight: 1.2
-              }}>
-                {it.subtitle}
-              </div>
-            )}
-            {it.author && (
-              <div style={{ 
-                fontSize: 11, 
-                color: "#667eea",
-                fontWeight: 600
-              }}>
-                👤 {it.author}
-              </div>
-            )}
-            {it.description && (
-              <div style={{ 
-                fontSize: 11, 
-                color: "#666",
+                color: "#6C757D",
                 lineHeight: 1.3,
-                textAlign: "justify",
-                maxHeight: "60px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical"
+                marginBottom: 4
               }}>
-                {it.description}
+              {[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}
               </div>
-            )}
-            
-            <div style={{ 
-              fontSize: 10, 
-              color: "#6C757D",
-              lineHeight: 1.2,
-              marginTop: 4
-            }}>
-              {[it.binding, it.pages && `${it.pages} pages`].filter(Boolean).join(" • ")}
-            </div>
-            {it.price && (
+              {it.imprint && (
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#6C757D",
+                  marginBottom: 2
+                }}>
+                  🏢 {it.imprint}
+                </div>
+              )}
+              {it.releaseDate && (
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#6C757D",
+                  marginBottom: 4
+                }}>
+                  📅 {it.releaseDate}
+                </div>
+              )}
+              {it.price && (
+                <div style={{ 
+                  fontSize: 14, 
+                  color: "#D63384",
+                  fontWeight: 600,
+                  marginTop: 4
+                }}>
+                  ${it.price}
+                </div>
+              )}
               <div style={{ 
-                fontSize: 13, 
-                color: "#D63384",
-                fontWeight: 600,
-                marginTop: 4
+                fontSize: 10, 
+                color: "#ADB5BD", 
+                marginTop: "auto",
+                wordBreak: "break-all",
+                fontFamily: "monospace"
               }}>
-                ${it.price}
+                /products/{it.handle}
               </div>
-            )}
             
             {showOrderEditor && (
               <div style={{ 
