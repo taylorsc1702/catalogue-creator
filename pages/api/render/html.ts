@@ -108,7 +108,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 ${it.releaseDate ? `<div class="meta-item">📅 ${esc(it.releaseDate)}</div>` : ""}
                 ${it.publicity ? `<div class="meta-item" style="font-style: italic; margin-top: 8px;">${esc(it.publicity)}</div>` : ""}
                 ${it.reviews ? `<div class="meta-item" style="margin-top: 4px;">${esc(it.reviews)}</div>` : ""}
-                <div class="product-isbn">/products/${esc(it.handle)}</div>
               </div>` :
               // Other layouts: Standard metafields
               `<div class="product-specs">

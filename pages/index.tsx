@@ -1,6 +1,5 @@
 // pages/index.tsx
 import { useMemo, useState } from "react";
-import CollaborationPanel from "@/components/CollaborationPanel";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -41,10 +40,6 @@ export default function Home() {
   const [utmCampaign, setUtmCampaign] = useState("");
   const [utmContent, setUtmContent] = useState("");
   const [utmTerm, setUtmTerm] = useState("");
-  
-  // Collaboration state
-  const [currentCatalogueId, setCurrentCatalogueId] = useState<string | undefined>();
-  const [showCollaboration, setShowCollaboration] = useState(false);
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -389,36 +384,6 @@ export default function Home() {
     return utmParams.toString() ? `${baseUrl}?${utmParams.toString()}` : baseUrl;
   }
 
-  async function createCatalogue() {
-    if (!items.length) {
-      alert("Please fetch products first before creating a catalogue.");
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/collaboration/catalogues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: `Catalogue - ${new Date().toLocaleDateString()}`,
-          description: `Generated from ${items.length} products`,
-          tags: ['generated', 'catalogue']
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentCatalogueId(data.catalogue.id);
-        setShowCollaboration(true);
-        alert(`Catalogue created! You can now collaborate with your team.`);
-      } else {
-        throw new Error('Failed to create catalogue');
-      }
-    } catch (error) {
-      console.error('Failed to create catalogue:', error);
-      alert('Failed to create catalogue. Please try again.');
-    }
-  }
 
   async function openMixedLayout() {
     if (!items.length) { alert("Fetch products first."); return; }
@@ -723,32 +688,6 @@ export default function Home() {
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
           </div>
 
-          {/* Collaboration Section */}
-          <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <button 
-              onClick={createCatalogue} 
-              disabled={!items.length} 
-              style={{
-                ...btn(),
-                background: currentCatalogueId ? '#28A745' : '#667eea',
-                color: 'white'
-              }}
-            >
-              {currentCatalogueId ? '✅ Catalogue Created' : '🤝 Create Collaborative Catalogue'}
-            </button>
-            {currentCatalogueId && (
-              <button 
-                onClick={() => setShowCollaboration(!showCollaboration)} 
-                style={{
-                  ...btn(showCollaboration),
-                  background: showCollaboration ? '#667eea' : '#6C757D',
-                  color: 'white'
-                }}
-              >
-                {showCollaboration ? '👁️ Hide Collaboration' : '👥 Show Collaboration'}
-              </button>
-            )}
-          </div>
 
           {items.length > 0 && (
             <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -769,20 +708,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Collaboration Panel */}
-          {showCollaboration && currentCatalogueId && (
-            <CollaborationPanel
-              catalogueId={currentCatalogueId}
-              items={items}
-              layout={layout}
-              hyperlinkToggle={hyperlinkToggle}
-              utmParams={{ utmSource, utmMedium, utmCampaign, utmContent, utmTerm }}
-              onSaveVersion={(version) => {
-                console.log('Version saved:', version);
-                alert(`Version ${version.version} saved successfully!`);
-              }}
-            />
-          )}
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
