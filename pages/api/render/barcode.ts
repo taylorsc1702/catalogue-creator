@@ -13,11 +13,12 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, utmParams } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, discountCode, utmParams } = req.body as {
       items: Item[];
       layout: 1 | 2 | 4 | 8;
       includeBarcodes?: boolean;
       itemQrToggles?: {[key: number]: boolean};
+      discountCode?: string;
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -53,19 +54,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const generateProductUrl = (handle: string): string => {
       const baseUrl = `${SITE}/products/${handle}`;
       
-      // Add UTM parameters if any are provided
-      if (utmParams) {
-        const utmUrlParams = new URLSearchParams();
-        if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
-        if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
-        if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
-        if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
-        if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
-        
-        return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
+      // Add discount code and UTM parameters if any are provided
+      const urlParams = new URLSearchParams();
+      
+      // Add discount code first
+      if (discountCode) {
+        urlParams.set('discount', discountCode);
       }
       
-      return baseUrl;
+      // Add UTM parameters
+      if (utmParams) {
+        if (utmParams.utmSource) urlParams.set('utm_source', utmParams.utmSource);
+        if (utmParams.utmMedium) urlParams.set('utm_medium', utmParams.utmMedium);
+        if (utmParams.utmCampaign) urlParams.set('utm_campaign', utmParams.utmCampaign);
+        if (utmParams.utmContent) urlParams.set('utm_content', utmParams.utmContent);
+        if (utmParams.utmTerm) urlParams.set('utm_term', utmParams.utmTerm);
+      }
+      
+      return urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
     };
 
     const pagesHtml = chunks.map((page, chunkIndex) => {

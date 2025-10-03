@@ -37,6 +37,7 @@ export default function Home() {
   
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
   const [utmSource, setUtmSource] = useState("");
   const [utmMedium, setUtmMedium] = useState("");
   const [utmCampaign, setUtmCampaign] = useState("");
@@ -180,6 +181,7 @@ export default function Home() {
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           itemQrToggles,
+          discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -212,6 +214,7 @@ export default function Home() {
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           itemQrToggles,
+          discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -387,15 +390,22 @@ export default function Home() {
     
     const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
     
-    // Add UTM parameters if any are provided
-    const utmParams = new URLSearchParams();
-    if (utmSource) utmParams.set('utm_source', utmSource);
-    if (utmMedium) utmParams.set('utm_medium', utmMedium);
-    if (utmCampaign) utmParams.set('utm_campaign', utmCampaign);
-    if (utmContent) utmParams.set('utm_content', utmContent);
-    if (utmTerm) utmParams.set('utm_term', utmTerm);
+    // Add discount code and UTM parameters if any are provided
+    const urlParams = new URLSearchParams();
     
-    return utmParams.toString() ? `${baseUrl}?${utmParams.toString()}` : baseUrl;
+    // Add discount code first
+    if (discountCode) {
+      urlParams.set('discount', discountCode);
+    }
+    
+    // Add UTM parameters
+    if (utmSource) urlParams.set('utm_source', utmSource);
+    if (utmMedium) urlParams.set('utm_medium', utmMedium);
+    if (utmCampaign) urlParams.set('utm_campaign', utmCampaign);
+    if (utmContent) urlParams.set('utm_content', utmContent);
+    if (utmTerm) urlParams.set('utm_term', utmTerm);
+    
+    return urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
   }
 
 
@@ -497,6 +507,31 @@ export default function Home() {
             style={{
               width: "100%",
               maxWidth: "500px",
+              padding: "12px 16px",
+              border: "2px solid #E2E8F0",
+              borderRadius: "8px",
+              fontSize: "16px",
+              outline: "none",
+              transition: "border-color 0.2s",
+            }}
+            onFocus={(e) => e.target.style.borderColor = "#805AD5"}
+            onBlur={(e) => e.target.style.borderColor = "#E2E8F0"}
+          />
+        </div>
+
+        {/* Discount Code Input */}
+        <div style={{ marginBottom: "24px", textAlign: "center" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", color: "#4A5568", fontSize: "1.1rem" }}>
+            Discount Code (Optional)
+          </label>
+          <input
+            type="text"
+            value={discountCode}
+            onChange={(e) => setDiscountCode(e.target.value)}
+            placeholder="Enter discount code (e.g., 'SAVE20', 'SPRING2025')"
+            style={{
+              width: "100%",
+              maxWidth: "300px",
               padding: "12px 16px",
               border: "2px solid #E2E8F0",
               borderRadius: "8px",
