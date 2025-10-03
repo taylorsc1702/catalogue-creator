@@ -84,7 +84,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const line = lineParts.join(" • ");
 
         const productUrl = generateProductUrl(it.handle);
-        const shouldShowQr = includeBarcodes && (itemQrToggles[chunkIndex * perPage + itemIndex] !== false);
+        const globalItemIndex = chunkIndex * perPage + itemIndex;
+        const shouldShowQr = includeBarcodes && (itemQrToggles[globalItemIndex] === true);
         const qrCodeDataUrl = shouldShowQr ? generateQRCode(productUrl) : '';
 
         return [
