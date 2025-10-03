@@ -13,10 +13,11 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, includeBarcodes = true, utmParams } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, utmParams } = req.body as {
       items: Item[];
       layout: 1 | 2 | 4 | 8;
       includeBarcodes?: boolean;
+      itemQrToggles?: {[key: number]: boolean};
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -67,8 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return baseUrl;
     };
 
-    const pagesHtml = chunks.map(page => {
-      const cards = page.map(it => {
+    const pagesHtml = chunks.map((page, chunkIndex) => {
+      const cards = page.map((it, itemIndex) => {
         const lineParts: string[] = [];
         if (it.binding) lineParts.push(esc(it.binding));
         if (it.pages) lineParts.push(esc(`${it.pages} pages`));
@@ -77,7 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const line = lineParts.join(" • ");
 
         const productUrl = generateProductUrl(it.handle);
-        const qrCodeDataUrl = includeBarcodes ? generateQRCode(productUrl) : '';
+        const shouldShowQr = includeBarcodes && (itemQrToggles[chunkIndex * perPage + itemIndex] !== false);
+        const qrCodeDataUrl = shouldShowQr ? generateQRCode(productUrl) : '';
 
         return [
           '<div class="card">',

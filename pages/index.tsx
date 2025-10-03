@@ -32,6 +32,7 @@ export default function Home() {
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
+  const [itemQrToggles, setItemQrToggles] = useState<{[key: number]: boolean}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   
   // UTM Parameters
@@ -178,6 +179,7 @@ export default function Home() {
           layout,
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
+          itemQrToggles,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -209,6 +211,7 @@ export default function Home() {
           layout,
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
+          itemQrToggles,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -362,6 +365,16 @@ export default function Home() {
     const newLayouts = {...itemLayouts};
     delete newLayouts[index];
     setItemLayouts(newLayouts);
+  }
+
+  function setItemQrToggle(index: number, enabled: boolean) {
+    setItemQrToggles({...itemQrToggles, [index]: enabled});
+  }
+
+  function clearItemQrToggle(index: number) {
+    const newQrToggles = {...itemQrToggles};
+    delete newQrToggles[index];
+    setItemQrToggles(newQrToggles);
   }
 
   function generateProductUrl(handle: string): string {
@@ -736,7 +749,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemQrToggles={itemQrToggles} setItemQrToggle={setItemQrToggle} clearItemQrToggle={clearItemQrToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
     </div>
   );
@@ -806,7 +819,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, hyperlinkToggle, generateProductUrl }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemQrToggles, setItemQrToggle, clearItemQrToggle, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8; 
   showOrderEditor: boolean;
@@ -816,6 +829,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   itemLayouts: {[key: number]: 1|2|3|4|8};
   setItemLayout: (index: number, layout: 1|2|3|4|8) => void;
   clearItemLayout: (index: number) => void;
+  itemQrToggles: {[key: number]: boolean};
+  setItemQrToggle: (index: number, enabled: boolean) => void;
+  clearItemQrToggle: (index: number) => void;
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
 }) {
@@ -1099,6 +1115,43 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                   {itemLayouts[i] && (
                     <button
                       onClick={() => clearItemLayout(i)}
+                      style={{
+                        border: "none",
+                        background: "#E9ECEF",
+                        color: "#6C757D",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 11, color: "#6C757D", fontWeight: "600" }}>QR:</span>
+                  <button
+                    onClick={() => setItemQrToggle(i, !itemQrToggles[i])}
+                    style={{
+                      border: "1px solid",
+                      borderColor: itemQrToggles[i] ? "#28A745" : "#E9ECEF",
+                      background: itemQrToggles[i] ? "#28A745" : "white",
+                      color: itemQrToggles[i] ? "white" : "#495057",
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      fontSize: 10,
+                      fontWeight: 600
+                    }}
+                  >
+                    {itemQrToggles[i] ? "ON" : "OFF"}
+                  </button>
+                  {itemQrToggles[i] && (
+                    <button
+                      onClick={() => clearItemQrToggle(i)}
                       style={{
                         border: "none",
                         background: "#E9ECEF",
