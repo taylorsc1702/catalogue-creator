@@ -13,9 +13,10 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log('Barcode API called with:', JSON.stringify(req.body, null, 2));
     const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, discountCode, utmParams } = req.body as {
       items: Item[];
-      layout: 1 | 2 | 4 | 8;
+      layout: 1 | 2 | 3 | 4 | 8;
       includeBarcodes?: boolean;
       itemQrToggles?: {[key: number]: boolean};
       discountCode?: string;
@@ -30,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (!items?.length) throw new Error("No items provided");
 
-    const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
+    const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
     const perPage = layout;
 
     const chunks: Item[][] = [];
