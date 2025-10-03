@@ -41,10 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const generateQRCode = (text: string) => {
       try {
+        console.log('Generating QR code for:', text);
         const qr = QRCode(0, 'M');
         qr.addData(text);
         qr.make();
-        return qr.createDataURL(4, 0);
+        const dataUrl = qr.createDataURL(4, 0);
+        console.log('QR code generated successfully, length:', dataUrl.length);
+        return dataUrl;
       } catch (error) {
         console.error('QR Code generation error:', error);
         return '';
@@ -85,8 +88,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const productUrl = generateProductUrl(it.handle);
         const globalItemIndex = chunkIndex * perPage + itemIndex;
-        const shouldShowQr = includeBarcodes && (itemQrToggles[globalItemIndex] === true);
+        const shouldShowQr = includeBarcodes && (itemQrToggles[globalItemIndex] !== false);
         const qrCodeDataUrl = shouldShowQr ? generateQRCode(productUrl) : '';
+        
+        // Debug logging
+        console.log(`Item ${globalItemIndex}: shouldShowQr=${shouldShowQr}, toggle=${itemQrToggles[globalItemIndex]}, includeBarcodes=${includeBarcodes}`);
 
         return [
           '<div class="card">',
