@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ImageRun, ExternalHyperlink } from "docx";
+import { downloadImageAsBase64, calculateImageDimensions } from "@/lib/image-utils";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -13,20 +14,34 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, title = "Product Catalogue" } = req.body as {
+    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane' } = req.body as {
       items: Item[];
       title?: string;
+      layout?: number;
+      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
     };
     
     if (!items?.length) throw new Error("No items provided");
 
+    // Download images for all items
+    console.log("Downloading images for DOCX export...");
+    const imagePromises = items.map(async (item) => {
+      if (item.imageUrl) {
+        const imageData = await downloadImageAsBase64(item.imageUrl);
+        return { item, imageData };
+      }
+      return { item, imageData: null };
+    });
+    
+    const itemsWithImages = await Promise.all(imagePromises);
+    console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
+
     // Create pages with 2, 3, or 4 products each based on layout
-    const layout = req.body.layout || 4; // Default to 4-per-page
     const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
     
-    for (let i = 0; i < items.length; i += productsPerPage) {
-      const pageItems = items.slice(i, i + productsPerPage);
+    for (let i = 0; i < itemsWithImages.length; i += productsPerPage) {
+      const pageItems = itemsWithImages.slice(i, i + productsPerPage);
       
       if (layout === 2) {
         // 2-per-page layout (side by side)
@@ -44,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0], i + 1, layout),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -55,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1], i + 2, layout),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -86,7 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0], i + 1, layout),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -97,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1], i + 2, layout),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -108,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[2], i + 3, layout),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -140,7 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0], i + 1, layout),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -151,7 +166,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1], i + 2, layout),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -167,7 +182,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[2], i + 3, layout),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -178,7 +193,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[3], i + 4, layout),
+                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -243,7 +258,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function createProductCell(item: Item | undefined, index: number, layout: number): Paragraph[] {
+function createProductCell(
+  item: Item | undefined, 
+  index: number, 
+  layout: number, 
+  imageData?: { base64: string; width: number; height: number; mimeType: string } | null
+): Paragraph[] {
   if (!item) {
     return [new Paragraph({ text: "" })];
   }
@@ -260,9 +280,43 @@ function createProductCell(item: Item | undefined, index: number, layout: number
   const priceSize = is2PerPage ? 14 : is3PerPage ? 13 : 12;
   const isbnSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
 
-  return [
-    // Title
-    new Paragraph({
+  const paragraphs: Paragraph[] = [];
+
+  // Add image if available
+  if (imageData) {
+    const maxWidth = is2PerPage ? 120 : is3PerPage ? 100 : 80;
+    const maxHeight = is2PerPage ? 180 : is3PerPage ? 150 : 120;
+    
+    const dimensions = calculateImageDimensions(
+      imageData.width, 
+      imageData.height, 
+      maxWidth, 
+      maxHeight
+    );
+
+    try {
+      const imageRun = new ImageRun({
+        data: imageData.base64,
+        transformation: {
+          width: dimensions.width,
+          height: dimensions.height,
+        },
+        type: "png", // or "jpeg" based on mimeType
+      });
+      
+      paragraphs.push(new Paragraph({
+        children: [imageRun],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 }
+      }));
+    } catch (error) {
+      console.warn(`Failed to create image for ${item.title}:`, error);
+      // Continue without image
+    }
+  }
+
+  // Title
+  paragraphs.push(new Paragraph({
       children: [
         new TextRun({
           text: item.title,
@@ -272,124 +326,142 @@ function createProductCell(item: Item | undefined, index: number, layout: number
         }),
       ],
       spacing: { after: is2PerPage ? 150 : 100 },
-    }),
+    }));
     
     // Subtitle
-    ...(item.subtitle ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: item.subtitle,
-          italics: true,
-          size: subtitleSize,
-          color: "7F8C8D",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 150 : 100 },
-    })] : []),
+    if (item.subtitle) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: item.subtitle,
+            italics: true,
+            size: subtitleSize,
+            color: "7F8C8D",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 150 : 100 },
+      }));
+    }
     
     // Author
-    ...(item.author ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `By ${item.author}`,
-          size: authorSize,
-          color: "000000",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 150 : 100 },
-    })] : []),
+    if (item.author) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `By ${item.author}`,
+            size: authorSize,
+            color: "000000",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 150 : 100 },
+      }));
+    }
     
     // Description
-    ...(item.description ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: item.description,
-          size: descSize,
-          color: "333333",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 200 : 100 },
-    })] : []),
+    if (item.description) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: item.description,
+            size: descSize,
+            color: "333333",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 200 : 100 },
+      }));
+    }
     
     // Specs
-    ...(item.binding || item.pages || item.dimensions ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: [
-            item.binding,
-            item.pages && `${item.pages} pages`,
-            item.dimensions
-          ].filter(Boolean).join(" • "),
-          size: specSize,
-          color: "666666",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 150 : 100 },
-    })] : []),
+    if (item.binding || item.pages || item.dimensions) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: [
+              item.binding,
+              item.pages && `${item.pages} pages`,
+              item.dimensions
+            ].filter(Boolean).join(" • "),
+            size: specSize,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 150 : 100 },
+      }));
+    }
     
     // Publisher
-    ...(item.imprint ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `Publisher: ${item.imprint}`,
-          size: metaSize,
-          color: "666666",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 100 : 50 },
-    })] : []),
+    if (item.imprint) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `Publisher: ${item.imprint}`,
+            size: metaSize,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 100 : 50 },
+      }));
+    }
     
     // Release Date
-    ...(item.releaseDate ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `Release: ${item.releaseDate}`,
-          size: metaSize,
-          color: "666666",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 100 : 50 },
-    })] : []),
+    if (item.releaseDate) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `Release: ${item.releaseDate}`,
+            size: metaSize,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 100 : 50 },
+      }));
+    }
     
     // Weight
-    ...(item.weight ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `Weight: ${item.weight}`,
-          size: metaSize,
-          color: "666666",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 100 : 50 },
-    })] : []),
+    if (item.weight) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `Weight: ${item.weight}`,
+            size: metaSize,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 100 : 50 },
+      }));
+    }
     
     // Illustrations
-    ...(item.illustrations ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `Illustrations: ${item.illustrations}`,
-          size: metaSize,
-          color: "666666",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 100 : 50 },
-    })] : []),
+    if (item.illustrations) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `Illustrations: ${item.illustrations}`,
+            size: metaSize,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 100 : 50 },
+      }));
+    }
     
     // Price
-    ...(item.price ? [new Paragraph({
-      children: [
-        new TextRun({
-          text: `AUD$ ${item.price}`,
-          bold: true,
-          size: priceSize,
-          color: "D63384",
-        }),
-      ],
-      spacing: { after: is2PerPage ? 150 : 100 },
-    })] : []),
+    if (item.price) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: `AUD$ ${item.price}`,
+            bold: true,
+            size: priceSize,
+            color: "D63384",
+          }),
+        ],
+        spacing: { after: is2PerPage ? 150 : 100 },
+      }));
+    }
     
     // ISBN
-    new Paragraph({
+    paragraphs.push(new Paragraph({
       children: [
         new TextRun({
           text: `ISBN: ${item.handle}`,
@@ -398,7 +470,8 @@ function createProductCell(item: Item | undefined, index: number, layout: number
         }),
       ],
       spacing: { after: 0 },
-    }),
-  ];
+    }));
+
+  return paragraphs;
 }
 

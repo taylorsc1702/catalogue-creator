@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { downloadImageAsBase64 } from "@/lib/image-utils";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -8,17 +9,36 @@ type Item = {
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
+type ItemWithImage = {
+  item: Item;
+  imageData: {base64: string, width: number, height: number, mimeType: string} | null;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, title = "Product Catalogue" } = req.body as {
+    const { items, layout = 4, title = "Product Catalogue", hyperlinkToggle = 'woodslane' } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | 4 | 8; 
+      layout: 1 | 2 | 3 | 4 | 8; 
       title?: string;
+      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
     };
     
     if (!items?.length) throw new Error("No items provided");
 
-    const html = renderGoogleDocsHtml(items, layout, title);
+    // Download images for all items
+    console.log("Downloading images for Google Docs export...");
+    const imagePromises = items.map(async (item) => {
+      if (item.imageUrl) {
+        const imageData = await downloadImageAsBase64(item.imageUrl);
+        return { item, imageData };
+      }
+      return { item, imageData: null };
+    });
+    
+    const itemsWithImages = await Promise.all(imagePromises);
+    console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
+
+    const html = renderGoogleDocsHtml(itemsWithImages, layout, title, hyperlinkToggle);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -27,29 +47,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderGoogleDocsHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, title: string) {
+function renderGoogleDocsHtml(
+  itemsWithImages: ItemWithImage[], 
+  layout: 1 | 2 | 3 | 4 | 8, 
+  title: string, 
+  hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'
+) {
   const perPage = layout;
-  const chunks: Item[][] = [];
-  for (let i = 0; i < items.length; i += perPage) {
-    chunks.push(items.slice(i, i + perPage));
+  const chunks: ItemWithImage[][] = [];
+  for (let i = 0; i < itemsWithImages.length; i += perPage) {
+    chunks.push(itemsWithImages.slice(i, i + perPage));
   }
 
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+  const generateProductUrl = (handle: string): string => {
+    const baseUrls = {
+      woodslane: 'https://woodslane.com.au',
+      woodslanehealth: 'https://www.woodslanehealth.com.au',
+      woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+      woodslanepress: 'https://www.woodslanepress.com.au'
+    };
+    return `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+  };
+
   const pagesHtml = chunks.map((page, pageIndex) => {
-    const createProductCard = (item: Item, index: number) => {
+    const createProductCard = (itemWithImage: ItemWithImage, index: number) => {
+      const item = itemWithImage.item;
       if (!item) return '<div class="product-card empty"></div>';
+      
+      // Use image data if available, otherwise fallback to URL
+      const imageSrc = itemWithImage.imageData 
+        ? itemWithImage.imageData.base64 
+        : (item.imageUrl || 'https://via.placeholder.com/120x180?text=No+Image');
       
       return `
         <div class="product-card">
           <div class="product-image">
-            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/120x180?text=No+Image')}" 
+            <img src="${esc(imageSrc)}" 
                  alt="${esc(item.title)}" 
                  class="book-cover">
           </div>
           <div class="product-details">
-            <h2 class="product-title">${esc(item.title)}</h2>
+            <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
             ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
             ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
