@@ -147,6 +147,8 @@ export default function Home() {
           layout, 
           includeBarcodes: true, 
           hyperlinkToggle,
+          itemQrToggles,
+          discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
