@@ -101,7 +101,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               it.weight ? `<div class="meta">Weight: ${esc(it.weight)}</div>` : "",
               it.illustrations ? `<div class="meta">Illustrations: ${esc(it.illustrations)}</div>` : "",
               it.price ? `<div class="price">AUD$ ${esc(it.price)}</div>` : "",
-              includeBarcodes && qrCodeDataUrl ? `<div class="barcode"><img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code"></div>` : "",
+              qrCodeDataUrl ? `<div class="barcode"><img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code"></div>` : "",
             "</div>",
           "</div>",
         ].join("");
