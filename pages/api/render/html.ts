@@ -10,18 +10,25 @@ type Item = {
   handle: string; vendor?: string; tags?: string[];
 };
 
-const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
+// const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane' } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', utmParams } = req.body as {
       items: Item[]; 
       layout: 1 | 2 | 3 | 4 | 8; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+      utmParams?: {
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmContent?: string;
+        utmTerm?: string;
+      };
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle);
+    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -30,8 +37,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress') {
-  const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
+function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+}) {
+  // const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
   const perPage = layout;
 
   const generateProductUrl = (handle: string): string => {
@@ -41,7 +54,22 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       woodslaneeducation: 'https://www.woodslaneeducation.com.au',
       woodslanepress: 'https://www.woodslanepress.com.au'
     };
-    return `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    
+    const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    
+    // Add UTM parameters if any are provided
+    if (utmParams) {
+      const utmUrlParams = new URLSearchParams();
+      if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
+      if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
+      if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
+      if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
+      if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
+      
+      return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
+    }
+    
+    return baseUrl;
   };
 
   const chunks: Item[][] = [];

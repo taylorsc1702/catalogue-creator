@@ -13,10 +13,17 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, includeBarcodes = true } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, utmParams } = req.body as {
       items: Item[];
       layout: 1 | 2 | 4 | 8;
       includeBarcodes?: boolean;
+      utmParams?: {
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmContent?: string;
+        utmTerm?: string;
+      };
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -42,6 +49,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     };
 
+    const generateProductUrl = (handle: string): string => {
+      const baseUrl = `${SITE}/products/${handle}`;
+      
+      // Add UTM parameters if any are provided
+      if (utmParams) {
+        const utmUrlParams = new URLSearchParams();
+        if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
+        if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
+        if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
+        if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
+        if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
+        
+        return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
+      }
+      
+      return baseUrl;
+    };
+
     const pagesHtml = chunks.map(page => {
       const cards = page.map(it => {
         const lineParts: string[] = [];
@@ -51,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (it.edition) lineParts.push(esc(`Edition: ${it.edition}`));
         const line = lineParts.join(" • ");
 
-        const productUrl = `${SITE}/products/${it.handle}`;
+        const productUrl = generateProductUrl(it.handle);
         const qrCodeDataUrl = includeBarcodes ? generateQRCode(productUrl) : '';
 
         return [

@@ -10,15 +10,22 @@ type Item = {
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
-const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
+// const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane' } = req.body as {
+    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', utmParams } = req.body as {
       items: Item[];
       title?: string;
       layout?: number;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+      utmParams?: {
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmContent?: string;
+        utmTerm?: string;
+      };
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -35,6 +42,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const itemsWithImages = await Promise.all(imagePromises);
     console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
+
+    // Function to generate product URLs with UTM parameters
+    const generateProductUrl = (handle: string): string => {
+      const baseUrls = {
+        woodslane: 'https://woodslane.com.au',
+        woodslanehealth: 'https://www.woodslanehealth.com.au',
+        woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+        woodslanepress: 'https://www.woodslanepress.com.au'
+      };
+      
+      const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+      
+      // Add UTM parameters if any are provided
+      if (utmParams) {
+        const utmUrlParams = new URLSearchParams();
+        if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
+        if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
+        if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
+        if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
+        if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
+        
+        return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
+      }
+      
+      return baseUrl;
+    };
 
     // Create pages with 2, 3, or 4 products each based on layout
     const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
@@ -59,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -70,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -101,7 +134,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -112,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -123,7 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -155,7 +188,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -166,7 +199,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -182,7 +215,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -193,7 +226,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData),
+                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData, generateProductUrl),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -262,7 +295,8 @@ function createProductCell(
   item: Item | undefined, 
   index: number, 
   layout: number, 
-  imageData?: { base64: string; width: number; height: number; mimeType: string } | null
+  imageData?: { base64: string; width: number; height: number; mimeType: string } | null,
+  generateProductUrl?: (handle: string) => string
 ): Paragraph[] {
   if (!item) {
     return [new Paragraph({ text: "" })];
@@ -460,13 +494,20 @@ function createProductCell(
       }));
     }
     
-    // ISBN
+    // Product URL (replacing ISBN with clickable URL)
+    const productUrl = generateProductUrl ? generateProductUrl(item.handle) : `https://woodslane.com.au/products/${item.handle}`;
     paragraphs.push(new Paragraph({
       children: [
-        new TextRun({
-          text: `ISBN: ${item.handle}`,
-          size: isbnSize,
-          color: "666666",
+        new ExternalHyperlink({
+          children: [
+            new TextRun({
+              text: `View Product: ${productUrl}`,
+              size: isbnSize,
+              color: "0066CC",
+              underline: {},
+            }),
+          ],
+          link: productUrl,
         }),
       ],
       spacing: { after: 0 },

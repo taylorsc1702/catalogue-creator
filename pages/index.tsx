@@ -1,5 +1,6 @@
 // pages/index.tsx
 import { useMemo, useState } from "react";
+import CollaborationPanel from "@/components/CollaborationPanel";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -33,6 +34,17 @@ export default function Home() {
   const [showOrderEditor, setShowOrderEditor] = useState(false);
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
+  
+  // UTM Parameters
+  const [utmSource, setUtmSource] = useState("");
+  const [utmMedium, setUtmMedium] = useState("");
+  const [utmCampaign, setUtmCampaign] = useState("");
+  const [utmContent, setUtmContent] = useState("");
+  const [utmTerm, setUtmTerm] = useState("");
+  
+  // Collaboration state
+  const [currentCatalogueId, setCurrentCatalogueId] = useState<string | undefined>();
+  const [showCollaboration, setShowCollaboration] = useState(false);
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
@@ -83,11 +95,17 @@ export default function Home() {
   async function openPrintView() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
-    const resp = await fetch("/api/render/html", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, layout, showFields: { authorBio: false }, hyperlinkToggle })
-    });
+      const resp = await fetch("/api/render/html", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          layout, 
+          showFields: { authorBio: false }, 
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+        })
+      });
       
       if (!resp.ok) {
         const error = await resp.text();
@@ -126,7 +144,13 @@ export default function Home() {
       const resp = await fetch("/api/render/barcode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, layout, includeBarcodes: true, hyperlinkToggle })
+        body: JSON.stringify({ 
+          items, 
+          layout, 
+          includeBarcodes: true, 
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+        })
       });
       
       if (!resp.ok) {
@@ -157,7 +181,8 @@ export default function Home() {
           items, 
           layout,
           title: `Catalogue - ${new Date().toLocaleDateString()}`,
-          hyperlinkToggle
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
       
@@ -187,7 +212,8 @@ export default function Home() {
           items, 
           layout,
           title: `Catalogue - ${new Date().toLocaleDateString()}`,
-          hyperlinkToggle
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
       
@@ -231,7 +257,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items,
           title: `Catalogue - ${new Date().toLocaleDateString()}`,
-          hyperlinkToggle
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
       
@@ -274,7 +301,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items,
           title: `Catalogue - ${new Date().toLocaleDateString()}`,
-          hyperlinkToggle
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
       
@@ -347,7 +375,49 @@ export default function Home() {
       woodslaneeducation: 'https://www.woodslaneeducation.com.au',
       woodslanepress: 'https://www.woodslanepress.com.au'
     };
-    return `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    
+    const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    
+    // Add UTM parameters if any are provided
+    const utmParams = new URLSearchParams();
+    if (utmSource) utmParams.set('utm_source', utmSource);
+    if (utmMedium) utmParams.set('utm_medium', utmMedium);
+    if (utmCampaign) utmParams.set('utm_campaign', utmCampaign);
+    if (utmContent) utmParams.set('utm_content', utmContent);
+    if (utmTerm) utmParams.set('utm_term', utmTerm);
+    
+    return utmParams.toString() ? `${baseUrl}?${utmParams.toString()}` : baseUrl;
+  }
+
+  async function createCatalogue() {
+    if (!items.length) {
+      alert("Please fetch products first before creating a catalogue.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/collaboration/catalogues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          description: `Generated from ${items.length} products`,
+          tags: ['generated', 'catalogue']
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentCatalogueId(data.catalogue.id);
+        setShowCollaboration(true);
+        alert(`Catalogue created! You can now collaborate with your team.`);
+      } else {
+        throw new Error('Failed to create catalogue');
+      }
+    } catch (error) {
+      console.error('Failed to create catalogue:', error);
+      alert('Failed to create catalogue. Please try again.');
+    }
   }
 
   async function openMixedLayout() {
@@ -363,7 +433,8 @@ export default function Home() {
           items,
           layoutAssignments,
           showFields: { authorBio: false },
-          hyperlinkToggle
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
       
@@ -577,6 +648,72 @@ export default function Home() {
         ))}
       </div>
 
+      {/* UTM Parameters Section */}
+      <div style={{ 
+        marginTop: 20, 
+        padding: 16, 
+        background: "#F8F9FA", 
+        borderRadius: 12, 
+        border: "1px solid #E9ECEF" 
+      }}>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 8, 
+          marginBottom: 16 
+        }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#495057" }}>📊 UTM Tracking Parameters</span>
+          <span style={{ fontSize: 12, color: "#6C757D" }}>(Optional - for analytics tracking)</span>
+        </div>
+        
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+          <Field label="Source (utm_source)">
+            <input 
+              value={utmSource} 
+              onChange={e => setUtmSource(e.target.value)} 
+              placeholder="catalogue" 
+              style={{ fontSize: 12 }}
+            />
+          </Field>
+          <Field label="Medium (utm_medium)">
+            <input 
+              value={utmMedium} 
+              onChange={e => setUtmMedium(e.target.value)} 
+              placeholder="print" 
+              style={{ fontSize: 12 }}
+            />
+          </Field>
+          <Field label="Campaign (utm_campaign)">
+            <input 
+              value={utmCampaign} 
+              onChange={e => setUtmCampaign(e.target.value)} 
+              placeholder="spring2024" 
+              style={{ fontSize: 12 }}
+            />
+          </Field>
+          <Field label="Content (utm_content)">
+            <input 
+              value={utmContent} 
+              onChange={e => setUtmContent(e.target.value)} 
+              placeholder="qr_code" 
+              style={{ fontSize: 12 }}
+            />
+          </Field>
+          <Field label="Term (utm_term)">
+            <input 
+              value={utmTerm} 
+              onChange={e => setUtmTerm(e.target.value)} 
+              placeholder="keyword" 
+              style={{ fontSize: 12 }}
+            />
+          </Field>
+        </div>
+        
+        <div style={{ fontSize: 12, color: "#6C757D", marginTop: 8 }}>
+          💡 These parameters will be added to all product URLs in QR codes and exports for tracking purposes.
+        </div>
+      </div>
+
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
             <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
@@ -584,6 +721,33 @@ export default function Home() {
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
+          </div>
+
+          {/* Collaboration Section */}
+          <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <button 
+              onClick={createCatalogue} 
+              disabled={!items.length} 
+              style={{
+                ...btn(),
+                background: currentCatalogueId ? '#28A745' : '#667eea',
+                color: 'white'
+              }}
+            >
+              {currentCatalogueId ? '✅ Catalogue Created' : '🤝 Create Collaborative Catalogue'}
+            </button>
+            {currentCatalogueId && (
+              <button 
+                onClick={() => setShowCollaboration(!showCollaboration)} 
+                style={{
+                  ...btn(showCollaboration),
+                  background: showCollaboration ? '#667eea' : '#6C757D',
+                  color: 'white'
+                }}
+              >
+                {showCollaboration ? '👁️ Hide Collaboration' : '👥 Show Collaboration'}
+              </button>
+            )}
           </div>
 
           {items.length > 0 && (
@@ -603,6 +767,21 @@ export default function Home() {
                 </span>
               )}
             </div>
+          )}
+
+          {/* Collaboration Panel */}
+          {showCollaboration && currentCatalogueId && (
+            <CollaborationPanel
+              catalogueId={currentCatalogueId}
+              items={items}
+              layout={layout}
+              hyperlinkToggle={hyperlinkToggle}
+              utmParams={{ utmSource, utmMedium, utmCampaign, utmContent, utmTerm }}
+              onSaveVersion={(version) => {
+                console.log('Version saved:', version);
+                alert(`Version ${version.version} saved successfully!`);
+              }}
+            />
           )}
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
