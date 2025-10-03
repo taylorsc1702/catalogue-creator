@@ -35,6 +35,7 @@ export default function Home() {
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   
   // UTM Parameters
+  const [catalogueName, setCatalogueName] = useState("");
   const [utmSource, setUtmSource] = useState("");
   const [utmMedium, setUtmMedium] = useState("");
   const [utmCampaign, setUtmCampaign] = useState("");
@@ -175,7 +176,7 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout,
-          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -206,7 +207,7 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout,
-          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -251,7 +252,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items,
-          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -295,7 +296,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items,
-          title: `Catalogue - ${new Date().toLocaleDateString()}`,
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -468,6 +469,31 @@ export default function Home() {
           }}>
             Create professional product catalogues from your Shopify store
           </p>
+        </div>
+
+        {/* Catalogue Name Input */}
+        <div style={{ marginBottom: "24px", textAlign: "center" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", color: "#4A5568", fontSize: "1.1rem" }}>
+            Catalogue Name
+          </label>
+          <input
+            type="text"
+            value={catalogueName}
+            onChange={(e) => setCatalogueName(e.target.value)}
+            placeholder="Enter catalogue name (e.g., 'Spring 2025 Collection', 'B2B Medical Devices')"
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              padding: "12px 16px",
+              border: "2px solid #E2E8F0",
+              borderRadius: "8px",
+              fontSize: "16px",
+              outline: "none",
+              transition: "border-color 0.2s",
+            }}
+            onFocus={(e) => e.target.style.borderColor = "#805AD5"}
+            onBlur={(e) => e.target.style.borderColor = "#E2E8F0"}
+          />
         </div>
 
       {/* Search Mode Toggle */}
