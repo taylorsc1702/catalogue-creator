@@ -349,14 +349,21 @@ function createProductCell(
     }
   }
 
-  // Title
+  // Title (clickable)
+  const productUrl = generateProductUrl ? generateProductUrl(item.handle) : `https://woodslane.com.au/products/${item.handle}`;
   paragraphs.push(new Paragraph({
       children: [
-        new TextRun({
-          text: item.title,
-          bold: true,
-          size: titleSize,
-          color: "2C3E50",
+        new ExternalHyperlink({
+          children: [
+            new TextRun({
+              text: item.title,
+              bold: true,
+              size: titleSize,
+              color: "2C3E50",
+              underline: {},
+            }),
+          ],
+          link: productUrl,
         }),
       ],
       spacing: { after: is2PerPage ? 150 : 100 },
@@ -494,24 +501,7 @@ function createProductCell(
       }));
     }
     
-    // Product URL (replacing ISBN with clickable URL)
-    const productUrl = generateProductUrl ? generateProductUrl(item.handle) : `https://woodslane.com.au/products/${item.handle}`;
-    paragraphs.push(new Paragraph({
-      children: [
-        new ExternalHyperlink({
-          children: [
-            new TextRun({
-              text: `View Product: ${productUrl}`,
-              size: isbnSize,
-              color: "0066CC",
-              underline: {},
-            }),
-          ],
-          link: productUrl,
-        }),
-      ],
-      spacing: { after: 0 },
-    }));
+    // Product URL removed - title is now clickable
 
   return paragraphs;
 }
