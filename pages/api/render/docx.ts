@@ -82,6 +82,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Clean the code - remove non-digits
         let cleanCode = code.replace(/[^0-9]/g, '');
         
+        console.log('DOCX - Raw code:', code, 'Cleaned:', cleanCode);
+        
+        // If no numeric data, generate a placeholder barcode
+        if (cleanCode.length === 0) {
+          console.log('DOCX - No numeric data found, generating placeholder barcode');
+          cleanCode = '1234567890123'; // Placeholder EAN-13
+        }
+        
         // EAN-13 needs exactly 13 digits
         if (cleanCode.length < 13) {
           cleanCode = cleanCode.padStart(13, '0');
@@ -89,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           cleanCode = cleanCode.substring(0, 13);
         }
         
-        console.log('Generating EAN-13 barcode for:', cleanCode);
+        console.log('DOCX - Final EAN-13 code:', cleanCode);
         
         const canvas = createCanvas(150, 60);
         JsBarcode(canvas, cleanCode, {
@@ -128,6 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (itemBarcodeType === "EAN-13") {
           // Use EAN-13 format for 13-digit barcodes
           const barcodeCode = item.icrkdt || item.handle;
+          console.log(`DOCX - Generating EAN-13 for item ${index}: icrkdt="${item.icrkdt}", handle="${item.handle}", using="${barcodeCode}"`);
           const barcodeBase64 = generateEAN13Barcode(barcodeCode);
           if (barcodeBase64) {
             barcodeData = {

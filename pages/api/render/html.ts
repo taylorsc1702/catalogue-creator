@@ -94,6 +94,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       // Clean the code - remove non-digits
       let cleanCode = code.replace(/[^0-9]/g, '');
       
+      console.log('Raw code:', code, 'Cleaned:', cleanCode);
+      
+      // If no numeric data, generate a placeholder barcode
+      if (cleanCode.length === 0) {
+        console.log('No numeric data found, generating placeholder barcode');
+        cleanCode = '1234567890123'; // Placeholder EAN-13
+      }
+      
       // EAN-13 needs exactly 13 digits
       if (cleanCode.length < 13) {
         cleanCode = cleanCode.padStart(13, '0');
@@ -101,7 +109,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         cleanCode = cleanCode.substring(0, 13);
       }
       
-      console.log('Generating EAN-13 barcode for:', cleanCode);
+      console.log('Final EAN-13 code:', cleanCode);
       
       // Create a canvas element
       const canvas = createCanvas(150, 60);
@@ -144,6 +152,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         if (itemBarcodeType === "EAN-13") {
           // Use EAN-13 format for 13-digit barcodes
           const barcodeCode = it.icrkdt || it.handle;
+          console.log(`Generating EAN-13 for item ${globalIndex}: icrkdt="${it.icrkdt}", handle="${it.handle}", using="${barcodeCode}"`);
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
             barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
