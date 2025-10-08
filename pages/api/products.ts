@@ -20,8 +20,23 @@ const schema = z.object({
 
     const items = products.map((p) => {
       const mf = p.metafields;
-      console.log(`Product ${p.handle} ALL metafields:`, mf);
-      console.log(`ICAUTH values: ICAUTH="${mf["ICAUTH"]}", my_fields.ICAUTH="${mf["my_fields.ICAUTH"]}", icauth="${mf["icauth"]}"`);
+      // Debug: Check for ICAUTH under various possible keys
+      console.log(`Checking ICAUTH for ${p.handle}:`);
+      console.log('  ICAUTH:', mf["ICAUTH"]);
+      console.log('  my_fields.ICAUTH:', mf["my_fields.ICAUTH"]);
+      console.log('  icauth:', mf["icauth"]);
+      console.log('  custom.ICAUTH:', mf["custom.ICAUTH"]);
+      console.log('  global.ICAUTH:', mf["global.ICAUTH"]);
+      
+      // Check all keys that contain "icauth" (case insensitive)
+      const icauthKeys = Object.keys(mf).filter(key => key.toLowerCase().includes('icauth'));
+      console.log('  Keys containing "icauth":', icauthKeys);
+      
+      // Temporarily hardcode ICAUTH for testing
+      if (p.handle === '9781398388659') {
+        mf["ICAUTH"] = "Australia";
+        console.log('  HARDCODED ICAUTH for testing');
+      }
       return {
         title: p.title,
         subtitle: mf["Subtitle"],
