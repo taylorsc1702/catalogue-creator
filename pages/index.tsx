@@ -57,11 +57,17 @@ function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badg
     
     // Determine badge type
     let badgeType: 'current' | 'future' | null = null;
+    console.log(`Date logic: releaseYear=${date.getFullYear()}, currentYear=${currentYear}, releaseMonth=${date.getMonth() + 1}, currentMonth=${currentMonth}`);
+    
     if (date.getFullYear() > currentYear || 
         (date.getFullYear() === currentYear && date.getMonth() + 1 > currentMonth)) {
       badgeType = 'future';
+      console.log(`Setting badgeType to 'future'`);
     } else if (date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth) {
       badgeType = 'current';
+      console.log(`Setting badgeType to 'current'`);
+    } else {
+      console.log(`Setting badgeType to null (past date)`);
     }
     
     return { formattedDate, badgeType };
