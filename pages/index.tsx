@@ -1062,7 +1062,13 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 </div>
               )}
               {it.releaseDate && (() => {
+                // Test if function exists
+                if (typeof formatDateAndBadge !== 'function') {
+                  alert('formatDateAndBadge function not found!');
+                  return <div>ERROR: Function not found</div>;
+                }
                 const { formattedDate, badgeType } = formatDateAndBadge(it.releaseDate);
+                alert(`Product ${it.handle}: releaseDate="${it.releaseDate}", badgeType="${badgeType}"`);
                 return (
                   <div style={{ 
                     fontSize: 10, 
