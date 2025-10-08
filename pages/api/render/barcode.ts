@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import QRCode from "qrcode-generator";
 import JsBarcode from "jsbarcode";
+import { createCanvas } from "canvas";
 
 type Item = {
   title: string; subtitle?: string; price?: string;
@@ -10,7 +11,6 @@ type Item = {
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
-const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -63,7 +63,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('Generating EAN-13 barcode for:', ean13Code);
         
         // Create a canvas element
-        const { createCanvas } = require('canvas');
         const canvas = createCanvas(200, 80);
         
         // Generate the barcode

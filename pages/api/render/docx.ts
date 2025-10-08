@@ -312,7 +312,7 @@ function createProductCell(
   const specSize = is2PerPage ? 11 : is3PerPage ? 10 : 9;
   const metaSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
   const priceSize = is2PerPage ? 14 : is3PerPage ? 13 : 12;
-  const isbnSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
+  // const isbnSize = is2PerPage ? 10 : is3PerPage ? 9 : 9; // TODO: Use for ISBN display if needed
 
   const paragraphs: Paragraph[] = [];
 
