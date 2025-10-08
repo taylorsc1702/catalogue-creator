@@ -20,6 +20,8 @@ const schema = z.object({
 
     const items = products.map((p) => {
       const mf = p.metafields;
+      console.log(`Product ${p.handle} metafields:`, Object.keys(mf));
+      console.log(`ICAUTH values: ICAUTH="${mf["ICAUTH"]}", my_fields.ICAUTH="${mf["my_fields.ICAUTH"]}"`);
       return {
         title: p.title,
         subtitle: mf["Subtitle"],

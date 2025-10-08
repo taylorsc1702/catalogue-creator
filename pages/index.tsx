@@ -1067,6 +1067,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
               )}
               {it.releaseDate && (() => {
                 const { formattedDate, badgeType } = formatDateAndBadge(it.releaseDate);
+                console.log(`Product ${it.handle}: icauth="${it.icauth}", type=${typeof it.icauth}`);
                 return (
                   <div style={{ 
                     fontSize: 10, 
