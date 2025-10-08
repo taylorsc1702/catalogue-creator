@@ -1,4 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import QRCode from "qrcode-generator";
+import JsBarcode from "jsbarcode";
+import { createCanvas } from "canvas";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -10,17 +13,27 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|3|4|8)[]; 
       showFields: Record<string, boolean>;
+      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+      itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
+      barcodeType?: "EAN-13" | "QR Code" | "None";
+      utmParams?: {
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmContent?: string;
+        utmTerm?: string;
+      };
     };
     
     if (!items?.length) throw new Error("No items provided");
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = renderMixedHtml(items, layoutAssignments, showFields || {});
+    const html = renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, utmParams);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -29,9 +42,99 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>) {
+function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", utmParams?: {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+}) {
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
+  // Function to generate product URLs with UTM parameters
+  const generateProductUrl = (handle: string): string => {
+    const baseUrls = {
+      woodslane: 'https://woodslane.com.au',
+      woodslanehealth: 'https://www.woodslanehealth.com.au',
+      woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+      woodslanepress: 'https://www.woodslanepress.com.au'
+    };
+    
+    const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    
+    // Add UTM parameters if any are provided
+    if (utmParams) {
+      const utmUrlParams = new URLSearchParams();
+      if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
+      if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
+      if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
+      if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
+      if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
+      
+      return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
+    }
+    
+    return baseUrl;
+  };
+
+  // Barcode generation functions
+  const generateQRCode = (text: string) => {
+    try {
+      const qr = QRCode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createDataURL(4, 0);
+    } catch (error) {
+      console.error('QR Code generation error:', error);
+      return '';
+    }
+  };
+
+  const generateEAN13Barcode = (code: string) => {
+    try {
+      // Clean the code - remove non-digits
+      let cleanCode = code.replace(/[^0-9]/g, '');
+      
+      console.log('Mixed - Raw code:', code, 'Cleaned:', cleanCode);
+      
+      // If no numeric data, generate a placeholder barcode
+      if (cleanCode.length === 0) {
+        console.log('Mixed - No numeric data found, generating placeholder barcode');
+        cleanCode = '1234567890123'; // Placeholder EAN-13
+      }
+      
+      // EAN-13 needs exactly 13 digits
+      if (cleanCode.length < 13) {
+        cleanCode = cleanCode.padStart(13, '0');
+      } else if (cleanCode.length > 13) {
+        cleanCode = cleanCode.substring(0, 13);
+      }
+      
+      console.log('Mixed - Final EAN-13 code:', cleanCode);
+      
+      // Create a canvas element
+      const canvas = createCanvas(150, 60);
+      
+      // Generate the barcode
+      JsBarcode(canvas, cleanCode, {
+        format: "EAN13",
+        width: 1.5,
+        height: 40,
+        displayValue: true,
+        fontSize: 10,
+        textAlign: "center",
+        textPosition: "bottom",
+        textMargin: 2
+      });
+      
+      // Convert canvas to data URL
+      return canvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('EAN-13 barcode generation error:', error);
+      return '';
+    }
+  };
 
   // Group items by their layout requirements
   const pages: { items: Item[]; layout: 1|2|3|4|8 }[] = [];
@@ -61,15 +164,41 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     pages.push({ items: currentPage, layout: currentLayout });
   }
 
-  const pagesHtml = pages.map(page => {
-    const createProductCard = (it: Item) => {
+  const pagesHtml = pages.map((page, pageIndex) => {
+    const createProductCard = (it: Item, localIndex: number) => {
+      // Find the global index of this item
+      const globalIndex = items.findIndex(item => item.handle === it.handle);
+      
+      // Determine barcode type for this item
+      const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
+      
+      // Generate barcode if needed
+      let barcodeHtml = '';
+      if (itemBarcodeType && itemBarcodeType !== "None") {
+        if (itemBarcodeType === "EAN-13") {
+          // Use EAN-13 format for 13-digit barcodes
+          const barcodeCode = it.icrkdt || it.handle;
+          console.log(`Mixed - Generating EAN-13 for item ${globalIndex}: icrkdt="${it.icrkdt}", handle="${it.handle}", using="${barcodeCode}"`);
+          const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+          if (barcodeDataUrl) {
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+          }
+        } else if (itemBarcodeType === "QR Code") {
+          const productUrl = generateProductUrl(it.handle);
+          const qrDataUrl = generateQRCode(productUrl);
+          if (qrDataUrl) {
+            barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+          }
+        }
+      }
+
       return [
         '<div class="product-card">',
           '<div class="product-image">',
             `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
           '</div>',
           '<div class="product-details">',
-            `<h2 class="product-title">${esc(it.title)}</h2>`,
+            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
             it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
             it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
             it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
@@ -87,6 +216,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
             it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
             `<div class="product-isbn">ISBN: ${esc(it.handle)}</div>`,
             show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
+            barcodeHtml,
           '</div>',
         '</div>',
       ].join("");
@@ -94,7 +224,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 
     const layout = page.layout;
     const layoutClass = layout === 2 ? "layout-2" : layout === 3 ? "layout-3" : layout === 1 ? "layout-1" : layout === 8 ? "layout-8" : "";
-    const cards = page.items.map(createProductCard).join("");
+    const cards = page.items.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
     // Fill empty slots for proper grid layout
     const emptySlots = layout - page.items.length;
@@ -333,6 +463,22 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
   .page.layout-8 .product-isbn {
     font-size: 7px;
   }
+  
+  .barcode {
+    margin-top: 8px;
+    text-align: center;
+  }
+  
+  .qr-code {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .ean13-barcode {
+    width: 75px;
+    height: 30px;
+  }
+  
   @media print {
     .page {
       page-break-after: always;
