@@ -14,12 +14,13 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     console.log('Barcode API called with:', JSON.stringify(req.body, null, 2));
-    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, discountCode, utmParams } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
       items: Item[];
       layout: 1 | 2 | 3 | 4 | 8;
       includeBarcodes?: boolean;
       itemQrToggles?: {[key: number]: boolean};
       discountCode?: string;
+      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -56,7 +57,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const generateProductUrl = (handle: string): string => {
-      const baseUrl = `${SITE}/products/${handle}`;
+      // Use the hyperlinkToggle to determine the base URL
+      const baseUrls = {
+        woodslane: 'https://woodslane.com.au',
+        woodslanehealth: 'https://www.woodslanehealth.com.au',
+        woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+        woodslanepress: 'https://www.woodslanepress.com.au'
+      };
+      
+      const baseUrl = `${baseUrls[hyperlinkToggle || 'woodslane']}/products/${handle}`;
       
       // Add discount code and UTM parameters if any are provided
       const urlParams = new URLSearchParams();
