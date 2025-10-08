@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ImageRun, ExternalHyperlink } from "docx";
 import { downloadImageAsBase64, calculateImageDimensions } from "@/lib/image-utils";
+import QRCode from "qrcode-generator";
+import JsBarcode from "jsbarcode";
+import { createCanvas } from "canvas";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -14,11 +17,13 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', utmParams } = req.body as {
+    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
       items: Item[];
       title?: string;
       layout?: number;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+      itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
+      barcodeType?: "EAN-13" | "QR Code" | "None";
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -29,19 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
     
     if (!items?.length) throw new Error("No items provided");
-
-    // Download images for all items
-    console.log("Downloading images for DOCX export...");
-    const imagePromises = items.map(async (item) => {
-      if (item.imageUrl) {
-        const imageData = await downloadImageAsBase64(item.imageUrl);
-        return { item, imageData };
-      }
-      return { item, imageData: null };
-    });
-    
-    const itemsWithImages = await Promise.all(imagePromises);
-    console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
 
     // Function to generate product URLs with UTM parameters
     const generateProductUrl = (handle: string): string => {
@@ -69,6 +61,99 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return baseUrl;
     };
 
+    // Barcode generation functions
+    const generateQRCode = (text: string) => {
+      try {
+        const qr = QRCode(0, 'M');
+        qr.addData(text);
+        qr.make();
+        const dataUrl = qr.createDataURL(4, 0);
+        // Convert data URL to base64
+        const base64 = dataUrl.split(',')[1];
+        return base64;
+      } catch (error) {
+        console.error('QR Code generation error:', error);
+        return null;
+      }
+    };
+
+    const generateEAN13Barcode = (ean13Code: string) => {
+      try {
+        if (!/^\d{13}$/.test(ean13Code)) {
+          console.error('Invalid EAN-13 code:', ean13Code);
+          return null;
+        }
+        
+        const canvas = createCanvas(200, 80);
+        JsBarcode(canvas, ean13Code, {
+          format: "EAN13",
+          width: 2,
+          height: 60,
+          displayValue: true,
+          fontSize: 12,
+          textAlign: "center",
+          textPosition: "bottom",
+          textMargin: 2
+        });
+        
+        const dataUrl = canvas.toDataURL('image/png');
+        const base64 = dataUrl.split(',')[1];
+        return base64;
+      } catch (error) {
+        console.error('EAN-13 barcode generation error:', error);
+        return null;
+      }
+    };
+
+    // Download images and generate barcodes for all items
+    console.log("Downloading images and generating barcodes for DOCX export...");
+    const imagePromises = items.map(async (item, index) => {
+      let imageData = null;
+      if (item.imageUrl) {
+        imageData = await downloadImageAsBase64(item.imageUrl);
+      }
+      
+      // Determine barcode type for this item
+      const itemBarcodeType = itemBarcodeTypes?.[index] || barcodeType;
+      let barcodeData = null;
+      
+      if (itemBarcodeType && itemBarcodeType !== "None") {
+        if (itemBarcodeType === "EAN-13") {
+          let ean13Code = item.icrkdt || item.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+          if (ean13Code.length < 13) {
+            ean13Code = ean13Code.padStart(13, '0');
+          } else if (ean13Code.length > 13) {
+            ean13Code = ean13Code.substring(0, 13);
+          }
+          const barcodeBase64 = generateEAN13Barcode(ean13Code);
+          if (barcodeBase64) {
+            barcodeData = {
+              base64: barcodeBase64,
+              width: 200,
+              height: 80,
+              mimeType: 'image/png'
+            };
+          }
+        } else if (itemBarcodeType === "QR Code") {
+          const productUrl = generateProductUrl(item.handle);
+          const qrBase64 = generateQRCode(productUrl);
+          if (qrBase64) {
+            barcodeData = {
+              base64: qrBase64,
+              width: 120,
+              height: 120,
+              mimeType: 'image/png'
+            };
+          }
+        }
+      }
+      
+      return { item, imageData, barcodeData };
+    });
+    
+    const itemsWithImages = await Promise.all(imagePromises);
+    console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images and generated ${itemsWithImages.filter(i => i.barcodeData).length} barcodes successfully`);
+
     // Create pages with 2, 3, or 4 products each based on layout
     const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
@@ -92,7 +177,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -103,7 +188,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -134,7 +219,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -145,7 +230,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -156,7 +241,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -188,7 +273,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -199,7 +284,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -215,7 +300,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -226,7 +311,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData, generateProductUrl),
+                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData, generateProductUrl, pageItems[3]?.barcodeData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -296,7 +381,8 @@ function createProductCell(
   index: number, 
   layout: number, 
   imageData?: { base64: string; width: number; height: number; mimeType: string } | null,
-  generateProductUrl?: (handle: string) => string
+  generateProductUrl?: (handle: string) => string,
+  barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null
 ): Paragraph[] {
   if (!item) {
     return [new Paragraph({ text: "" })];
@@ -502,6 +588,28 @@ function createProductCell(
     }
     
     // Product URL removed - title is now clickable
+
+  // Add barcode if available
+  if (barcodeData) {
+    try {
+      const barcodeRun = new ImageRun({
+        data: barcodeData.base64,
+        transformation: {
+          width: barcodeData.width * 0.75,  // Scale down slightly
+          height: barcodeData.height * 0.75,
+        },
+        type: "png",
+      });
+      
+      paragraphs.push(new Paragraph({
+        children: [barcodeRun],
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 150, after: 150 },
+      }));
+    } catch (error) {
+      console.error('Error adding barcode to DOCX:', error);
+    }
+  }
 
   return paragraphs;
 }

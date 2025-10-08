@@ -207,8 +207,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     // Create product slots based on layout
     let productsHtml = '';
     
-    if (layout === 2) {
-      // 2-per-page: only 2 products
+    if (layout === 1) {
+      // 1-per-page: single product
+      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
+      productsHtml = product1;
+    } else if (layout === 2) {
+      // 2-per-page: 2 products
       const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
       const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}`;
@@ -218,13 +222,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
       const product3 = page[2] ? createProductCard(page[2], 2) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}${product3}`;
-    } else {
+    } else if (layout === 4) {
       // 4-per-page: 4 products
       const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
       const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
       const product3 = page[2] ? createProductCard(page[2], 2) : '<div class="product-card empty"></div>';
       const product4 = page[3] ? createProductCard(page[3], 3) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}${product3}${product4}`;
+    } else if (layout === 8) {
+      // 8-per-page: 8 products
+      const cards = [];
+      for (let i = 0; i < 8; i++) {
+        cards.push(page[i] ? createProductCard(page[i], i) : '<div class="product-card empty"></div>');
+      }
+      productsHtml = cards.join('');
     }
 
     const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : "";

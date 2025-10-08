@@ -148,6 +148,7 @@ export default function Home() {
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           itemBarcodeTypes,
+          barcodeType,
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -181,6 +182,7 @@ export default function Home() {
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
           itemBarcodeTypes,
+          barcodeType,
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -390,6 +392,8 @@ export default function Home() {
           layoutAssignments,
           showFields: { authorBio: false },
           hyperlinkToggle,
+          itemBarcodeTypes,
+          barcodeType,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
