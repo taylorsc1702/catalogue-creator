@@ -1,4 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import QRCode from "qrcode-generator";
+import JsBarcode from "jsbarcode";
+import { createCanvas } from "canvas";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -14,11 +17,13 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', utmParams } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
       items: Item[]; 
       layout: 1 | 2 | 3 | 4 | 8; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
+      itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
+      barcodeType?: "EAN-13" | "QR Code" | "None";
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -28,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams);
+    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -43,7 +48,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
-}) {
+}, itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None") {
   // const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
   const perPage = layout;
 
@@ -72,14 +77,84 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     return baseUrl;
   };
 
+  const generateQRCode = (text: string) => {
+    try {
+      const qr = QRCode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      return qr.createDataURL(4, 0);
+    } catch (error) {
+      console.error('QR Code generation error:', error);
+      return '';
+    }
+  };
+
+  const generateEAN13Barcode = (ean13Code: string) => {
+    try {
+      // Validate EAN-13 code (must be exactly 13 digits)
+      if (!/^\d{13}$/.test(ean13Code)) {
+        console.error('Invalid EAN-13 code:', ean13Code, '- must be exactly 13 digits');
+        return '';
+      }
+      
+      // Create a canvas element
+      const canvas = createCanvas(200, 80);
+      
+      // Generate the barcode
+      JsBarcode(canvas, ean13Code, {
+        format: "EAN13",
+        width: 2,
+        height: 60,
+        displayValue: true,
+        fontSize: 12,
+        textAlign: "center",
+        textPosition: "bottom",
+        textMargin: 2
+      });
+      
+      // Convert canvas to data URL
+      return canvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('EAN-13 barcode generation error:', error);
+      return '';
+    }
+  };
+
   const chunks: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) chunks.push(items.slice(i, i + perPage));
 
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-  const pagesHtml = chunks.map(page => {
-    const createProductCard = (it: Item) => {
+  const pagesHtml = chunks.map((page, pageIndex) => {
+    const createProductCard = (it: Item, localIndex: number) => {
+      const globalIndex = pageIndex * perPage + localIndex;
+      // Determine barcode type for this item
+      const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
+      
+      // Generate barcode if needed
+      let barcodeHtml = '';
+      if (itemBarcodeType && itemBarcodeType !== "None") {
+        if (itemBarcodeType === "EAN-13") {
+          let ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+          if (ean13Code.length < 13) {
+            ean13Code = ean13Code.padStart(13, '0');
+          } else if (ean13Code.length > 13) {
+            ean13Code = ean13Code.substring(0, 13);
+          }
+          const barcodeDataUrl = generateEAN13Barcode(ean13Code);
+          if (barcodeDataUrl) {
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+          }
+        } else if (itemBarcodeType === "QR Code") {
+          const productUrl = generateProductUrl(it.handle);
+          const qrDataUrl = generateQRCode(productUrl);
+          if (qrDataUrl) {
+            barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+          }
+        }
+      }
+
       return [
         '<div class="product-card">',
           layout === 1 ? 
@@ -123,6 +198,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               </div>`,
             it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
             show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
+            barcodeHtml,
           '</div>',
         '</div>',
       ].join("");
@@ -133,21 +209,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     
     if (layout === 2) {
       // 2-per-page: only 2 products
-      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
-      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
+      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}`;
     } else if (layout === 3) {
       // 3-per-page: 3 products
-      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
-      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
-      const product3 = page[2] ? createProductCard(page[2]) : '<div class="product-card empty"></div>';
+      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
+      const product3 = page[2] ? createProductCard(page[2], 2) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}${product3}`;
     } else {
       // 4-per-page: 4 products
-      const product1 = page[0] ? createProductCard(page[0]) : '<div class="product-card empty"></div>';
-      const product2 = page[1] ? createProductCard(page[1]) : '<div class="product-card empty"></div>';
-      const product3 = page[2] ? createProductCard(page[2]) : '<div class="product-card empty"></div>';
-      const product4 = page[3] ? createProductCard(page[3]) : '<div class="product-card empty"></div>';
+      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
+      const product2 = page[1] ? createProductCard(page[1], 1) : '<div class="product-card empty"></div>';
+      const product3 = page[2] ? createProductCard(page[2], 2) : '<div class="product-card empty"></div>';
+      const product4 = page[3] ? createProductCard(page[3], 3) : '<div class="product-card empty"></div>';
       productsHtml = `${product1}${product2}${product3}${product4}`;
     }
 
@@ -478,6 +554,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     font-style: italic;
     margin-top: 4px;
     line-height: 1.2;
+  }
+  
+  .barcode {
+    margin-top: 8px;
+    text-align: center;
+  }
+  
+  .qr-code {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .ean13-barcode {
+    width: 120px;
+    height: 80px;
   }
   
   /* 2-per-page layout specific styles */

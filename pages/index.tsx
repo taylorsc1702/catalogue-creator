@@ -98,6 +98,8 @@ export default function Home() {
           layout, 
           showFields: { authorBio: false }, 
           hyperlinkToggle,
+          itemBarcodeTypes,
+          barcodeType,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -133,44 +135,6 @@ export default function Home() {
     }
   }
 
-  async function openBarcodeView() {
-    if (!items.length) { alert("Fetch products first."); return; }
-    
-    console.log('Opening barcode view with:', { barcodeType, includeBarcodes: barcodeType !== "None", itemsCount: items.length });
-    
-    try {
-      const resp = await fetch("/api/render/barcode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          items, 
-          layout, 
-          includeBarcodes: barcodeType !== "None", 
-          barcodeType,
-          hyperlinkToggle,
-          itemBarcodeTypes,
-          discountCode,
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
-        })
-      });
-      
-      if (!resp.ok) {
-        const error = await resp.text();
-        alert(`Error generating QR codes: ${error}`);
-        return;
-      }
-      
-      const html = await resp.text();
-      const w = window.open("", "_blank", "noopener,noreferrer");
-      if (w) { 
-        w.document.open(); 
-        w.document.write(html); 
-        w.document.close(); 
-      }
-    } catch (error) {
-      alert("Error generating QR codes: " + (error instanceof Error ? error.message : "Unknown error"));
-    }
-  }
 
   async function downloadDocx() {
     if (!items.length) { alert("Fetch products first."); return; }
@@ -791,7 +755,6 @@ export default function Home() {
 
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📊 With Barcodes</button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
