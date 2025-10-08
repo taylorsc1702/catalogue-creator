@@ -55,15 +55,19 @@ function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badg
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
     
-    // Determine badge type - simple logic
+    // Determine badge type - correct logic
     let badgeType: 'current' | 'future' | null = null;
     
-    // If release date >= current month/year, show future badge
-    if (date.getFullYear() > currentYear || 
+    // If release date < current month/year, show CURRENT badge (past releases)
+    if (date.getFullYear() < currentYear || 
+        (date.getFullYear() === currentYear && date.getMonth() + 1 < currentMonth)) {
+      badgeType = 'current';
+    }
+    // If release date >= current month/year, show FUTURE badge (current/future releases)
+    else if (date.getFullYear() > currentYear || 
         (date.getFullYear() === currentYear && date.getMonth() + 1 >= currentMonth)) {
       badgeType = 'future';
     }
-    // Past dates get no badge (badgeType remains null)
     
     return { formattedDate, badgeType };
   } catch {
@@ -1062,13 +1066,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 </div>
               )}
               {it.releaseDate && (() => {
-                // Test if function exists
-                if (typeof formatDateAndBadge !== 'function') {
-                  alert('formatDateAndBadge function not found!');
-                  return <div>ERROR: Function not found</div>;
-                }
                 const { formattedDate, badgeType } = formatDateAndBadge(it.releaseDate);
-                alert(`Product ${it.handle}: releaseDate="${it.releaseDate}", badgeType="${badgeType}"`);
                 return (
                   <div style={{ 
                     fontSize: 10, 
@@ -1087,11 +1085,11 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                         borderRadius: 4,
                         fontWeight: 600,
                         textTransform: "uppercase",
-                        backgroundColor: "#007BFF",
+                        backgroundColor: badgeType === 'current' ? "#28A745" : "#007BFF",
                         color: "white",
                         border: "2px solid red"
                       }}>
-                        FUTURE
+                        {badgeType}
                       </span>
                     )}
                     {it.icauth && (
