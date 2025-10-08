@@ -388,6 +388,207 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
+function create1UpLayout(
+  item: Item,
+  imageData?: { base64: string; width: number; height: number; mimeType: string } | null,
+  generateProductUrl?: (handle: string) => string,
+  barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null
+): Paragraph[] {
+  const productUrl = generateProductUrl ? generateProductUrl(item.handle) : `https://woodslane.com.au/products/${item.handle}`;
+  
+  // Create a 2-column table for 1-up layout
+  const table = new Table({
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
+    rows: [
+      // Single row with two cells
+      new TableRow({
+        children: [
+          // Left column - Image, Author Bio, Internals
+          new TableCell({
+            width: {
+              size: 40,
+              type: WidthType.PERCENTAGE,
+            },
+            children: [
+              // Book cover image
+              ...(imageData ? [
+                new Paragraph({
+                  children: [
+                    new ImageRun({
+                      data: imageData.base64,
+                      transformation: {
+                        width: 200,
+                        height: 300,
+                      },
+                      type: "png",
+                    }),
+                  ],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 300 },
+                }),
+              ] : []),
+              
+              // Author Bio
+              ...(item.authorBio ? [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: "Author Bio:",
+                      bold: true,
+                      size: 14,
+                      color: "0D47A1",
+                    }),
+                  ],
+                  spacing: { after: 200 },
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.authorBio.replace(/<[^>]*>/g, ''), // Strip HTML tags
+                      size: 12,
+                      color: "1565C0",
+                    }),
+                  ],
+                  spacing: { after: 300 },
+                }),
+              ] : []),
+            ],
+          }),
+          
+          // Right column - Product details
+          new TableCell({
+            width: {
+              size: 60,
+              type: WidthType.PERCENTAGE,
+            },
+            children: [
+              // Title
+              new Paragraph({
+                children: [
+                  new ExternalHyperlink({
+                    children: [
+                      new TextRun({
+                        text: item.title,
+                        bold: true,
+                        size: 24,
+                        color: "2C3E50",
+                        underline: {},
+                      }),
+                    ],
+                    link: productUrl,
+                  }),
+                ],
+                spacing: { after: 200 },
+              }),
+              
+              // Subtitle
+              ...(item.subtitle ? [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.subtitle,
+                      italics: true,
+                      size: 18,
+                      color: "7F8C8D",
+                    }),
+                  ],
+                  spacing: { after: 200 },
+                }),
+              ] : []),
+              
+              // Author
+              ...(item.author ? [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `By ${item.author}`,
+                      size: 16,
+                      color: "667eea",
+                      bold: true,
+                    }),
+                  ],
+                  spacing: { after: 300 },
+                }),
+              ] : []),
+              
+              // Description
+              ...(item.description ? [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.description.replace(/<[^>]*>/g, ''), // Strip HTML tags
+                      size: 14,
+                      color: "495057",
+                    }),
+                  ],
+                  spacing: { after: 300 },
+                }),
+              ] : []),
+              
+              // Product details grid
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: [
+                      item.vendor ? `Vendor: ${item.vendor}` : '',
+                      item.dimensions ? `Dimensions: ${item.dimensions}` : '',
+                      item.releaseDate ? `Release Date: ${item.releaseDate}` : '',
+                      item.pages ? `Pages: ${item.pages}` : '',
+                    ].filter(Boolean).join('\n'),
+                    size: 14,
+                    color: "495057",
+                  }),
+                ],
+                spacing: { after: 400 },
+              }),
+              
+              // Bottom section with barcode, handle, and price
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: [
+                      item.icrkdt ? `Barcode: ${item.icrkdt}` : '',
+                      `Handle (ISBN): ${item.handle}`,
+                      item.price ? `AUD$ ${item.price}` : '',
+                    ].filter(Boolean).join('\n'),
+                    size: 16,
+                    color: "495057",
+                    bold: true,
+                  }),
+                ],
+                spacing: { after: 200 },
+              }),
+              
+              // Add barcode image if available
+              ...(barcodeData ? [
+                new Paragraph({
+                  children: [
+                    new ImageRun({
+                      data: barcodeData.base64,
+                      transformation: {
+                        width: barcodeData.width * 0.5, // Scale down 50%
+                        height: barcodeData.height * 0.5,
+                      },
+                      type: "png",
+                    }),
+                  ],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 200 },
+                }),
+              ] : []),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+
+  return [new Paragraph({ children: [table] })];
+}
+
 function createProductCell(
   item: Item | undefined, 
   index: number, 
@@ -398,6 +599,11 @@ function createProductCell(
 ): Paragraph[] {
   if (!item) {
     return [new Paragraph({ text: "" })];
+  }
+
+  // Special handling for 1-up layout - create 2-column table
+  if (layout === 1) {
+    return create1UpLayout(item, imageData, generateProductUrl, barcodeData);
   }
 
   // Adjust font sizes based on layout

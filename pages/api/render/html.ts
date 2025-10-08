@@ -167,36 +167,103 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       }
 
       return [
-        '<div class="product-card">',
-          layout === 1 ? 
-            // 1-per-page: Large image with thumbnails
-            `<div class="product-image-large">
-              <img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover-large">
-              ${it.additionalImages && it.additionalImages.length > 0 ? 
-                `<div class="additional-images">${it.additionalImages.slice(0, 4).map((img, idx) => 
-                  `<img src="${esc(img)}" alt="${esc(it.title)} - Internal ${idx + 2}" class="additional-image">`
-                ).join('')}</div>` : ''}
-            </div>` :
-            // Other layouts: Standard image
-            `<div class="product-image">
+        layout === 1 ? 
+          // 1-per-page: Professional 2-column layout
+          `<div class="product-card layout-1up">
+            <!-- Left Column -->
+            <div class="left-column">
+              <!-- Book Cover -->
+              <div class="book-cover-container">
+                <img src="${esc(it.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(it.title)}" class="book-cover-large">
+              </div>
+              
+              <!-- Author Bio -->
+              ${it.authorBio ? `
+                <div class="author-bio-box">
+                  <div class="author-bio-title">Author Bio:</div>
+                  <div class="author-bio-content">${esc(it.authorBio)}</div>
+                </div>
+              ` : ''}
+              
+              <!-- Internals Thumbnails -->
+              ${it.additionalImages && it.additionalImages.length > 0 ? `
+                <div class="internals-section">
+                  <div class="internals-title">Internals:</div>
+                  <div class="internals-thumbnails">
+                    ${it.additionalImages.slice(0, 6).map((img, idx) => 
+                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
+                    ).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+              <!-- Title Section -->
+              <div class="title-section">
+                <h1 class="product-title-large">
+                  <a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a>
+                </h1>
+                ${it.subtitle ? `<h2 class="product-subtitle-large">${esc(it.subtitle)}</h2>` : ''}
+                ${it.author ? `<div class="product-author-large">By ${esc(it.author)}</div>` : ''}
+              </div>
+
+              <!-- Description -->
+              ${it.description ? `
+                <div class="product-description-large">
+                  ${esc(it.description)}
+                </div>
+              ` : ''}
+
+              <!-- Product Details Grid -->
+              <div class="product-details-grid">
+                ${it.vendor ? `<div class="detail-item"><strong>Vendor:</strong> ${esc(it.vendor)}</div>` : ''}
+                ${it.dimensions ? `<div class="detail-item"><strong>Dimensions:</strong> ${esc(it.dimensions)}</div>` : ''}
+                ${it.releaseDate ? `
+                  <div class="detail-item">
+                    <strong>Release Date:</strong> ${esc(it.releaseDate)}
+                    ${it.releaseDate.includes('/') ? `
+                      <span class="date-badge ${new Date(it.releaseDate.split('/')[1] + '-' + it.releaseDate.split('/')[0] + '-01') < new Date() ? 'current' : 'future'}">
+                        ${new Date(it.releaseDate.split('/')[1] + '-' + it.releaseDate.split('/')[0] + '-01') < new Date() ? 'CURRENT' : 'FUTURE'}
+                      </span>
+                    ` : ''}
+                  </div>
+                ` : ''}
+                ${it.pages ? `<div class="detail-item"><strong>Pages:</strong> ${esc(it.pages)}</div>` : ''}
+              </div>
+
+              <!-- Bottom Section -->
+              <div class="bottom-section">
+                ${it.icrkdt ? `
+                  <div class="barcode-section">
+                    <div class="barcode-label">Barcode:</div>
+                    <div class="barcode-value">${esc(it.icrkdt)}</div>
+                  </div>
+                ` : ''}
+                <div class="handle-section">
+                  <div class="handle-label">Handle (ISBN):</div>
+                  <div class="handle-value">${esc(it.handle)}</div>
+                </div>
+                ${it.price ? `
+                  <div class="price-section">
+                    AUD$ ${esc(it.price)}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>` :
+          // Other layouts: Standard layout
+          `<div class="product-card">
+            <div class="product-image">
               <img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">
-            </div>`,
-          '<div class="product-details">',
-            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
-            it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
-            it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
-            it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
-            layout === 1 ? 
-              // 1-per-page: Organized metafields at bottom
-              `<div class="product-meta">
-                <div class="spec-item">${[it.binding, it.pages && `${it.pages} pages`, it.dimensions].filter(Boolean).join(" • ")}</div>
-                ${it.imprint ? `<div class="meta-item">🏢 ${esc(it.imprint)}</div>` : ""}
-                ${it.releaseDate ? `<div class="meta-item">📅 ${esc(it.releaseDate)}</div>` : ""}
-                ${it.publicity ? `<div class="meta-item" style="font-style: italic; margin-top: 8px;">${esc(it.publicity)}</div>` : ""}
-                ${it.reviews ? `<div class="meta-item" style="margin-top: 4px;">${esc(it.reviews)}</div>` : ""}
-              </div>` :
-              // Other layouts: Standard metafields
-              `<div class="product-specs">
+            </div>
+            <div class="product-details">
+              <h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>
+              ${it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : ""}
+              ${it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : ""}
+              ${it.description ? `<div class="product-description">${esc(it.description)}</div>` : ""}
+              <div class="product-specs">
                 ${it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : ""}
                 ${it.pages ? `<span class="spec-item">${esc(it.pages)} pages</span>` : ""}
                 ${it.dimensions ? `<span class="spec-item">${esc(it.dimensions)}</span>` : ""}
@@ -206,12 +273,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 ${it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(it.releaseDate)}</div>` : ""}
                 ${it.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(it.weight)}</div>` : ""}
                 ${it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : ""}
-              </div>`,
-            it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
-            show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
-            barcodeHtml,
-          '</div>',
-        '</div>',
+              </div>
+              ${it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : ""}
+              ${show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : ""}
+              ${barcodeHtml}
+            </div>
+          </div>`,
       ].join("");
     };
 
@@ -404,13 +471,189 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     gap: 16px;
     margin-bottom: 20px;
   }
+  /* 1-up layout styles */
+  .layout-1up {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 24px;
+    padding: 24px;
+    min-height: 400px;
+  }
+  
+  .layout-1up .left-column {
+    flex-shrink: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .layout-1up .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  
+  .book-cover-container {
+    text-align: center;
+  }
+  
   .book-cover-large {
     width: 200px;
     height: 300px;
     object-fit: cover;
-    border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    background: #F8F9FA;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .author-bio-box {
+    background: #E3F2FD;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #1565C0;
+  }
+  
+  .author-bio-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #0D47A1;
+  }
+  
+  .author-bio-content {
+    color: #1565C0;
+  }
+  
+  .internals-section {
+    margin-top: 16px;
+  }
+  
+  .internals-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #495057;
+  }
+  
+  .internals-thumbnails {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #E9ECEF;
+  }
+  
+  .title-section {
+    margin-bottom: 16px;
+  }
+  
+  .product-title-large {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2C3E50;
+    margin: 0 0 4px 0;
+  }
+  
+  .product-subtitle-large {
+    font-size: 18px;
+    font-weight: 500;
+    color: #7F8C8D;
+    font-style: italic;
+    margin: 0 0 8px 0;
+  }
+  
+  .product-author-large {
+    font-size: 16px;
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .product-description-large {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #495057;
+    margin-bottom: 16px;
+  }
+  
+  .product-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .detail-item {
+    color: #495057;
+  }
+  
+  .date-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+  
+  .date-badge.current {
+    background-color: #28A745;
+    color: white;
+  }
+  
+  .date-badge.future {
+    background-color: #007BFF;
+    color: white;
+  }
+  
+  .bottom-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #E9ECEF;
+  }
+  
+  .barcode-section,
+  .handle-section {
+    text-align: center;
+  }
+  
+  .barcode-label,
+  .handle-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: #6C757D;
+  }
+  
+  .barcode-value,
+  .handle-value {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .price-section {
+    margin-left: auto;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
   }
   .page.layout-1 .product-title {
     font-size: 24px;
