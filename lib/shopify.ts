@@ -144,7 +144,11 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
       for (const edge of n.metafields?.edges ?? []) {
         const node = edge?.node;
         if (node?.key) {
+          // Store by both key alone and namespace.key combination for flexibility
           mf[node.key] = node.value ?? undefined;
+          if (node.namespace) {
+            mf[`${node.namespace}.${node.key}`] = node.value ?? undefined;
+          }
         }
       }
 

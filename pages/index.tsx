@@ -1086,19 +1086,22 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                         {badgeType}
                       </span>
                     )}
-                    {it.icauth && (
-                      <span style={{
-                        fontSize: 8,
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        backgroundColor: "#FF6B35",
-                        color: "white"
-                      }}>
-                        AUS-{it.icauth}
-                      </span>
-                    )}
+                    {it.icauth && (() => {
+                      console.log(`Product ${it.handle} has icauth:`, it.icauth);
+                      return (
+                        <span style={{
+                          fontSize: 8,
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          backgroundColor: "#FF6B35",
+                          color: "white"
+                        }}>
+                          AUS-{it.icauth}
+                        </span>
+                      );
+                    })()}
                   </div>
                 );
               })()}

@@ -20,6 +20,16 @@ const schema = z.object({
 
     const items = products.map((p) => {
       const mf = p.metafields;
+      
+      // Debug logging for ICAUTH metafield
+      if (mf["ICAUTH"] || mf["my_fields.ICAUTH"]) {
+        console.log(`Product ${p.handle} has ICAUTH:`, {
+          'ICAUTH': mf["ICAUTH"],
+          'my_fields.ICAUTH': mf["my_fields.ICAUTH"],
+          allMetafields: Object.keys(mf).filter(key => key.toLowerCase().includes('icauth'))
+        });
+      }
+      
       return {
         title: p.title,
         subtitle: mf["Subtitle"],
@@ -37,7 +47,7 @@ const schema = z.object({
         icillus: mf["icillus"],
         illustrations: mf["Illlustrations"],
         edition: mf["Edition"],
-        icauth: mf["ICAUTH"],
+        icauth: mf["ICAUTH"] || mf["my_fields.ICAUTH"],
         publicity: mf["publicity"],
         reviews: mf["reviews"],
         imageUrl: p.featuredImageUrl,
