@@ -77,20 +77,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     };
 
-    const generateEAN13Barcode = (ean13Code: string) => {
+    const generateUPCBarcode = (code: string) => {
       try {
-        if (!/^\d{13}$/.test(ean13Code)) {
-          console.error('Invalid EAN-13 code:', ean13Code);
-          return null;
+        // Clean the code - remove non-digits
+        let cleanCode = code.replace(/[^0-9]/g, '');
+        
+        // UPC-A needs exactly 12 digits
+        if (cleanCode.length < 12) {
+          cleanCode = cleanCode.padStart(12, '0');
+        } else if (cleanCode.length > 12) {
+          cleanCode = cleanCode.substring(0, 12);
         }
         
-        const canvas = createCanvas(200, 80);
-        JsBarcode(canvas, ean13Code, {
-          format: "EAN13",
-          width: 2,
-          height: 60,
+        console.log('Generating UPC-A barcode for:', cleanCode);
+        
+        const canvas = createCanvas(150, 60);
+        JsBarcode(canvas, cleanCode, {
+          format: "UPC",
+          width: 1.5,
+          height: 40,
           displayValue: true,
-          fontSize: 12,
+          fontSize: 10,
           textAlign: "center",
           textPosition: "bottom",
           textMargin: 2
@@ -100,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const base64 = dataUrl.split(',')[1];
         return base64;
       } catch (error) {
-        console.error('EAN-13 barcode generation error:', error);
+        console.error('UPC barcode generation error:', error);
         return null;
       }
     };
@@ -119,18 +126,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          let ean13Code = item.icrkdt || item.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
-          if (ean13Code.length < 13) {
-            ean13Code = ean13Code.padStart(13, '0');
-          } else if (ean13Code.length > 13) {
-            ean13Code = ean13Code.substring(0, 13);
-          }
-          const barcodeBase64 = generateEAN13Barcode(ean13Code);
+          // Use UPC format for better compatibility
+          const barcodeCode = item.icrkdt || item.handle;
+          const barcodeBase64 = generateUPCBarcode(barcodeCode);
           if (barcodeBase64) {
             barcodeData = {
               base64: barcodeBase64,
-              width: 200,
-              height: 80,
+              width: 150,
+              height: 60,
               mimeType: 'image/png'
             };
           }
@@ -140,8 +143,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           if (qrBase64) {
             barcodeData = {
               base64: qrBase64,
-              width: 120,
-              height: 120,
+              width: 60,
+              height: 60,
               mimeType: 'image/png'
             };
           }
@@ -595,8 +598,8 @@ function createProductCell(
       const barcodeRun = new ImageRun({
         data: barcodeData.base64,
         transformation: {
-          width: barcodeData.width * 0.75,  // Scale down slightly
-          height: barcodeData.height * 0.75,
+          width: barcodeData.width * 0.5,  // 50% smaller
+          height: barcodeData.height * 0.5,
         },
         type: "png",
       });

@@ -89,24 +89,30 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     }
   };
 
-  const generateEAN13Barcode = (ean13Code: string) => {
+  const generateUPCBarcode = (code: string) => {
     try {
-      // Validate EAN-13 code (must be exactly 13 digits)
-      if (!/^\d{13}$/.test(ean13Code)) {
-        console.error('Invalid EAN-13 code:', ean13Code, '- must be exactly 13 digits');
-        return '';
+      // Clean the code - remove non-digits
+      let cleanCode = code.replace(/[^0-9]/g, '');
+      
+      // UPC-A needs exactly 12 digits
+      if (cleanCode.length < 12) {
+        cleanCode = cleanCode.padStart(12, '0');
+      } else if (cleanCode.length > 12) {
+        cleanCode = cleanCode.substring(0, 12);
       }
       
+      console.log('Generating UPC-A barcode for:', cleanCode);
+      
       // Create a canvas element
-      const canvas = createCanvas(200, 80);
+      const canvas = createCanvas(150, 60);
       
       // Generate the barcode
-      JsBarcode(canvas, ean13Code, {
-        format: "EAN13",
-        width: 2,
-        height: 60,
+      JsBarcode(canvas, cleanCode, {
+        format: "UPC",
+        width: 1.5,
+        height: 40,
         displayValue: true,
-        fontSize: 12,
+        fontSize: 10,
         textAlign: "center",
         textPosition: "bottom",
         textMargin: 2
@@ -115,7 +121,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       // Convert canvas to data URL
       return canvas.toDataURL('image/png');
     } catch (error) {
-      console.error('EAN-13 barcode generation error:', error);
+      console.error('UPC barcode generation error:', error);
       return '';
     }
   };
@@ -136,15 +142,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       let barcodeHtml = '';
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          let ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
-          if (ean13Code.length < 13) {
-            ean13Code = ean13Code.padStart(13, '0');
-          } else if (ean13Code.length > 13) {
-            ean13Code = ean13Code.substring(0, 13);
-          }
-          const barcodeDataUrl = generateEAN13Barcode(ean13Code);
+          // Use UPC format for better compatibility
+          const barcodeCode = it.icrkdt || it.handle;
+          const barcodeDataUrl = generateUPCBarcode(barcodeCode);
           if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="UPC Barcode" class="upc-barcode"></div>`;
           }
         } else if (itemBarcodeType === "QR Code") {
           const productUrl = generateProductUrl(it.handle);
@@ -573,13 +575,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   }
   
   .qr-code {
-    width: 60px;
-    height: 60px;
+    width: 30px;
+    height: 30px;
   }
   
-  .ean13-barcode {
-    width: 120px;
-    height: 80px;
+  .upc-barcode {
+    width: 75px;
+    height: 30px;
   }
   
   /* 2-per-page layout specific styles */
