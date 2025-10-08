@@ -55,14 +55,13 @@ function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badg
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
     
-    // Determine badge type
+    // Determine badge type - simple logic
     let badgeType: 'current' | 'future' | null = null;
     
+    // If release date >= current month/year, show future badge
     if (date.getFullYear() > currentYear || 
-        (date.getFullYear() === currentYear && date.getMonth() + 1 > currentMonth)) {
+        (date.getFullYear() === currentYear && date.getMonth() + 1 >= currentMonth)) {
       badgeType = 'future';
-    } else if (date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth) {
-      badgeType = 'current';
     }
     // Past dates get no badge (badgeType remains null)
     
