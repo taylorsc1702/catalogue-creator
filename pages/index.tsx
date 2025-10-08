@@ -24,6 +24,7 @@ export default function Home() {
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
   const [layout, setLayout] = useState<1|2|3|4|8>(4);
+  const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
@@ -141,7 +142,8 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout, 
-          includeBarcodes: true, 
+          includeBarcodes: barcodeType !== "None", 
+          barcodeType,
           hyperlinkToggle,
           itemQrToggles,
           discountCode,
@@ -679,6 +681,20 @@ export default function Home() {
         <span>Layout:</span>
         {[1,2,3,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
+        ))}
+        <span style={{ marginLeft: 16, fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
+        {["EAN-13", "QR Code", "None"].map(type => (
+          <button 
+            key={type}
+            onClick={()=>setBarcodeType(type as "EAN-13" | "QR Code" | "None")} 
+            style={{
+              ...btn(barcodeType === type),
+              fontSize: 12,
+              padding: "6px 12px"
+            }}
+          >
+            {type === "EAN-13" ? "📊 EAN-13" : type === "QR Code" ? "📱 QR Code" : "🚫 None"}
+          </button>
         ))}
       </div>
 

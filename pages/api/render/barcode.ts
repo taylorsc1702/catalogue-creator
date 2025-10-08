@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import QRCode from "qrcode-generator";
+import JsBarcode from "jsbarcode";
 
 type Item = {
   title: string; subtitle?: string; price?: string;
@@ -14,10 +15,11 @@ const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     console.log('Barcode API called with:', JSON.stringify(req.body, null, 2));
-    const { items, layout = 4, includeBarcodes = true, itemQrToggles = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, barcodeType = "QR Code", itemQrToggles = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
       items: Item[];
       layout: 1 | 2 | 3 | 4 | 8;
       includeBarcodes?: boolean;
+      barcodeType?: "EAN-13" | "QR Code" | "None";
       itemQrToggles?: {[key: number]: boolean};
       discountCode?: string;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
@@ -52,6 +54,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return dataUrl;
       } catch (error) {
         console.error('QR Code generation error:', error);
+        return '';
+      }
+    };
+
+    const generateEAN13Barcode = (ean13Code: string) => {
+      try {
+        console.log('Generating EAN-13 barcode for:', ean13Code);
+        
+        // Create a canvas element
+        const { createCanvas } = require('canvas');
+        const canvas = createCanvas(200, 80);
+        
+        // Generate the barcode
+        JsBarcode(canvas, ean13Code, {
+          format: "EAN13",
+          width: 2,
+          height: 60,
+          displayValue: true,
+          fontSize: 12,
+          textAlign: "center",
+          textPosition: "bottom",
+          textMargin: 2
+        });
+        
+        // Convert canvas to data URL
+        const dataUrl = canvas.toDataURL('image/png');
+        console.log('EAN-13 barcode generated successfully, length:', dataUrl.length);
+        return dataUrl;
+      } catch (error) {
+        console.error('EAN-13 barcode generation error:', error);
         return '';
       }
     };
@@ -98,11 +130,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const productUrl = generateProductUrl(it.handle);
         const globalItemIndex = chunkIndex * perPage + itemIndex;
-        const shouldShowQr = includeBarcodes && (itemQrToggles[globalItemIndex] !== false);
-        const qrCodeDataUrl = shouldShowQr ? generateQRCode(productUrl) : '';
+        const shouldShowBarcode = includeBarcodes && (itemQrToggles[globalItemIndex] !== false);
+        
+        let barcodeDataUrl = '';
+        let barcodeHtml = '';
+        
+        if (shouldShowBarcode && barcodeType !== "None") {
+          if (barcodeType === "EAN-13") {
+            // For EAN-13, we need an actual EAN-13 code. Let's use the product handle or generate one
+            // In a real scenario, you'd want to use the actual ISBN/EAN-13 from your product data
+            const ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+            barcodeDataUrl = generateEAN13Barcode(ean13Code);
+            barcodeHtml = barcodeDataUrl ? `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>` : '';
+          } else if (barcodeType === "QR Code") {
+            barcodeDataUrl = generateQRCode(productUrl);
+            barcodeHtml = barcodeDataUrl ? `<div class="barcode"><img src="${barcodeDataUrl}" alt="QR Code" class="qr-code"></div>` : '';
+          }
+        }
         
         // Debug logging
-        console.log(`Item ${globalItemIndex}: shouldShowQr=${shouldShowQr}, toggle=${itemQrToggles[globalItemIndex]}, includeBarcodes=${includeBarcodes}`);
+        console.log(`Item ${globalItemIndex}: shouldShowBarcode=${shouldShowBarcode}, barcodeType=${barcodeType}, toggle=${itemQrToggles[globalItemIndex]}, includeBarcodes=${includeBarcodes}`);
 
         return [
           '<div class="card">',
@@ -117,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               it.weight ? `<div class="meta">Weight: ${esc(it.weight)}</div>` : "",
               it.illustrations ? `<div class="meta">Illustrations: ${esc(it.illustrations)}</div>` : "",
               it.price ? `<div class="price">AUD$ ${esc(it.price)}</div>` : "",
-              qrCodeDataUrl ? `<div class="barcode"><img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code"></div>` : "",
+              barcodeHtml,
             "</div>",
           "</div>",
         ].join("");
@@ -148,6 +195,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   .url { margin-top:6px; font-size:11px; color:#656F91; word-break: break-all; }
   .barcode { margin-top:8px; text-align:center; }
   .qr-code { width:60px; height:60px; }
+  .ean13-barcode { width:120px; height:80px; }
   @media print { .noprint { display:none !important; } }
 </style>
 </head>
