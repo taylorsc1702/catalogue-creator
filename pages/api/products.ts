@@ -9,9 +9,7 @@ const schema = z.object({
   tag: z.string().optional(),
   vendor: z.string().optional(),
   collectionId: z.string().optional(),
-  metafieldKey: z.string().optional(),
-  metafieldContains: z.string().optional(),
-  freeText: z.string().optional(),
+  publishingStatus: z.enum(["Active", "Draft", "All"]).optional(),
   handleList: z.array(z.string()).optional(),
 });
 

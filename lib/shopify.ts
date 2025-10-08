@@ -179,9 +179,7 @@ export function buildShopifyQuery(opts: {
   tag?: string;
   vendor?: string;
   collectionId?: string;
-  metafieldKey?: string;
-  metafieldContains?: string;
-  freeText?: string;
+  publishingStatus?: "Active" | "Draft" | "All";
   handleList?: string[];
 }) {
   // Handle list takes priority
@@ -206,18 +204,9 @@ export function buildShopifyQuery(opts: {
 
   if (opts.collectionId) p.push(`collection_id:${opts.collectionId}`);
 
-  if (opts.metafieldKey) {
-    const [ns, key] = opts.metafieldKey.split(".");
-    if (ns && key) {
-      if (opts.metafieldContains?.trim()) {
-        p.push(`metafield:'${ns}.${key}:${escapeVal(opts.metafieldContains)}*'`);
-      } else {
-        p.push(`metafield:'${ns}.${key}:*'`);
-      }
-    }
+  if (opts.publishingStatus && opts.publishingStatus !== "All") {
+    p.push(`status:${opts.publishingStatus.toLowerCase()}`);
   }
-
-  if (opts.freeText?.trim()) p.push(opts.freeText.trim());
 
   // If no filters provided, return a default query to get all products
   return p.length > 0 ? p.join(" AND ") : "*";

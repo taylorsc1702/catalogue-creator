@@ -21,9 +21,7 @@ export default function Home() {
   const [tag, setTag] = useState("");
   const [vendor, setVendor] = useState("");
   const [collectionId, setCollectionId] = useState("");
-  const [metafieldKey, setMetafieldKey] = useState("my_fields.author");
-  const [metafieldContains, setMetafieldContains] = useState("");
-  const [freeText, setFreeText] = useState("");
+  const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
   const [layout, setLayout] = useState<1|2|3|4|8>(4);
   const [loading, setLoading] = useState(false);
@@ -54,20 +52,18 @@ export default function Home() {
     if (tag) parts.push(`tag:'${tag}'`);
     if (vendor) parts.push(`vendor:'${vendor}'`);
     if (collectionId) parts.push(`collection_id:${collectionId}`);
-    if (metafieldKey) {
-      if (metafieldContains) parts.push(`metafield:'${metafieldKey}:${metafieldContains}*'`);
-      else parts.push(`metafield:'${metafieldKey}:*'`);
+    if (publishingStatus !== "All") {
+      parts.push(`status:${publishingStatus.toLowerCase()}`);
     }
-    if (freeText) parts.push(freeText);
     return parts.join(" AND ") || "status:active";
-  }, [tag, vendor, collectionId, metafieldKey, metafieldContains, freeText, useHandleList, handleList]);
+  }, [tag, vendor, collectionId, publishingStatus, useHandleList, handleList]);
 
   async function fetchItems() {
     setLoading(true);
     try {
       const requestBody = useHandleList && handleList.trim() 
         ? { handleList: handleList.trim().split('\n').map(h => h.trim()).filter(Boolean) }
-        : { tag, vendor, collectionId, metafieldKey, metafieldContains, freeText };
+        : { tag, vendor, collectionId, publishingStatus };
         
       const resp = await fetch("/api/products", {
         method: "POST",
@@ -614,13 +610,32 @@ export default function Home() {
       </div>
 
       {!useHandleList ? (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
         <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
         <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
-        <Field label="Metafield key"><input value={metafieldKey} onChange={e=>setMetafieldKey(e.target.value)} placeholder="my_fields.author" /></Field>
-        <Field label="Metafield contains"><input value={metafieldContains} onChange={e=>setMetafieldContains(e.target.value)} placeholder="Smith" /></Field>
-        <Field label="Free text"><input value={freeText} onChange={e=>setFreeText(e.target.value)} placeholder="published_status:any" /></Field>
+        <Field label="Publishing Status">
+          <select 
+            value={publishingStatus} 
+            onChange={e=>setPublishingStatus(e.target.value as "Active" | "Draft" | "All")}
+            style={{
+              border: "2px solid #E9ECEF", 
+              borderRadius: "10px", 
+              padding: "12px 16px", 
+              fontSize: "14px",
+              background: "#FAFBFC",
+              transition: "all 0.2s ease",
+              outline: "none",
+              cursor: "pointer"
+            }}
+            onFocus={(e) => e.target.style.borderColor = "#667eea"}
+            onBlur={(e) => e.target.style.borderColor = "#E9ECEF"}
+          >
+            <option value="All">All</option>
+            <option value="Active">Active</option>
+            <option value="Draft">Draft</option>
+          </select>
+        </Field>
       </div>
       ) : (
         <div style={{ marginBottom: 16 }}>
@@ -829,6 +844,20 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
           background: #FAFBFC;
         }
         textarea:focus {
+          outline: none;
+          border-color: #667eea;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        select {
+          border: 2px solid #E9ECEF;
+          border-radius: 10px;
+          padding: 12px 16px;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          background: #FAFBFC;
+        }
+        select:focus {
           outline: none;
           border-color: #667eea;
           background: white;
