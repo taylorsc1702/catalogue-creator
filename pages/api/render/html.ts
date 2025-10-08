@@ -89,26 +89,26 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     }
   };
 
-  const generateUPCBarcode = (code: string) => {
+  const generateEAN13Barcode = (code: string) => {
     try {
       // Clean the code - remove non-digits
       let cleanCode = code.replace(/[^0-9]/g, '');
       
-      // UPC-A needs exactly 12 digits
-      if (cleanCode.length < 12) {
-        cleanCode = cleanCode.padStart(12, '0');
-      } else if (cleanCode.length > 12) {
-        cleanCode = cleanCode.substring(0, 12);
+      // EAN-13 needs exactly 13 digits
+      if (cleanCode.length < 13) {
+        cleanCode = cleanCode.padStart(13, '0');
+      } else if (cleanCode.length > 13) {
+        cleanCode = cleanCode.substring(0, 13);
       }
       
-      console.log('Generating UPC-A barcode for:', cleanCode);
+      console.log('Generating EAN-13 barcode for:', cleanCode);
       
       // Create a canvas element
       const canvas = createCanvas(150, 60);
       
       // Generate the barcode
       JsBarcode(canvas, cleanCode, {
-        format: "UPC",
+        format: "EAN13",
         width: 1.5,
         height: 40,
         displayValue: true,
@@ -121,7 +121,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       // Convert canvas to data URL
       return canvas.toDataURL('image/png');
     } catch (error) {
-      console.error('UPC barcode generation error:', error);
+      console.error('EAN-13 barcode generation error:', error);
       return '';
     }
   };
@@ -142,11 +142,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       let barcodeHtml = '';
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          // Use UPC format for better compatibility
+          // Use EAN-13 format for 13-digit barcodes
           const barcodeCode = it.icrkdt || it.handle;
-          const barcodeDataUrl = generateUPCBarcode(barcodeCode);
+          const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="UPC Barcode" class="upc-barcode"></div>`;
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
           }
         } else if (itemBarcodeType === "QR Code") {
           const productUrl = generateProductUrl(it.handle);
@@ -579,7 +579,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     height: 30px;
   }
   
-  .upc-barcode {
+  .ean13-barcode {
     width: 75px;
     height: 30px;
   }
