@@ -135,6 +135,9 @@ export default function Home() {
 
   async function openBarcodeView() {
     if (!items.length) { alert("Fetch products first."); return; }
+    
+    console.log('Opening barcode view with:', { barcodeType, includeBarcodes: barcodeType !== "None", itemsCount: items.length });
+    
     try {
       const resp = await fetch("/api/render/barcode", {
         method: "POST",
@@ -788,7 +791,11 @@ export default function Home() {
 
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📱 With QR Codes</button>
+            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>
+              {barcodeType === "EAN-13" ? "📊 With EAN-13 Barcodes" : 
+               barcodeType === "QR Code" ? "📱 With QR Codes" : 
+               "🚫 With No Barcodes"}
+            </button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>

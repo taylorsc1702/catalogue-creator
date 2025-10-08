@@ -62,6 +62,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         console.log('Generating EAN-13 barcode for:', ean13Code);
         
+        // Validate EAN-13 code (must be exactly 13 digits)
+        if (!/^\d{13}$/.test(ean13Code)) {
+          console.error('Invalid EAN-13 code:', ean13Code, '- must be exactly 13 digits');
+          return '';
+        }
+        
         // Create a canvas element
         const canvas = createCanvas(200, 80);
         
@@ -83,7 +89,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return dataUrl;
       } catch (error) {
         console.error('EAN-13 barcode generation error:', error);
-        return '';
+        // Fallback: generate a simple QR code instead
+        console.log('Falling back to QR code generation');
+        return generateQRCode(`ISBN: ${ean13Code}`);
       }
     };
 
@@ -138,7 +146,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           if (barcodeType === "EAN-13") {
             // For EAN-13, we need an actual EAN-13 code. Let's use the product handle or generate one
             // In a real scenario, you'd want to use the actual ISBN/EAN-13 from your product data
-            const ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+            let ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+            
+            // Ensure we have a valid 13-digit EAN-13 code
+            if (ean13Code.length < 13) {
+              ean13Code = ean13Code.padStart(13, '0');
+            } else if (ean13Code.length > 13) {
+              ean13Code = ean13Code.substring(0, 13);
+            }
+            
+            console.log(`Generating EAN-13 for item ${globalItemIndex}: ${ean13Code}`);
             barcodeDataUrl = generateEAN13Barcode(ean13Code);
             barcodeHtml = barcodeDataUrl ? `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>` : '';
           } else if (barcodeType === "QR Code") {
