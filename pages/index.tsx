@@ -17,6 +17,58 @@ type ProductsResponse = {
   query?: string; // the final server-side Shopify search string
 };
 
+// Helper function to format date and determine badge type
+function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badgeType: 'current' | 'future' | null } {
+  if (!releaseDate) return { formattedDate: '', badgeType: null };
+  
+  try {
+    // Parse the date - handle various formats
+    let date: Date;
+    if (releaseDate.includes('/')) {
+      // Handle MM/DD/YYYY or MM/YYYY format
+      const parts = releaseDate.split('/');
+      if (parts.length === 2) {
+        // MM/YYYY format
+        date = new Date(parseInt(parts[1]), parseInt(parts[0]) - 1, 1);
+      } else {
+        // MM/DD/YYYY format
+        date = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+      }
+    } else {
+      // Try to parse as ISO date or other formats
+      date = new Date(releaseDate);
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return { formattedDate: releaseDate, badgeType: null };
+    }
+    
+    // Format as MM/YYYY
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const formattedDate = `${month}/${year}`;
+    
+    // Compare with current month/year
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    // Determine badge type
+    let badgeType: 'current' | 'future' | null = null;
+    if (date.getFullYear() > currentYear || 
+        (date.getFullYear() === currentYear && date.getMonth() + 1 > currentMonth)) {
+      badgeType = 'future';
+    } else if (date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth) {
+      badgeType = 'current';
+    }
+    
+    return { formattedDate, badgeType };
+  } catch {
+    return { formattedDate: releaseDate, badgeType: null };
+  }
+}
+
 export default function Home() {
   const [tag, setTag] = useState("");
   const [vendor, setVendor] = useState("");
@@ -42,58 +94,6 @@ export default function Home() {
   const [utmCampaign, setUtmCampaign] = useState("");
   const [utmContent, setUtmContent] = useState("");
   const [utmTerm, setUtmTerm] = useState("");
-
-  // Helper function to format date and determine badge type
-  const formatDateAndBadge = (releaseDate?: string) => {
-    if (!releaseDate) return { formattedDate: '', badgeType: null };
-    
-    try {
-      // Parse the date - handle various formats
-      let date: Date;
-      if (releaseDate.includes('/')) {
-        // Handle MM/DD/YYYY or MM/YYYY format
-        const parts = releaseDate.split('/');
-        if (parts.length === 2) {
-          // MM/YYYY format
-          date = new Date(parseInt(parts[1]), parseInt(parts[0]) - 1, 1);
-        } else {
-          // MM/DD/YYYY format
-          date = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
-        }
-      } else {
-        // Try to parse as ISO date or other formats
-        date = new Date(releaseDate);
-      }
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        return { formattedDate: releaseDate, badgeType: null };
-      }
-      
-      // Format as MM/YYYY
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const formattedDate = `${month}/${year}`;
-      
-      // Compare with current month/year
-      const now = new Date();
-      const currentMonth = now.getMonth() + 1;
-      const currentYear = now.getFullYear();
-      
-      // Determine badge type
-      let badgeType: 'current' | 'future' | null = null;
-      if (date.getFullYear() > currentYear || 
-          (date.getFullYear() === currentYear && date.getMonth() + 1 > currentMonth)) {
-        badgeType = 'future';
-      } else if (date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth) {
-        badgeType = 'current';
-      }
-      
-      return { formattedDate, badgeType };
-    } catch (error) {
-      return { formattedDate: releaseDate, badgeType: null };
-    }
-  };
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
