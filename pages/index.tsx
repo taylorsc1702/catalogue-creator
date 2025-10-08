@@ -57,18 +57,14 @@ function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badg
     
     // Determine badge type
     let badgeType: 'current' | 'future' | null = null;
-    console.log(`Date logic: releaseYear=${date.getFullYear()}, currentYear=${currentYear}, releaseMonth=${date.getMonth() + 1}, currentMonth=${currentMonth}`);
     
     if (date.getFullYear() > currentYear || 
         (date.getFullYear() === currentYear && date.getMonth() + 1 > currentMonth)) {
       badgeType = 'future';
-      console.log(`Setting badgeType to 'future'`);
     } else if (date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth) {
       badgeType = 'current';
-      console.log(`Setting badgeType to 'current'`);
-    } else {
-      console.log(`Setting badgeType to null (past date)`);
     }
+    // Past dates get no badge (badgeType remains null)
     
     return { formattedDate, badgeType };
   } catch {
@@ -1068,7 +1064,6 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
               )}
               {it.releaseDate && (() => {
                 const { formattedDate, badgeType } = formatDateAndBadge(it.releaseDate);
-                console.log(`Product ${it.handle}: releaseDate="${it.releaseDate}", formattedDate="${formattedDate}", badgeType="${badgeType}", icauth="${it.icauth}"`);
                 return (
                   <div style={{ 
                     fontSize: 10, 
