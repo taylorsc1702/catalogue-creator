@@ -37,6 +37,7 @@ const schema = z.object({
         icillus: mf["icillus"],
         illustrations: mf["Illlustrations"],
         edition: mf["Edition"],
+        icauth: mf["ICAUTH"],
         publicity: mf["publicity"],
         reviews: mf["reviews"],
         imageUrl: p.featuredImageUrl,

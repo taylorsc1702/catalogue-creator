@@ -6,6 +6,7 @@ type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  icauth?: string; // Australian author metafield
   publicity?: string; reviews?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
@@ -1068,7 +1069,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     marginBottom: 2,
                     display: "flex",
                     alignItems: "center",
-                    gap: 6
+                    gap: 6,
+                    flexWrap: "wrap"
                   }}>
                     <span>📅 {formattedDate}</span>
                     {badgeType && (
@@ -1082,6 +1084,19 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                         color: "white"
                       }}>
                         {badgeType}
+                      </span>
+                    )}
+                    {it.icauth && (
+                      <span style={{
+                        fontSize: 8,
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        backgroundColor: "#FF6B35",
+                        color: "white"
+                      }}>
+                        AUS-{it.icauth}
                       </span>
                     )}
                   </div>
