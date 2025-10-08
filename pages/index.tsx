@@ -1076,15 +1076,16 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     <span>📅 {formattedDate}</span>
                     {badgeType && (
                       <span style={{
-                        fontSize: 8,
-                        padding: "2px 6px",
+                        fontSize: 12,
+                        padding: "4px 8px",
                         borderRadius: 4,
                         fontWeight: 600,
                         textTransform: "uppercase",
-                        backgroundColor: badgeType === 'current' ? "#28A745" : "#007BFF",
-                        color: "white"
+                        backgroundColor: "#007BFF",
+                        color: "white",
+                        border: "2px solid red"
                       }}>
-                        {badgeType}
+                        FUTURE
                       </span>
                     )}
                     {it.icauth && (
