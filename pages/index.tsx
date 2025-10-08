@@ -31,7 +31,7 @@ export default function Home() {
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
-  const [itemQrToggles, setItemQrToggles] = useState<{[key: number]: boolean}>({});
+  const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   
   // UTM Parameters
@@ -148,7 +148,7 @@ export default function Home() {
           includeBarcodes: barcodeType !== "None", 
           barcodeType,
           hyperlinkToggle,
-          itemQrToggles,
+          itemBarcodeTypes,
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -183,7 +183,7 @@ export default function Home() {
           layout,
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
-          itemQrToggles,
+          itemBarcodeTypes,
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -216,7 +216,7 @@ export default function Home() {
           layout,
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
           hyperlinkToggle,
-          itemQrToggles,
+          itemBarcodeTypes,
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -373,14 +373,14 @@ export default function Home() {
     setItemLayouts(newLayouts);
   }
 
-  function setItemQrToggle(index: number, enabled: boolean) {
-    setItemQrToggles({...itemQrToggles, [index]: enabled});
+  function setItemBarcodeType(index: number, barcodeType: "EAN-13" | "QR Code" | "None") {
+    setItemBarcodeTypes({...itemBarcodeTypes, [index]: barcodeType});
   }
 
-  function clearItemQrToggle(index: number) {
-    const newQrToggles = {...itemQrToggles};
-    delete newQrToggles[index];
-    setItemQrToggles(newQrToggles);
+  function clearItemBarcodeType(index: number) {
+    const newBarcodeTypes = {...itemBarcodeTypes};
+    delete newBarcodeTypes[index];
+    setItemBarcodeTypes(newBarcodeTypes);
   }
 
   function generateProductUrl(handle: string): string {
@@ -791,11 +791,7 @@ export default function Home() {
 
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>
-              {barcodeType === "EAN-13" ? "📊 With EAN-13 Barcodes" : 
-               barcodeType === "QR Code" ? "📱 With QR Codes" : 
-               "🚫 With No Barcodes"}
-            </button>
+            <button onClick={openBarcodeView} disabled={!items.length} style={btn()}>📊 With Barcodes</button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
@@ -824,7 +820,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemQrToggles={itemQrToggles} setItemQrToggle={setItemQrToggle} clearItemQrToggle={clearItemQrToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
     </div>
   );
@@ -908,7 +904,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemQrToggles, setItemQrToggle, clearItemQrToggle, hyperlinkToggle, generateProductUrl }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8; 
   showOrderEditor: boolean;
@@ -918,9 +914,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   itemLayouts: {[key: number]: 1|2|3|4|8};
   setItemLayout: (index: number, layout: 1|2|3|4|8) => void;
   clearItemLayout: (index: number) => void;
-  itemQrToggles: {[key: number]: boolean};
-  setItemQrToggle: (index: number, enabled: boolean) => void;
-  clearItemQrToggle: (index: number) => void;
+  itemBarcodeTypes: {[key: number]: "EAN-13" | "QR Code" | "None"};
+  setItemBarcodeType: (index: number, barcodeType: "EAN-13" | "QR Code" | "None") => void;
+  clearItemBarcodeType: (index: number) => void;
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
 }) {
@@ -1221,26 +1217,29 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 </div>
                 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
-                  <span style={{ fontSize: 11, color: "#6C757D", fontWeight: "600" }}>QR:</span>
-                  <button
-                    onClick={() => setItemQrToggle(i, !itemQrToggles[i])}
-                    style={{
-                      border: "1px solid",
-                      borderColor: itemQrToggles[i] ? "#28A745" : "#E9ECEF",
-                      background: itemQrToggles[i] ? "#28A745" : "white",
-                      color: itemQrToggles[i] ? "white" : "#495057",
-                      padding: "4px 8px",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                      fontSize: 10,
-                      fontWeight: 600
-                    }}
-                  >
-                    {itemQrToggles[i] ? "ON" : "OFF"}
-                  </button>
-                  {itemQrToggles[i] && (
+                  <span style={{ fontSize: 11, color: "#6C757D", fontWeight: "600" }}>Barcode:</span>
+                  {["EAN-13", "QR Code", "None"].map(type => (
                     <button
-                      onClick={() => clearItemQrToggle(i)}
+                      key={type}
+                      onClick={() => setItemBarcodeType(i, type as "EAN-13" | "QR Code" | "None")}
+                      style={{
+                        border: "1px solid",
+                        borderColor: itemBarcodeTypes[i] === type ? "#28A745" : "#E9ECEF",
+                        background: itemBarcodeTypes[i] === type ? "#28A745" : "white",
+                        color: itemBarcodeTypes[i] === type ? "white" : "#495057",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 10,
+                        fontWeight: 600
+                      }}
+                    >
+                      {type === "EAN-13" ? "EAN" : type === "QR Code" ? "QR" : "None"}
+                    </button>
+                  ))}
+                  {itemBarcodeTypes[i] && itemBarcodeTypes[i] !== "None" && (
+                    <button
+                      onClick={() => clearItemBarcodeType(i)}
                       style={{
                         border: "none",
                         background: "#E9ECEF",

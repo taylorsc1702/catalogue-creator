@@ -15,12 +15,12 @@ type Item = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     console.log('Barcode API called with:', JSON.stringify(req.body, null, 2));
-    const { items, layout = 4, includeBarcodes = true, barcodeType = "QR Code", itemQrToggles = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
+    const { items, layout = 4, includeBarcodes = true, barcodeType = "QR Code", itemBarcodeTypes = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
       items: Item[];
       layout: 1 | 2 | 3 | 4 | 8;
       includeBarcodes?: boolean;
       barcodeType?: "EAN-13" | "QR Code" | "None";
-      itemQrToggles?: {[key: number]: boolean};
+      itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       discountCode?: string;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       utmParams?: {
@@ -137,13 +137,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const productUrl = generateProductUrl(it.handle);
         const globalItemIndex = chunkIndex * perPage + itemIndex;
-        const shouldShowBarcode = includeBarcodes && (itemQrToggles[globalItemIndex] !== false);
+        
+        // Use individual item barcode type if set, otherwise fall back to global barcode type
+        const itemBarcodeType = itemBarcodeTypes[globalItemIndex] || barcodeType;
+        const shouldShowBarcode = includeBarcodes && itemBarcodeType !== "None";
         
         let barcodeDataUrl = '';
         let barcodeHtml = '';
         
-        if (shouldShowBarcode && barcodeType !== "None") {
-          if (barcodeType === "EAN-13") {
+        if (shouldShowBarcode) {
+          if (itemBarcodeType === "EAN-13") {
             // For EAN-13, we need an actual EAN-13 code. Let's use the product handle or generate one
             // In a real scenario, you'd want to use the actual ISBN/EAN-13 from your product data
             let ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
@@ -158,14 +161,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             console.log(`Generating EAN-13 for item ${globalItemIndex}: ${ean13Code}`);
             barcodeDataUrl = generateEAN13Barcode(ean13Code);
             barcodeHtml = barcodeDataUrl ? `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>` : '';
-          } else if (barcodeType === "QR Code") {
+          } else if (itemBarcodeType === "QR Code") {
             barcodeDataUrl = generateQRCode(productUrl);
             barcodeHtml = barcodeDataUrl ? `<div class="barcode"><img src="${barcodeDataUrl}" alt="QR Code" class="qr-code"></div>` : '';
           }
         }
         
         // Debug logging
-        console.log(`Item ${globalItemIndex}: shouldShowBarcode=${shouldShowBarcode}, barcodeType=${barcodeType}, toggle=${itemQrToggles[globalItemIndex]}, includeBarcodes=${includeBarcodes}`);
+        console.log(`Item ${globalItemIndex}: shouldShowBarcode=${shouldShowBarcode}, itemBarcodeType=${itemBarcodeType}, globalBarcodeType=${barcodeType}, includeBarcodes=${includeBarcodes}`);
 
         return [
           '<div class="card">',
