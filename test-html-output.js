@@ -80,15 +80,15 @@ const mockItem = {
   imageUrl: "https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg"
 };
 
-  // Generate HTML for 1-up layout (simplified like 2-up)
+  // Generate HTML for 1-up layout (completely rewritten)
 function generate1UpHtml() {
   const layout = 1;
   const bannerColor = '#F7981D';
   const websiteName = 'www.woodslane.com.au';
   
-  // Simple product card like 2-up layout
+  // Completely rewritten 1-up product card
   const productsHtml = `
-    <div class="product-card">
+    <div class="product-card layout-1up">
       <div class="product-image">
         <img src="https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg" alt="Hey Warrior" class="book-cover">
       </div>
@@ -107,7 +107,6 @@ function generate1UpHtml() {
           <div class="meta-item">Release Date: 2020-10-30</div>
         </div>
         <div class="product-price">AUD$ 24.99</div>
-        <div class="product-isbn">ISBN: hey-warrior</div>
         <div class="author-bio">Karen Young is a psychologist and founder of heysigmund.com. She has written three books about anxiety, parenting, and the neurodevelopment of children.</div>
         <div class="internals-section">
           <div class="internals-title">Internals:</div>
@@ -280,15 +279,39 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   .page.layout-1up .page-content {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
+    padding: 20px;
   }
   
   .page.layout-1up .product-card {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
+    flex-direction: row;
+    gap: 20px;
     max-height: 100%;
     overflow: hidden;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  
+  .page.layout-1up .product-image {
+    flex-shrink: 0;
+    width: 200px;
+  }
+  
+  .page.layout-1up .book-cover {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  
+  .page.layout-1up .product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
   }
   
   .page.layout-2 .page-content {

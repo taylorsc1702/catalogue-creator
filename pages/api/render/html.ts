@@ -307,9 +307,51 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     let productsHtml = '';
     
     if (layout === 1) {
-      // 1-per-page: use simple product card like 2-up layout
-      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
-      productsHtml = product1;
+      // 1-per-page: completely rewritten simple layout
+      if (page[0]) {
+        const item = page[0];
+        const barcodeHtml = generateBarcodeHtml(item, 0, itemBarcodeTypes, barcodeType);
+        
+        productsHtml = `
+          <div class="product-card layout-1up">
+            <div class="product-image">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">${esc(item.title)}</h3>
+              ${item.subtitle ? `<p class="product-subtitle">${esc(item.subtitle)}</p>` : ""}
+              ${item.author ? `<p class="product-author">By ${esc(item.author)}</p>` : ""}
+              ${item.description ? `<p class="product-description">${esc(item.description)}</p>` : ""}
+              <div class="product-specs">
+                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+              </div>
+              <div class="product-meta">
+                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
+                ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+              </div>
+              ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              ${show.authorBio && item.authorBio ? `<div class="author-bio">${esc(item.authorBio)}</div>` : ""}
+              ${item.additionalImages && item.additionalImages.length > 0 ? `
+                <div class="internals-section">
+                  <div class="internals-title">Internals:</div>
+                  <div class="internals-thumbnails">
+                    ${item.additionalImages.slice(0, 6).map((img, idx) => 
+                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
+                    ).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      } else {
+        productsHtml = '<div class="product-card empty"></div>';
+      }
     } else if (layout === 2) {
       // 2-per-page: 2 products
       const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
@@ -444,20 +486,44 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-  /* 1-up layout uses simple product cards like other layouts */
-  .page.layout-1up .page-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-  }
-  
-  .page.layout-1up .product-card {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-    max-height: 100%;
-    overflow: hidden;
-  }
+      /* 1-up layout: completely rewritten simple CSS */
+      .page.layout-1up .page-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        padding: 20px;
+      }
+      
+      .page.layout-1up .product-card {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        max-height: 100%;
+        overflow: hidden;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      
+      .page.layout-1up .product-image {
+        flex-shrink: 0;
+        width: 200px;
+      }
+      
+      .page.layout-1up .book-cover {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+      
+      .page.layout-1up .product-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+      }
   .product-card {
     display: flex;
     flex-direction: column;
