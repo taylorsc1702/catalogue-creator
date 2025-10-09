@@ -49,30 +49,6 @@
     box-sizing: border-box;
   }
   
-  .layout-1up-content {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 24px;
-    padding: 24px;
-    min-height: 400px;
-    box-sizing: border-box !important;
-  }
-  
-  .layout-1up-content .left-column {
-    flex-shrink: 0;
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .layout-1up-content .right-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-  }
   
   .book-cover-large {
     width: 200px;
@@ -110,6 +86,15 @@
     grid-template-rows: 1fr;
   }
   
+  .page.layout-1up .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
   .page.layout-2 .page-content {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
@@ -144,6 +129,41 @@
   .product-author {
     font-size: 12px;
     margin-bottom: 6px;
+  }
+  
+  .author-bio {
+    background: #E3F2FD;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #1565C0;
+    margin-top: 8px;
+  }
+  
+  .internals-section {
+    margin-top: 12px;
+  }
+  
+  .internals-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #495057;
+  }
+  
+  .internals-thumbnails {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail {
+    width: 30px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #DEE2E6;
   }
   
   .banner {

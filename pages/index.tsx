@@ -183,7 +183,7 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout, 
-          showFields: { authorBio: false }, 
+          showFields: { authorBio: layout === 1 }, 
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
@@ -483,7 +483,7 @@ export default function Home() {
         body: JSON.stringify({ 
           items,
           layoutAssignments,
-          showFields: { authorBio: false },
+          showFields: { authorBio: true },
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
@@ -1353,9 +1353,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
               {it.releaseDate && (() => {
                 const { formattedDate, badgeType } = formatDateAndBadge(it.releaseDate);
                 return (
-                  <div style={{ 
-                    fontSize: 10, 
-                    color: "#6C757D",
+                <div style={{ 
+                  fontSize: 10, 
+                  color: "#6C757D",
                     marginBottom: 2,
                     display: "flex",
                     alignItems: "center",
@@ -1563,23 +1563,23 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
                   <span style={{ fontSize: 11, color: "#6C757D", fontWeight: "600" }}>Barcode:</span>
                   {["EAN-13", "QR Code", "None"].map(type => (
-                    <button
+                  <button
                       key={type}
                       onClick={() => setItemBarcodeType(i, type as "EAN-13" | "QR Code" | "None")}
-                      style={{
-                        border: "1px solid",
+                    style={{
+                      border: "1px solid",
                         borderColor: itemBarcodeTypes[i] === type ? "#28A745" : "#E9ECEF",
                         background: itemBarcodeTypes[i] === type ? "#28A745" : "white",
                         color: itemBarcodeTypes[i] === type ? "white" : "#495057",
-                        padding: "4px 8px",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                        fontSize: 10,
-                        fontWeight: 600
-                      }}
-                    >
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      fontSize: 10,
+                      fontWeight: 600
+                    }}
+                  >
                       {type === "EAN-13" ? "EAN" : type === "QR Code" ? "QR" : "None"}
-                    </button>
+                  </button>
                   ))}
                   {itemBarcodeTypes[i] && itemBarcodeTypes[i] !== "None" && (
                     <button

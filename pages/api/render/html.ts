@@ -287,6 +287,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               </div>
               ${it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : ""}
               ${show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : ""}
+              ${it.additionalImages && it.additionalImages.length > 0 ? `
+                <div class="internals-section">
+                  <div class="internals-title">Internals:</div>
+                  <div class="internals-thumbnails">
+                    ${it.additionalImages.slice(0, 6).map((img, idx) => 
+                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
+                    ).join('')}
+                  </div>
+                </div>
+              ` : ''}
               ${barcodeHtml}
             </div>
           </div>`,
@@ -297,13 +307,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     let productsHtml = '';
     
     if (layout === 1) {
-      // 1-per-page: use layout handler directly
-      const layoutHandler = layoutRegistry.getHandler('1-up');
-      if (layoutHandler && page[0]) {
-        productsHtml = layoutHandler.createHtmlExport(page[0], 0, generateProductUrl, '', bannerColor, websiteName);
-      } else {
-        productsHtml = '<div class="product-card empty"></div>';
-      }
+      // 1-per-page: use simple product card like 2-up layout
+      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
+      productsHtml = product1;
     } else if (layout === 2) {
       // 2-per-page: 2 products
       const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
@@ -331,27 +337,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       productsHtml = cards.join('');
     }
 
-    // Special handling for 1-up layout - use same page structure as other layouts
-    if (layout === 1) {
-      return `<div class="page layout-1up">
-        <!-- Header Banner -->
-        <div class="page-header banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
-          ${websiteName}
-        </div>
-        
-        <!-- Content Area -->
-        <div class="page-content">
-          ${productsHtml}
-        </div>
-        
-        <!-- Footer Banner -->
-        <div class="page-footer banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
-          ${websiteName}
-        </div>
-      </div>`;
-    }
+    // All layouts now use the same page structure
     
-    const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : layout === 4 ? " layout-4" : layout === 8 ? " layout-8" : "";
+    const layoutClass = layout === 1 ? " layout-1up" : layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : layout === 4 ? " layout-4" : layout === 8 ? " layout-8" : "";
     return `<div class="page${layoutClass}">
       <!-- Header Banner -->
       <div class="page-header banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
@@ -455,10 +443,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-  /* 1-up layout inherits from base .page class */
+  /* 1-up layout uses simple product cards like other layouts */
   .page.layout-1up .page-content {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
+  }
+  
+  .page.layout-1up .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+    max-height: 100%;
+    overflow: hidden;
   }
   .product-card {
     display: flex;
@@ -983,6 +980,41 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   /* Banner styles */
   .banner {
     page-break-inside: avoid;
+  }
+  
+  .author-bio {
+    background: #E3F2FD;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #1565C0;
+    margin-top: 8px;
+  }
+  
+  .internals-section {
+    margin-top: 12px;
+  }
+  
+  .internals-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #495057;
+  }
+  
+  .internals-thumbnails {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail {
+    width: 30px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #DEE2E6;
   }
   
   @media print {

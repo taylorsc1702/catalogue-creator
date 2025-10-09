@@ -80,19 +80,46 @@ const mockItem = {
   imageUrl: "https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg"
 };
 
-// Generate HTML for 1-up layout
+  // Generate HTML for 1-up layout (simplified like 2-up)
 function generate1UpHtml() {
   const layout = 1;
   const bannerColor = '#F7981D';
   const websiteName = 'www.woodslane.com.au';
   
-  // Simulate the same logic as the API
-  const layoutHandler = mockLayoutRegistry.getHandler('1-up');
-  let productsHtml = '';
-  
-  if (layoutHandler && mockItem) {
-    productsHtml = layoutHandler.createHtmlExport(mockItem, 0, (handle) => `https://woodslane.com.au/products/${handle}`, '', bannerColor, websiteName);
-  }
+  // Simple product card like 2-up layout
+  const productsHtml = `
+    <div class="product-card">
+      <div class="product-image">
+        <img src="https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg" alt="Hey Warrior" class="book-cover">
+      </div>
+      <div class="product-info">
+        <h3 class="product-title">Hey Warrior</h3>
+        <p class="product-subtitle">A book for kids about anxiety</p>
+        <p class="product-author">By Karen Young</p>
+        <p class="product-description">Kids can do amazing things with the right information. Understanding why anxiety feels the way it does and where the physical symptoms come from is a powerful step in turning anxiety around.</p>
+        <div class="product-specs">
+          <span class="spec-item">HARDBACK</span>
+          <span class="spec-item">36 pages</span>
+          <span class="spec-item">270 x 210 mm</span>
+        </div>
+        <div class="product-meta">
+          <div class="meta-item">Vendor: HEY SIGMUND</div>
+          <div class="meta-item">Release Date: 2020-10-30</div>
+        </div>
+        <div class="product-price">AUD$ 24.99</div>
+        <div class="product-isbn">ISBN: hey-warrior</div>
+        <div class="author-bio">Karen Young is a psychologist and founder of heysigmund.com. She has written three books about anxiety, parenting, and the neurodevelopment of children.</div>
+        <div class="internals-section">
+          <div class="internals-title">Internals:</div>
+          <div class="internals-thumbnails">
+            <img src="https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg" alt="Internal 1" class="internal-thumbnail">
+            <img src="https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg" alt="Internal 2" class="internal-thumbnail">
+            <img src="https://cdn.shopify.com/s/files/1/0001/0001/products/hey-warrior.jpg" alt="Internal 3" class="internal-thumbnail">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
   
   const pageHtml = `<div class="page layout-1up">
     <!-- Header Banner -->
@@ -217,30 +244,6 @@ function generateCompleteHtml(layoutHtml, layoutName) {
     box-sizing: border-box;
   }
   
-  .layout-1up-content {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 24px;
-    padding: 24px;
-    min-height: 400px;
-    box-sizing: border-box !important;
-  }
-  
-  .layout-1up-content .left-column {
-    flex-shrink: 0;
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .layout-1up-content .right-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-  }
   
   .book-cover-large {
     width: 200px;
@@ -278,6 +281,15 @@ function generateCompleteHtml(layoutHtml, layoutName) {
     grid-template-rows: 1fr;
   }
   
+  .page.layout-1up .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
   .page.layout-2 .page-content {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
@@ -312,6 +324,41 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   .product-author {
     font-size: 12px;
     margin-bottom: 6px;
+  }
+  
+  .author-bio {
+    background: #E3F2FD;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #1565C0;
+    margin-top: 8px;
+  }
+  
+  .internals-section {
+    margin-top: 12px;
+  }
+  
+  .internals-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #495057;
+  }
+  
+  .internals-thumbnails {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail {
+    width: 30px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #DEE2E6;
   }
   
   .banner {
