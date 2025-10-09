@@ -343,14 +343,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.subtitle ? `<p class="product-subtitle">${esc(item.subtitle)}</p>` : ""}
               ${item.author ? `<p class="product-author">By ${esc(item.author)}</p>` : ""}
               ${item.description ? `<p class="product-description">${esc(item.description)}</p>` : ""}
-              <div class="product-specs">
-                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-              </div>
               <div class="product-meta">
                 ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
                 ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
+                ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+                ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+                ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
                 ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
@@ -500,16 +498,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       .page.layout-1up .page-content {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
-        padding: 20px;
+        padding: 15px;
       }
       
       .page.layout-1up .product-card {
         display: flex;
         flex-direction: row;
-        gap: 24px;
+        gap: 20px;
         max-height: 100%;
         overflow: hidden;
-        padding: 20px;
+        padding: 15px;
       }
       
       .page.layout-1up .left-column {
@@ -527,7 +525,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       .page.layout-1up .book-cover {
         width: 100%;
         height: auto;
-        max-height: 350px;
+        max-height: 300px;
         object-fit: contain;
         border-radius: 4px;
         border: 1px solid #ddd;
@@ -535,10 +533,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       
       .page.layout-1up .author-bio {
         background: #E3F2FD;
-        padding: 12px;
+        padding: 10px;
         border-radius: 6px;
-        font-size: 11px;
-        line-height: 1.4;
+        font-size: 10px;
+        line-height: 1.3;
       }
       
       .page.layout-1up .author-bio-title {
@@ -553,14 +551,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       
       .page.layout-1up .internals-section {
         background: #F5F5F5;
-        padding: 12px;
+        padding: 10px;
         border-radius: 6px;
       }
       
       .page.layout-1up .internals-title {
         font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 11px;
+        margin-bottom: 6px;
+        font-size: 10px;
         color: #495057;
       }
       
@@ -610,11 +608,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       }
       
       .page.layout-1up .product-description {
-        font-size: 12px;
-        line-height: 1.5;
+        font-size: 11px;
+        line-height: 1.4;
         color: #333;
         margin: 0;
-        max-height: 150px;
+        max-height: 120px;
         overflow: hidden;
         text-overflow: ellipsis;
       }

@@ -114,14 +114,12 @@ function generate1UpHtml() {
         <p class="product-subtitle">A book for kids about anxiety</p>
         <p class="product-author">By Karen Young</p>
         <p class="product-description">Kids can do amazing things with the right information. Understanding why anxiety feels the way it does and where the physical symptoms come from is a powerful step in turning anxiety around.</p>
-        <div class="product-specs">
-          <span class="spec-item">HARDBACK</span>
-          <span class="spec-item">36 pages</span>
-          <span class="spec-item">270 x 210 mm</span>
-        </div>
         <div class="product-meta">
           <div class="meta-item"><strong>Publisher:</strong> HEY SIGMUND</div>
           <div class="meta-item"><strong>Release Date:</strong> 10/2020</div>
+          <div class="meta-item"><strong>Binding:</strong> HARDBACK</div>
+          <div class="meta-item"><strong>Pages:</strong> 36 pages</div>
+          <div class="meta-item"><strong>Dimensions:</strong> 270 x 210 mm</div>
         </div>
         <div class="product-price">AUD$ 24.99</div>
       </div>
@@ -287,16 +285,16 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   .page.layout-1up .page-content {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
-    padding: 20px;
+    padding: 15px;
   }
   
   .page.layout-1up .product-card {
     display: flex;
     flex-direction: row;
-    gap: 24px;
+    gap: 20px;
     max-height: 100%;
     overflow: hidden;
-    padding: 20px;
+    padding: 15px;
   }
   
   .page.layout-1up .left-column {
@@ -314,7 +312,7 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   .page.layout-1up .book-cover {
     width: 100%;
     height: auto;
-    max-height: 350px;
+    max-height: 300px;
     object-fit: contain;
     border-radius: 4px;
     border: 1px solid #ddd;
@@ -322,10 +320,10 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   
   .page.layout-1up .author-bio {
     background: #E3F2FD;
-    padding: 12px;
+    padding: 10px;
     border-radius: 6px;
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 10px;
+    line-height: 1.3;
   }
   
   .page.layout-1up .author-bio-title {
@@ -340,14 +338,14 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   
   .page.layout-1up .internals-section {
     background: #F5F5F5;
-    padding: 12px;
+    padding: 10px;
     border-radius: 6px;
   }
   
   .page.layout-1up .internals-title {
     font-weight: 600;
-    margin-bottom: 8px;
-    font-size: 11px;
+    margin-bottom: 6px;
+    font-size: 10px;
     color: #495057;
   }
   
@@ -397,11 +395,11 @@ function generateCompleteHtml(layoutHtml, layoutName) {
   }
   
   .page.layout-1up .product-description {
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.4;
     color: #333;
     margin: 0;
-    max-height: 150px;
+    max-height: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
