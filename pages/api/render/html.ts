@@ -474,7 +474,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       "header"
       "content"
       "footer";
-    grid-template-columns: 1fr; /* FIXED: Single column for proper banner layout */
     grid-template-rows: auto 1fr auto;
     page-break-after: always; 
     padding: 0;
