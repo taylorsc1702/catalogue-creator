@@ -27,9 +27,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (!items?.length) throw new Error("No items provided");
 
-    // Download images for all items
-    console.log("Downloading images for Google Docs export...");
-    const imagePromises = items.map(async (item) => {
+    // Generate the HTML with banner parameters
+    const html = await generateGoogleDocsHtml(items, layout, title, hyperlinkToggle, bannerColor, websiteName);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.status(200).send(html);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to generate Google Docs HTML";
+    res.status(400).send(`<pre>${message}</pre>`);
+  }
+}
+
+async function generateGoogleDocsHtml(items: Item[], layout: number, title: string, hyperlinkToggle: string, bannerColor: string, websiteName: string) {
+  // Download images for all items
+  console.log("Downloading images for Google Docs export...");
+  const imagePromises = items.map(async (item) => {
       if (item.imageUrl) {
         const imageData = await downloadImageAsBase64(item.imageUrl);
         return { item, imageData };
@@ -37,23 +48,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return { item, imageData: null };
     });
     
-    const itemsWithImages = await Promise.all(imagePromises);
-    console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
+  const itemsWithImages = await Promise.all(imagePromises);
+  console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
 
-    const html = renderGoogleDocsHtml(itemsWithImages, layout, title, hyperlinkToggle);
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.status(200).send(html);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to render Google Docs HTML";
-    res.status(400).send(`<pre>${message}</pre>`);
-  }
+  return renderGoogleDocsHtml(itemsWithImages, layout, title, hyperlinkToggle, bannerColor, websiteName);
 }
 
 function renderGoogleDocsHtml(
   itemsWithImages: ItemWithImage[], 
   layout: 1 | 2 | 3 | 4 | 8, 
   title: string, 
-  hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'
+  hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress',
+  bannerColor: string,
+  websiteName: string
 ) {
   const perPage = layout;
   const chunks: ItemWithImage[][] = [];
