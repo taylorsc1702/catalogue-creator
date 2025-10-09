@@ -1,4 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { Paragraph } from "docx";
 import React from 'react';
 
@@ -18,7 +17,7 @@ export interface LayoutHandler {
   createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => React.ReactElement;
   createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string) => string;
   createDocxExport: (item: Item, index: number, imageData?: { base64: string; width: number; height: number; mimeType: string } | null, generateProductUrl?: (handle: string) => string, barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => Paragraph[];
-  createGoogleDocsExport?: (item: Item, index: number) => any;
+  createGoogleDocsExport?: (item: Item, index: number) => unknown;
   getCssStyles: () => string;
   getPerPage: () => number;
 }

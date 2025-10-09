@@ -1,5 +1,7 @@
 // pages/index.tsx
 import { useMemo, useState } from "react";
+import Image from 'next/image';
+import { layoutRegistry } from '@/lib/layout-registry';
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -711,8 +713,8 @@ export default function Home() {
         {[1,2,3,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
-        <button onClick={()=>setLayout('list' as 'list')} style={btn(layout==='list')}>📋 List</button>
-        <button onClick={()=>setLayout('compact-list' as 'compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
+        <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
+        <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
         <span style={{ marginLeft: 16, fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
         {["EAN-13", "QR Code", "None"].map(type => (
           <button 
@@ -931,7 +933,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle: _hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8|'list'|'compact-list'; 
   showOrderEditor: boolean;
@@ -949,11 +951,11 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
 }) {
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
-  // Import the layout registry
-  const { layoutRegistry } = require('@/lib/layout-registry');
+  // Convert layout to LayoutType format
+  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout;
   
   // Get the handler for the current layout
-  const layoutHandler = layoutRegistry.getHandler(layout.toString());
+  const layoutHandler = layoutRegistry.getHandler(layoutType);
   
   if (layoutHandler) {
     // Use handler system for supported layouts
@@ -968,8 +970,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
     );
   }
   
-  // Fallback to legacy grid layout for numeric layouts
-  const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
+  // Fallback to legacy grid layout for numeric layouts (should not be reached now)
   return (
     <div style={{ 
       display: "grid", 
@@ -996,12 +997,12 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             flexShrink: 0,
             width: "80px"
           }}>
-            <img 
+            <Image 
               src={it.imageUrl || "https://via.placeholder.com/80x120?text=No+Image"} 
               alt={it.title}
+              width={80}
+              height={120}
               style={{ 
-                width: 80, 
-                height: 120, 
                 objectFit: "cover", 
                 borderRadius: 6, 
                 background: "#F8F9FA",
