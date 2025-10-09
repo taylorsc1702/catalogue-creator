@@ -310,7 +310,26 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       // 1-per-page: Two column layout - Left: image/bio/internals, Right: details
       if (page[0]) {
         const item = page[0];
-        const barcodeHtml = generateBarcodeHtml(item, 0, itemBarcodeTypes, barcodeType);
+        const globalIndex = pageIndex * perPage + 0;
+        const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
+        
+        // Generate barcode if needed
+        let barcodeHtml = '';
+        if (itemBarcodeType && itemBarcodeType !== "None") {
+          if (itemBarcodeType === "EAN-13") {
+            const barcodeCode = item.icrkdt || item.handle;
+            const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+            if (barcodeDataUrl) {
+              barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+            }
+          } else if (itemBarcodeType === "QR Code") {
+            const productUrl = generateProductUrl(item.handle);
+            const qrDataUrl = generateQRCode(productUrl);
+            if (qrDataUrl) {
+              barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+            }
+          }
+        }
         
         productsHtml = `
           <div class="product-card layout-1up">
