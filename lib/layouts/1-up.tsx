@@ -533,7 +533,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
         flex-direction: row !important;
         gap: 24px;
         padding: 24px;
-        min-height: 400px;
+        height: 100vh !important;
+        min-height: 100vh !important;
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -545,6 +546,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
         display: flex;
         flex-direction: column;
         gap: 16px;
+        height: 100%;
+        justify-content: flex-start;
       }
       
       .layout-1up .right-column {
@@ -553,6 +556,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
         flex-direction: column;
         gap: 12px;
         min-width: 0;
+        height: 100%;
+        justify-content: space-between;
       }
       
       .book-cover-container {
