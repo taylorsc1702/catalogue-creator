@@ -248,7 +248,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                 <a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a>
               </h1>
               ${item.subtitle ? `<h2 class="product-subtitle-large">${esc(item.subtitle)}</h2>` : ''}
-              ${item.author ? `<div class="product-author-large">By ${esc(item.author)}</div>` : ''}
+              ${item.author ? `<div class="product-author-large">${esc(item.author)}</div>` : ''}
             </div>
 
             <!-- Description -->
@@ -436,7 +436,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: `By ${item.author}`,
+                          text: item.author,
                           size: 16,
                           color: "667eea",
                           bold: true,
