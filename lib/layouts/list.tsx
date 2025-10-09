@@ -195,7 +195,7 @@ export function createListLayoutHandler(): LayoutHandler {
       );
     },
 
-    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string) => {
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
       return `
         <div class="list-item">
           <div class="list-image">

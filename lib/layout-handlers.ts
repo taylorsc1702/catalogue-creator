@@ -15,7 +15,7 @@ export type Item = {
 export interface LayoutHandler {
   name: string;
   createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => React.ReactElement;
-  createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string) => string;
+  createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => string;
   createDocxExport: (item: Item, index: number, imageData?: { base64: string; width: number; height: number; mimeType: string } | null, generateProductUrl?: (handle: string) => string, barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => Paragraph[];
   createGoogleDocsExport?: (item: Item, index: number) => unknown;
   getCssStyles: () => string;

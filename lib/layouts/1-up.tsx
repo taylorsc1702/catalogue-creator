@@ -209,11 +209,11 @@ export function create1UpLayoutHandler(): LayoutHandler {
       );
     },
 
-    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string) => {
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
       return `
         <!-- Header Banner -->
-        <div class="banner header-banner" style="background-color: #F7981D; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
-          www.woodslane.com.au
+        <div class="banner header-banner" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
+          ${websiteName || 'www.woodslane.com.au'}
         </div>
         
         <div class="product-card layout-1up">
@@ -303,8 +303,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
         </div>
         
         <!-- Footer Banner -->
-        <div class="banner footer-banner" style="background-color: #F7981D; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
-          www.woodslane.com.au
+        <div class="banner footer-banner" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
+          ${websiteName || 'www.woodslane.com.au'}
         </div>
       `;
     },
