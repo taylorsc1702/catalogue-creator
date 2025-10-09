@@ -1074,8 +1074,157 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
     return (
       <div style={{ marginTop: 24 }}>
         {items.map((it, i) => (
-          <div key={i}>
+          <div key={i} style={{ 
+            border: showOrderEditor ? "2px solid #667eea" : "none", 
+            borderRadius: showOrderEditor ? 12 : 0, 
+            padding: showOrderEditor ? 12 : 0, 
+            background: showOrderEditor ? "white" : "transparent",
+            boxShadow: showOrderEditor ? "0 4px 20px rgba(102, 126, 234, 0.2)" : "none",
+            transition: "all 0.2s ease",
+            position: "relative",
+            marginBottom: showOrderEditor ? 16 : 0
+          }}>
             {layoutHandler.createPreview(it, i, generateProductUrl)}
+            
+            {showOrderEditor && (
+              <div style={{ 
+                marginTop: 12,
+                padding: 12,
+                background: "#F8F9FA",
+                borderRadius: 8,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                flexWrap: "wrap"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 8, paddingRight: 8, borderRight: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#495057" }}>
+                    Position: {i + 1}
+                  </span>
+                  {itemLayouts[i] && (
+                    <span style={{ fontSize: 11, color: "#667eea", fontWeight: 600 }}>
+                      (Custom: {itemLayouts[i]}-up)
+                    </span>
+                  )}
+                </div>
+                
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button
+                    onClick={() => moveItemUp(i)}
+                    disabled={i === 0}
+                    style={{
+                      background: i === 0 ? "#E9ECEF" : "#667eea",
+                      color: i === 0 ? "#ADB5BD" : "white",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      cursor: i === 0 ? "not-allowed" : "pointer",
+                      fontWeight: 600,
+                      transition: "all 0.2s ease"
+                    }}
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => moveItemDown(i)}
+                    disabled={i === items.length - 1}
+                    style={{
+                      background: i === items.length - 1 ? "#E9ECEF" : "#667eea",
+                      color: i === items.length - 1 ? "#ADB5BD" : "white",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      cursor: i === items.length - 1 ? "not-allowed" : "pointer",
+                      fontWeight: 600,
+                      transition: "all 0.2s ease"
+                    }}
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 11, color: "#6C757D" }}>Go to:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={items.length}
+                    placeholder={`1-${items.length}`}
+                    value={positionInputs[i] || ""}
+                    onChange={(e) => setPositionInputs({ ...positionInputs, [i]: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const newPos = parseInt(positionInputs[i]);
+                        if (newPos >= 1 && newPos <= items.length) {
+                          moveItemToPosition(i, newPos - 1);
+                          setPositionInputs({ ...positionInputs, [i]: "" });
+                        }
+                      }
+                    }}
+                    style={{
+                      width: 50,
+                      padding: "4px 8px",
+                      border: "1px solid #DEE2E6",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      textAlign: "center"
+                    }}
+                  />
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 11, color: "#6C757D" }}>Layout:</span>
+                  {[1,2,3,4,8].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => itemLayouts[i] === n ? clearItemLayout(i) : setItemLayout(i, n as 1|2|3|4|8)}
+                      style={{
+                        background: itemLayouts[i] === n ? "#667eea" : "white",
+                        color: itemLayouts[i] === n ? "white" : "#667eea",
+                        border: "1px solid #667eea",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "all 0.2s ease"
+                      }}
+                      title={`Set ${n}-up layout for this item`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 11, color: "#6C757D" }}>Barcode:</span>
+                  {["EAN-13", "QR Code", "None"].map(type => (
+                    <button
+                      key={type}
+                      onClick={() => itemBarcodeTypes[i] === type ? clearItemBarcodeType(i) : setItemBarcodeType(i, type as "EAN-13" | "QR Code" | "None")}
+                      style={{
+                        background: itemBarcodeTypes[i] === type ? "#28A745" : "white",
+                        color: itemBarcodeTypes[i] === type ? "white" : "#28A745",
+                        border: "1px solid #28A745",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        fontSize: 10,
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "all 0.2s ease"
+                      }}
+                      title={`Set ${type} for this item`}
+                    >
+                      {type === "EAN-13" ? "EAN" : type === "QR Code" ? "QR" : "None"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
