@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import QRCode from "qrcode-generator";
 import JsBarcode from "jsbarcode";
 import { createCanvas } from "canvas";
+import { layoutRegistry, LayoutType } from "@/lib/layout-registry";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -166,6 +167,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         }
       }
 
+      // Use handler system if available, otherwise fall back to legacy code
+      const layoutHandler = layoutRegistry.getHandler(layout.toString() as LayoutType);
+      if (layoutHandler) {
+        return layoutHandler.createHtmlExport(it, localIndex, generateProductUrl, barcodeHtml);
+      }
+
+      // Legacy fallback for layouts not yet converted
       return [
         layout === 1 ? 
           // 1-per-page: Professional 2-column layout
@@ -835,6 +843,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     width: 75px;
     height: 30px;
   }
+  
+  /* Handler-based layout styles */
+  ${layoutRegistry.getAllCssStyles()}
   
   /* 2-per-page layout specific styles */
   .page.layout-2 .product-price {
