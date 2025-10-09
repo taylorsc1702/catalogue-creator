@@ -103,6 +103,27 @@ export default function Home() {
   const [utmContent, setUtmContent] = useState("");
   const [utmTerm, setUtmTerm] = useState("");
 
+  // Banner color configuration based on website
+  const getBannerColor = (website: string): string => {
+    const colors = {
+      woodslane: '#F7981D',
+      woodslanehealth: '#192C6B', 
+      woodslaneeducation: '#E4506E',
+      woodslanepress: '#1EADFF'
+    };
+    return colors[website as keyof typeof colors] || '#F7981D';
+  };
+
+  const getWebsiteName = (website: string): string => {
+    const names = {
+      woodslane: 'www.woodslane.com.au',
+      woodslanehealth: 'www.woodslanehealth.com.au',
+      woodslaneeducation: 'www.woodslaneeducation.com.au', 
+      woodslanepress: 'www.woodslanepress.com.au'
+    };
+    return names[website as keyof typeof names] || 'www.woodslane.com.au';
+  };
+
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
       const handles = handleList.split('\n').map(h => h.trim()).filter(Boolean);
@@ -160,6 +181,8 @@ export default function Home() {
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -209,6 +232,8 @@ export default function Home() {
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -243,6 +268,8 @@ export default function Home() {
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
           discountCode,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
@@ -454,6 +481,8 @@ export default function Home() {
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
         })
       });
@@ -751,6 +780,26 @@ export default function Home() {
             {option.label}
           </button>
         ))}
+      </div>
+
+      {/* Banner Preview */}
+      <div style={{ marginTop: 16 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#495057", marginBottom: 8, display: "block" }}>Export Banner Preview:</span>
+        <div style={{ 
+          backgroundColor: getBannerColor(hyperlinkToggle), 
+          color: "white", 
+          padding: "8px 16px", 
+          borderRadius: 4,
+          textAlign: "center",
+          fontSize: 14,
+          fontWeight: 600,
+          marginBottom: 8
+        }}>
+          {getWebsiteName(hyperlinkToggle)}
+        </div>
+        <div style={{ fontSize: 12, color: "#6C757D", textAlign: "center" }}>
+          This banner will appear at the header and footer of all exports
+        </div>
       </div>
 
       {/* UTM Parameters Section */}

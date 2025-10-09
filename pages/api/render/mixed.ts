@@ -13,13 +13,15 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|3|4|8)[]; 
       showFields: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
+      bannerColor?: string;
+      websiteName?: string;
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -33,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, utmParams);
+    const html = renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -42,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", utmParams?: {
+function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", bannerColor?: string, websiteName?: string, utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -487,7 +489,17 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 </style>
 </head>
 <body>
+  <!-- Header Banner -->
+  <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
+    ${esc(websiteName || 'www.woodslane.com.au')}
+  </div>
+  
   ${pagesHtml}
+  
+  <!-- Footer Banner -->
+  <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
+    ${esc(websiteName || 'www.woodslane.com.au')}
+  </div>
 </body>
 </html>`;
 }

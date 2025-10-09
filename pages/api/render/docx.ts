@@ -18,13 +18,15 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
+    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[];
       title?: string;
       layout?: number;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
+      bannerColor?: string;
+      websiteName?: string;
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -346,6 +348,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sections: [{
         properties: {},
         children: [
+          // Header Banner
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: websiteName,
+                bold: true,
+                size: 20,
+                color: "FFFFFF",
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+            shading: {
+              type: "solid",
+              color: bannerColor.replace('#', ''),
+            },
+          }),
+          
           // Header
           new Paragraph({
             children: [
@@ -374,6 +394,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           
           // Pages with 4 products each
           ...pages,
+          
+          // Footer Banner
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: websiteName,
+                bold: true,
+                size: 20,
+                color: "FFFFFF",
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+            shading: {
+              type: "solid",
+              color: bannerColor.replace('#', ''),
+            },
+          }),
         ],
       }],
     });

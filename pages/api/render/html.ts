@@ -18,13 +18,15 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", utmParams } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[]; 
       layout: 1 | 2 | 3 | 4 | 8; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
+      bannerColor?: string;
+      websiteName?: string;
       utmParams?: {
         utmSource?: string;
         utmMedium?: string;
@@ -34,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType);
+    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -49,7 +51,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
-}, itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None") {
+}, itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", bannerColor?: string, websiteName?: string) {
   // const cols = layout === 1 ? "1fr" : layout === 2 ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
   const perPage = layout;
 
@@ -897,6 +899,18 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       margin-bottom: 20mm;
     }
   }
+  
+  /* Banner styles */
+  .banner {
+    page-break-inside: avoid;
+  }
+  
+  @media print {
+    .banner {
+      -webkit-print-color-adjust: exact;
+      color-adjust: exact;
+    }
+  }
 </style>
 </head>
 <body>
@@ -904,7 +918,18 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     <button onclick="window.print()">🖨️ Print / Save as PDF</button>
     <span style="color: #666;">Use A4 paper, 15mm margins, hide headers/footers for best results.</span>
   </div>
+  
+  <!-- Header Banner -->
+  <div class="banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
+    ${websiteName}
+  </div>
+  
   ${pagesHtml}
+  
+  <!-- Footer Banner -->
+  <div class="banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
+    ${websiteName}
+  </div>
 </body>
 </html>`;
 }
