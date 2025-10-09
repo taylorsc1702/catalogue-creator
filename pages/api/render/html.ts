@@ -297,9 +297,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     let productsHtml = '';
     
     if (layout === 1) {
-      // 1-per-page: single product
-      const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
-      productsHtml = product1;
+      // 1-per-page: use layout handler directly
+      const layoutHandler = layoutRegistry.getHandler('1-up');
+      if (layoutHandler && page[0]) {
+        productsHtml = layoutHandler.createHtmlExport(page[0], 0, generateProductUrl, '', bannerColor, websiteName);
+      } else {
+        productsHtml = '<div class="product-card empty"></div>';
+      }
     } else if (layout === 2) {
       // 2-per-page: 2 products
       const product1 = page[0] ? createProductCard(page[0], 0) : '<div class="product-card empty"></div>';
@@ -327,23 +331,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       productsHtml = cards.join('');
     }
 
-    // Special handling for 1-up layout - use proper page structure with banners
+    // Special handling for 1-up layout - use simple page structure (banners included in layout)
     if (layout === 1) {
       return `<div class="page layout-1up">
-        <!-- Header Banner -->
-        <div class="page-header banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
-          ${websiteName}
-        </div>
-        
-        <!-- Content Area -->
-        <div class="page-content">
-          ${productsHtml}
-        </div>
-        
-        <!-- Footer Banner -->
-        <div class="page-footer banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
-          ${websiteName}
-        </div>
+        ${productsHtml}
       </div>`;
     }
     
@@ -451,33 +442,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-  /* 1-up layout with proper page structure */
+  /* Simple 1-up layout - banners included in layout handler */
   .page.layout-1up {
-    display: grid;
-    grid-template-areas: 
-      "header header"
-      "content content"
-      "footer footer";
-    grid-template-rows: auto 1fr auto;
-    gap: 10mm;
-    page-break-after: always; 
     padding: 0;
-    height: 100vh;
-  }
-  
-  .page.layout-1up .page-header {
-    grid-area: header;
-  }
-  
-  .page.layout-1up .page-content {
-    grid-area: content;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  
-  .page.layout-1up .page-footer {
-    grid-area: footer;
+    margin: 0;
+    page-break-after: always;
   }
   .product-card {
     display: flex;
