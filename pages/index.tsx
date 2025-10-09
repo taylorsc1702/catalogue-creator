@@ -93,6 +93,7 @@ export default function Home() {
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
+  const [customBannerColor, setCustomBannerColor] = useState<string>("");
   
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
@@ -105,6 +106,11 @@ export default function Home() {
 
   // Banner color configuration based on website
   const getBannerColor = (website: string): string => {
+    // Use custom color if provided, otherwise use default website color
+    if (customBannerColor.trim()) {
+      return customBannerColor.startsWith('#') ? customBannerColor : `#${customBannerColor}`;
+    }
+    
     const colors = {
       woodslane: '#F7981D',
       woodslanehealth: '#192C6B', 
@@ -799,6 +805,61 @@ export default function Home() {
         </div>
         <div style={{ fontSize: 12, color: "#6C757D", textAlign: "center" }}>
           This banner will appear at the header and footer of all exports
+        </div>
+        
+        {/* Custom Color Selector */}
+        <div style={{ marginTop: 16 }}>
+          <Field label="Custom Banner Color (Optional)">
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <input
+                type="text"
+                placeholder="e.g., #FF5733 or FF5733"
+                value={customBannerColor}
+                onChange={(e) => setCustomBannerColor(e.target.value)}
+                style={{ 
+                  flex: 1,
+                  border: "2px solid #E9ECEF", 
+                  borderRadius: 8, 
+                  padding: "8px 12px", 
+                  fontSize: 14,
+                  fontFamily: "monospace"
+                }}
+              />
+              <input
+                type="color"
+                value={getBannerColor(hyperlinkToggle)}
+                onChange={(e) => setCustomBannerColor(e.target.value)}
+                style={{ 
+                  width: 40, 
+                  height: 40, 
+                  border: "2px solid #E9ECEF", 
+                  borderRadius: 8,
+                  cursor: "pointer"
+                }}
+                title="Pick a color"
+              />
+              {customBannerColor && (
+                <button
+                  onClick={() => setCustomBannerColor("")}
+                  style={{
+                    background: "#6C757D",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "8px 12px",
+                    fontSize: 12,
+                    cursor: "pointer"
+                  }}
+                  title="Reset to default color"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+            <div style={{ fontSize: 12, color: "#6C757D", marginTop: 4 }}>
+              Leave empty to use the default website color. Enter HEX code with or without #
+            </div>
+          </Field>
         </div>
       </div>
 
