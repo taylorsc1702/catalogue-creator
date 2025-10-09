@@ -456,6 +456,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   }
   
   /* 1-up layout inherits from base .page class */
+  .page.layout-1up .page-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
   .product-card {
     display: flex;
     flex-direction: column;
