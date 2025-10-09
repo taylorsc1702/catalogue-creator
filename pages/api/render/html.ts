@@ -403,6 +403,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       "header header"
       "content content"
       "footer footer";
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr auto;
     page-break-after: always; 
     padding: 0;
