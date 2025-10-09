@@ -166,6 +166,44 @@ export function create1UpLayoutHandler(): LayoutHandler {
               {item.imprint && <span>🏢 {item.imprint}</span>}
               {item.weight && <span>⚖️ {item.weight}</span>}
             </div>
+            
+            {/* Internals/Additional Images */}
+            {item.additionalImages && item.additionalImages.length > 0 && (
+              <div style={{
+                marginTop: 8,
+                paddingTop: 8,
+                borderTop: "1px solid #E9ECEF"
+              }}>
+                <div style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#495057",
+                  marginBottom: 6
+                }}>
+                  📸 Internals ({item.additionalImages.length}):
+                </div>
+                <div style={{
+                  display: "flex",
+                  gap: 4,
+                  flexWrap: "wrap"
+                }}>
+                  {item.additionalImages.slice(0, 6).map((img, idx) => (
+                    <Image
+                      key={idx}
+                      src={img}
+                      alt={`Internal ${idx + 1}`}
+                      width={30}
+                      height={45}
+                      style={{
+                        objectFit: "cover",
+                        borderRadius: 3,
+                        border: "1px solid #DEE2E6"
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -321,6 +359,32 @@ export function create1UpLayoutHandler(): LayoutHandler {
                         }),
                       ],
                       spacing: { after: 300 },
+                    }),
+                  ] : []),
+                  
+                  // Internals section
+                  ...(item.additionalImages && item.additionalImages.length > 0 ? [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: "Internals:",
+                          bold: true,
+                          size: 14,
+                          color: "495057",
+                        }),
+                      ],
+                      spacing: { after: 200 },
+                    }),
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `${item.additionalImages.length} internal image${item.additionalImages.length > 1 ? 's' : ''} available`,
+                          size: 12,
+                          color: "6C757D",
+                          italics: true,
+                        }),
+                      ],
+                      spacing: { after: 100 },
                     }),
                   ] : []),
                 ],
