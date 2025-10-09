@@ -312,6 +312,48 @@ export default function Home() {
     }
   }
 
+  async function openGoogleAppsScript() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/googledocs-apps-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          layout,
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
+          showFields: { authorBio: layout === 1 },
+          hyperlinkToggle,
+          itemBarcodeTypes,
+          barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error creating Google Doc: ${error}`);
+        return;
+      }
+      
+      const result = await resp.json();
+      
+      if (result.success) {
+        // Open the Google Doc in a new tab
+        window.open(result.documentUrl, '_blank');
+        
+        // Show success message with document info
+        alert(`✅ Google Doc created successfully!\n\n📄 Document: ${result.documentName}\n🔗 URL: ${result.documentUrl}\n\nYour catalogue has been created with perfect formatting!`);
+      } else {
+        alert(`❌ Error creating Google Doc: ${result.error}\n\n${result.instructions || ''}`);
+      }
+    } catch (error) {
+      alert("Error creating Google Doc: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   async function openListView() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
@@ -933,6 +975,7 @@ export default function Home() {
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
             <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
+            <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
           </div>
