@@ -11,17 +11,19 @@ type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
-  imageUrl?: string; handle: string; vendor?: string; tags?: string[];
+  imageUrl?: string; additionalImages?: string[];
+  handle: string; vendor?: string; tags?: string[];
 };
 
 // const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, title = "Product Catalogue", layout = 4, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
+    const { items, title = "Product Catalogue", layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[];
       title?: string;
       layout?: number;
+      showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
@@ -123,12 +125,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     };
 
+    // HTML to plain text conversion
+    const htmlToPlainText = (html: string): string => {
+      if (!html) return '';
+      
+      let text = html;
+      
+      // Convert line breaks
+      text = text.replace(/<br\s*\/?>/gi, '\n');
+      text = text.replace(/<\/p>/gi, '\n');
+      text = text.replace(/<p[^>]*>/gi, '');
+      
+      // Remove all other HTML tags
+      text = text.replace(/<[^>]+>/g, '');
+      
+      // Decode HTML entities
+      text = text.replace(/&nbsp;/g, ' ');
+      text = text.replace(/&amp;/g, '&');
+      text = text.replace(/&lt;/g, '<');
+      text = text.replace(/&gt;/g, '>');
+      text = text.replace(/&quot;/g, '"');
+      text = text.replace(/&#39;/g, "'");
+      
+      // Clean up extra whitespace
+      text = text.replace(/\n\s*\n/g, '\n\n');
+      text = text.trim();
+      
+      return text;
+    };
+
     // Download images and generate barcodes for all items
     console.log("Downloading images and generating barcodes for DOCX export...");
     const imagePromises = items.map(async (item, index) => {
       let imageData = null;
       if (item.imageUrl) {
         imageData = await downloadImageAsBase64(item.imageUrl);
+      }
+      
+      // Download additional images (internals) - max 4
+      let additionalImagesData: Array<{ base64: string; width: number; height: number; mimeType: string }> = [];
+      if (item.additionalImages && item.additionalImages.length > 0) {
+        const internalPromises = item.additionalImages.slice(0, 4).map(url => downloadImageAsBase64(url));
+        const internalResults = await Promise.all(internalPromises);
+        additionalImagesData = internalResults.filter(img => img !== null) as Array<{ base64: string; width: number; height: number; mimeType: string }>;
       }
       
       // Determine barcode type for this item
@@ -163,14 +202,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
       
-      return { item, imageData, barcodeData };
+      return { item, imageData, barcodeData, additionalImagesData };
     });
     
     const itemsWithImages = await Promise.all(imagePromises);
     console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images and generated ${itemsWithImages.filter(i => i.barcodeData).length} barcodes successfully`);
 
-    // Create pages with 2, 3, or 4 products each based on layout
-    const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
+    // Create pages with 1, 2, 3, or 4 products each based on layout
+    const productsPerPage = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
     
     // Helper function to create banner paragraph
@@ -199,7 +238,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     for (let i = 0; i < itemsWithImages.length; i += productsPerPage) {
       const pageItems = itemsWithImages.slice(i, i + productsPerPage);
       
-      if (layout === 2) {
+      if (layout === 1) {
+        // 1-per-page layout (single product, full page)
+        const pageContent = createProductCell(
+          pageItems[0]?.item, 
+          i + 1, 
+          layout, 
+          pageItems[0]?.imageData, 
+          generateProductUrl, 
+          pageItems[0]?.barcodeData,
+          showFields,
+          htmlToPlainText,
+          pageItems[0]?.additionalImagesData
+        );
+        
+        // Add header banner, page content, and footer banner
+        pages.push(createBannerParagraph(true)); // Header banner
+        pages.push(...pageContent);
+        pages.push(createBannerParagraph(false)); // Footer banner
+      } else if (layout === 2) {
         // 2-per-page layout (side by side)
         const pageTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
@@ -215,7 +272,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData, showFields, htmlToPlainText, pageItems[0]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -226,7 +283,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData, showFields, htmlToPlainText, pageItems[1]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -261,7 +318,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData, showFields, htmlToPlainText, pageItems[0]?.additionalImagesData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -272,7 +329,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData, showFields, htmlToPlainText, pageItems[1]?.additionalImagesData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -283,7 +340,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData, showFields, htmlToPlainText, pageItems[2]?.additionalImagesData),
                   width: { size: 33.33, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -319,7 +376,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData),
+                  children: createProductCell(pageItems[0]?.item, i + 1, layout, pageItems[0]?.imageData, generateProductUrl, pageItems[0]?.barcodeData, showFields, htmlToPlainText, pageItems[0]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -330,7 +387,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData),
+                  children: createProductCell(pageItems[1]?.item, i + 2, layout, pageItems[1]?.imageData, generateProductUrl, pageItems[1]?.barcodeData, showFields, htmlToPlainText, pageItems[1]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -346,7 +403,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             new TableRow({
               children: [
                 new TableCell({
-                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData),
+                  children: createProductCell(pageItems[2]?.item, i + 3, layout, pageItems[2]?.imageData, generateProductUrl, pageItems[2]?.barcodeData, showFields, htmlToPlainText, pageItems[2]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -357,7 +414,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   },
                 }),
                 new TableCell({
-                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData, generateProductUrl, pageItems[3]?.barcodeData),
+                  children: createProductCell(pageItems[3]?.item, i + 4, layout, pageItems[3]?.imageData, generateProductUrl, pageItems[3]?.barcodeData, showFields, htmlToPlainText, pageItems[3]?.additionalImagesData),
                   width: { size: 50, type: WidthType.PERCENTAGE },
                   verticalAlign: "top",
                   borders: {
@@ -433,7 +490,10 @@ function createProductCell(
   layout: number, 
   imageData?: { base64: string; width: number; height: number; mimeType: string } | null,
   generateProductUrl?: (handle: string) => string,
-  barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null
+  barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null,
+  showFields?: Record<string, boolean>,
+  htmlToPlainText?: (html: string) => string,
+  additionalImagesData?: Array<{ base64: string; width: number; height: number; mimeType: string }>
 ): Paragraph[] {
   if (!item) {
     return [new Paragraph({ text: "" })];
@@ -448,23 +508,23 @@ function createProductCell(
   // Legacy fallback for layouts not yet converted
 
   // Adjust font sizes based on layout
+  const is1PerPage = layout === 1;
   const is2PerPage = layout === 2;
   const is3PerPage = layout === 3;
-  const titleSize = is2PerPage ? 18 : is3PerPage ? 16 : 14;
-  const subtitleSize = is2PerPage ? 14 : is3PerPage ? 12 : 12;
-  const authorSize = is2PerPage ? 13 : is3PerPage ? 12 : 11;
-  const descSize = is2PerPage ? 12 : is3PerPage ? 11 : 10;
-  const specSize = is2PerPage ? 11 : is3PerPage ? 10 : 9;
-  const metaSize = is2PerPage ? 10 : is3PerPage ? 9 : 9;
-  const priceSize = is2PerPage ? 14 : is3PerPage ? 13 : 12;
-  // const isbnSize = is2PerPage ? 10 : is3PerPage ? 9 : 9; // TODO: Use for ISBN display if needed
+  const titleSize = is1PerPage ? 24 : is2PerPage ? 18 : is3PerPage ? 16 : 14;
+  const subtitleSize = is1PerPage ? 18 : is2PerPage ? 14 : is3PerPage ? 12 : 12;
+  const authorSize = is1PerPage ? 16 : is2PerPage ? 13 : is3PerPage ? 12 : 11;
+  const descSize = is1PerPage ? 14 : is2PerPage ? 12 : is3PerPage ? 11 : 10;
+  const specSize = is1PerPage ? 12 : is2PerPage ? 11 : is3PerPage ? 10 : 9;
+  const metaSize = is1PerPage ? 12 : is2PerPage ? 10 : is3PerPage ? 9 : 9;
+  const priceSize = is1PerPage ? 20 : is2PerPage ? 14 : is3PerPage ? 13 : 12;
 
   const paragraphs: Paragraph[] = [];
 
   // Add image if available
   if (imageData) {
-    const maxWidth = is2PerPage ? 120 : is3PerPage ? 100 : 80;
-    const maxHeight = is2PerPage ? 180 : is3PerPage ? 150 : 120;
+    const maxWidth = is1PerPage ? 200 : is2PerPage ? 120 : is3PerPage ? 100 : 80;
+    const maxHeight = is1PerPage ? 300 : is2PerPage ? 180 : is3PerPage ? 150 : 120;
     
     const dimensions = calculateImageDimensions(
       imageData.width, 
@@ -647,6 +707,89 @@ function createProductCell(
     }
     
     // Product URL removed - title is now clickable
+
+  // Add author bio for 1-up layout
+  if (is1PerPage && showFields?.authorBio && item.authorBio && htmlToPlainText) {
+    const plainTextBio = htmlToPlainText(item.authorBio);
+    if (plainTextBio) {
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: "Author Bio:",
+            bold: true,
+            size: 12,
+            color: "1565C0",
+          }),
+        ],
+        spacing: { before: 200, after: 100 },
+      }));
+      
+      paragraphs.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: plainTextBio,
+            size: 11,
+            color: "333333",
+          }),
+        ],
+        spacing: { after: 150 },
+        shading: {
+          type: "solid",
+          color: "E3F2FD",
+        },
+      }));
+    }
+  }
+
+  // Add internals for 1-up layout
+  if (is1PerPage && additionalImagesData && additionalImagesData.length > 0) {
+    paragraphs.push(new Paragraph({
+      children: [
+        new TextRun({
+          text: "Internals:",
+          bold: true,
+          size: 12,
+          color: "495057",
+        }),
+      ],
+      spacing: { before: 200, after: 100 },
+    }));
+    
+    // Add internal images (max 4, 10% bigger than HTML = 39x55px)
+    const internalImageRuns: ImageRun[] = [];
+    for (const imgData of additionalImagesData.slice(0, 4)) {
+      try {
+        const dimensions = calculateImageDimensions(
+          imgData.width,
+          imgData.height,
+          39,  // 10% bigger than original 35px
+          55   // 10% bigger than original 50px
+        );
+        
+        internalImageRuns.push(new ImageRun({
+          data: imgData.base64,
+          transformation: {
+            width: dimensions.width,
+            height: dimensions.height,
+          },
+          type: "png",
+        }));
+      } catch (error) {
+        console.warn('Failed to add internal image:', error);
+      }
+    }
+    
+    if (internalImageRuns.length > 0) {
+      paragraphs.push(new Paragraph({
+        children: internalImageRuns,
+        spacing: { after: 150 },
+        shading: {
+          type: "solid",
+          color: "F5F5F5",
+        },
+      }));
+    }
+  }
 
   // Add barcode if available
   if (barcodeData) {
