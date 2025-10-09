@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function generateGoogleDocsHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, title: string, hyperlinkToggle: string, bannerColor: string, websiteName: string) {
+async function generateGoogleDocsHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, title: string, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', bannerColor: string, websiteName: string) {
   // Download images for all items
   console.log("Downloading images for Google Docs export...");
   const imagePromises = items.map(async (item) => {
