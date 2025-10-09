@@ -33,6 +33,7 @@ const schema = z.object({
         dimensions: mf["Dimensions"],
         releaseDate: mf["Release_date"],
         weight: mf["weight"],
+        sku: p.sku,
         icrkdt: mf["ICRKDT"],
         icillus: mf["icillus"],
         illustrations: mf["Illlustrations"],

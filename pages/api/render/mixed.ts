@@ -7,7 +7,7 @@ type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
@@ -179,8 +179,8 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
           // Use EAN-13 format for 13-digit barcodes
-          const barcodeCode = it.icrkdt || it.handle;
-          console.log(`Mixed - Generating EAN-13 for item ${globalIndex}: icrkdt="${it.icrkdt}", handle="${it.handle}", using="${barcodeCode}"`);
+          const barcodeCode = it.sku || it.handle;
+          console.log(`Mixed - Generating EAN-13 for item ${globalIndex}: sku="${it.sku}", handle="${it.handle}", using="${barcodeCode}"`);
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
             barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;

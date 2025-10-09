@@ -7,7 +7,7 @@ type Item = {
   title: string; subtitle?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
 };
 
@@ -147,9 +147,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         if (shouldShowBarcode) {
           if (itemBarcodeType === "EAN-13") {
-            // For EAN-13, we need an actual EAN-13 code. Let's use the product handle or generate one
+            // For EAN-13, we need an actual EAN-13 code. Let's use the product SKU or generate one
             // In a real scenario, you'd want to use the actual ISBN/EAN-13 from your product data
-            let ean13Code = it.icrkdt || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
+            let ean13Code = it.sku || it.handle.replace(/[^0-9]/g, '').padStart(13, '0').substring(0, 13);
             
             // Ensure we have a valid 13-digit EAN-13 code
             if (ean13Code.length < 13) {

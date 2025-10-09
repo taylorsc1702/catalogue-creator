@@ -10,7 +10,7 @@ type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
 };
@@ -177,8 +177,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
           // Use EAN-13 format for 13-digit barcodes
-          const barcodeCode = item.icrkdt || item.handle;
-          console.log(`DOCX - Generating EAN-13 for item ${index}: icrkdt="${item.icrkdt}", handle="${item.handle}", using="${barcodeCode}"`);
+          const barcodeCode = item.sku || item.handle;
+          console.log(`DOCX - Generating EAN-13 for item ${index}: sku="${item.sku}", handle="${item.handle}", using="${barcodeCode}"`);
           const barcodeBase64 = generateEAN13Barcode(barcodeCode);
           if (barcodeBase64) {
             barcodeData = {

@@ -10,6 +10,7 @@ export type ShopifyProduct = {
   featuredImageUrl?: string;
   additionalImages?: string[];
   price?: string;
+  sku?: string;
   metafields: Record<string, string | undefined>;
 };
 
@@ -49,7 +50,7 @@ const query = `
           tags
           featuredImage { url altText }
           images(first: 5) { edges { node { url altText } } }
-          variants(first: 1) { edges { node { price } } }
+          variants(first: 1) { edges { node { price sku } } }
           description
           metafields(first: 10) { 
             edges { 
@@ -77,7 +78,7 @@ type ProductNode = {
   description?: string | null;
   featuredImage?: { url?: string | null } | null;
   images?: { edges?: Array<{ node?: { url?: string | null; altText?: string | null } | null }> | null } | null;
-  variants?: { edges?: Array<{ node?: { price?: string | null } | null }> | null } | null;
+  variants?: { edges?: Array<{ node?: { price?: string | null; sku?: string | null } | null }> | null } | null;
   metafields?: { 
     edges?: Array<{ 
       node?: { 
@@ -162,6 +163,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
         featuredImageUrl: n.featuredImage?.url ?? n.images?.edges?.[0]?.node?.url ?? undefined,
         additionalImages: n.images?.edges?.slice(1).map(edge => edge?.node?.url).filter((url): url is string => Boolean(url)) ?? [],
         price: n.variants?.edges?.[0]?.node?.price ?? undefined,
+        sku: n.variants?.edges?.[0]?.node?.sku ?? undefined,
         metafields: mf,
       });
     }

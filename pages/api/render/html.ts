@@ -7,7 +7,7 @@ type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   publicity?: string; reviews?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
@@ -168,7 +168,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       let barcodeHtml = '';
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          const barcodeCode = item.icrkdt || item.handle;
+          const barcodeCode = item.sku || item.handle;
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
             barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
