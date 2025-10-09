@@ -18,7 +18,8 @@ class LayoutRegistry {
 
   private registerDefaultHandlers() {
     // Register all layout handlers
-    this.handlers.set('1-up', create1UpLayoutHandler());
+    // NOTE: 1-up handler is disabled - using inline code in html.ts instead
+    // this.handlers.set('1-up', create1UpLayoutHandler());
     this.handlers.set('2-up', create2UpLayoutHandler());
     this.handlers.set('3-up', create3UpLayoutHandler());
     this.handlers.set('4-up', create4UpLayoutHandler());
