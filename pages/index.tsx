@@ -81,7 +81,7 @@ export default function Home() {
   const [collectionId, setCollectionId] = useState("");
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|2|3|4|8>(4);
+  const [layout, setLayout] = useState<1|2|3|4|8|'list'|'compact-list'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
@@ -711,6 +711,8 @@ export default function Home() {
         {[1,2,3,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
+        <button onClick={()=>setLayout('list' as 'list')} style={btn(layout==='list')}>📋 List</button>
+        <button onClick={()=>setLayout('compact-list' as 'compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
         <span style={{ marginLeft: 16, fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
         {["EAN-13", "QR Code", "None"].map(type => (
           <button 
@@ -931,7 +933,7 @@ function btn(active = false): React.CSSProperties {
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
-  layout: 1|2|3|4|8; 
+  layout: 1|2|3|4|8|'list'|'compact-list'; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
@@ -946,6 +948,27 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   generateProductUrl: (handle: string) => string;
 }) {
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
+  
+  // Import the layout registry
+  const { layoutRegistry } = require('@/lib/layout-registry');
+  
+  // Get the handler for the current layout
+  const layoutHandler = layoutRegistry.getHandler(layout.toString());
+  
+  if (layoutHandler) {
+    // Use handler system for supported layouts
+    return (
+      <div style={{ marginTop: 24 }}>
+        {items.map((it, i) => (
+          <div key={i}>
+            {layoutHandler.createPreview(it, i, generateProductUrl)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Fallback to legacy grid layout for numeric layouts
   const cols = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : layout === 4 ? 2 : 4;
   return (
     <div style={{ 
