@@ -534,6 +534,9 @@ export function create1UpLayoutHandler(): LayoutHandler {
         gap: 24px;
         padding: 24px;
         min-height: 400px;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
       
       .layout-1up .left-column {
@@ -712,6 +715,14 @@ export function create1UpLayoutHandler(): LayoutHandler {
         border-radius: 8px;
         font-size: 18px;
         font-weight: 600;
+      }
+      
+      /* Force portrait display in browser */
+      @media screen {
+        .layout-1up {
+          max-width: 800px !important;
+          margin: 0 auto !important;
+        }
       }
     `
   };
