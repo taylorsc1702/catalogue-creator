@@ -138,14 +138,20 @@ function renderGoogleDocsHtml(
       productsHtml = `${product1}${product2}${product3}${product4}`;
     }
 
-    return `<div class="page">
+    const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : layout === 4 ? " layout-4" : layout === 8 ? " layout-8" : "";
+    return `<div class="page${layoutClass}">
       <!-- Header Banner -->
-      <div style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8pt 0; font-weight: bold; font-size: 12pt; margin-bottom: 20pt;">
+      <div class="page-header" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8pt 0; font-weight: bold; font-size: 12pt;">
         ${esc(websiteName)}
       </div>
-      ${productsHtml}
+      
+      <!-- Content Area -->
+      <div class="page-content">
+        ${productsHtml}
+      </div>
+      
       <!-- Footer Banner -->
-      <div style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8pt 0; font-weight: bold; font-size: 12pt; margin-top: 40pt;">
+      <div class="page-footer" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8pt 0; font-weight: bold; font-size: 12pt;">
         ${esc(websiteName)}
       </div>
     </div>`;
@@ -187,17 +193,54 @@ function renderGoogleDocsHtml(
     
     .page {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 20pt;
+      grid-template-areas: 
+        "header header"
+        "content content"
+        "footer footer";
+      grid-template-rows: auto 1fr auto;
+      gap: 15pt;
       margin-bottom: 40pt;
       page-break-after: always;
       min-height: 10in;
     }
     
-    .page.layout-2 {
+    .page-header {
+      grid-area: header;
+    }
+    
+    .page-content {
+      grid-area: content;
+      display: grid;
+      gap: 20pt;
+      overflow: hidden;
+    }
+    
+    .page-footer {
+      grid-area: footer;
+    }
+    
+    .page.layout-2 .page-content {
+      grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr;
       gap: 30pt;
+    }
+    
+    .page.layout-3 .page-content {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr;
+      gap: 20pt;
+    }
+    
+    .page.layout-4 .page-content {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 20pt;
+    }
+    
+    .page.layout-8 .page-content {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 15pt;
     }
     
     .product-card {
@@ -207,6 +250,10 @@ function renderGoogleDocsHtml(
       padding: 12pt;
       background: white;
       page-break-inside: avoid;
+      height: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     
     .product-card.empty {

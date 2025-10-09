@@ -326,15 +326,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       productsHtml = cards.join('');
     }
 
-    const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : "";
+    const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : layout === 4 ? " layout-4" : layout === 8 ? " layout-8" : "";
     return `<div class="page${layoutClass}">
       <!-- Header Banner -->
-      <div class="banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm; grid-column: 1 / -1;">
+      <div class="page-header banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
         ${websiteName}
       </div>
-      ${productsHtml}
+      
+      <!-- Content Area -->
+      <div class="page-content">
+        ${productsHtml}
+      </div>
+      
       <!-- Footer Banner -->
-      <div class="banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm; grid-column: 1 / -1;">
+      <div class="page-footer banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
         ${websiteName}
       </div>
     </div>`;
@@ -380,31 +385,49 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     margin-right: 16px;
   }
   .page { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    grid-template-rows: 1fr 1fr;
-    gap: 15mm; 
+    display: grid;
+    grid-template-areas: 
+      "header header"
+      "content content"
+      "footer footer";
+    grid-template-rows: auto 1fr auto;
     page-break-after: always; 
     padding: 0;
     height: 100vh;
+    gap: 10mm;
   }
-  .page.layout-2 {
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr;
-    gap: 20mm;
-    padding: 15mm;
-    align-items: start;
-    height: 100vh;
-    box-sizing: border-box;
+  
+  .page-header {
+    grid-area: header;
   }
-  .page.layout-3 {
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr 1fr 1fr; /* 3 columns */
+  
+  .page-content {
+    grid-area: content;
+    display: grid;
     gap: 15mm;
-    padding: 15mm; /* Even margins */
-    align-items: start;
-    height: 100vh; /* Ensure page height */
-    box-sizing: border-box; /* Include padding in height */
+    overflow: hidden;
+  }
+  
+  .page-footer {
+    grid-area: footer;
+  }
+  .page.layout-2 .page-content {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+  }
+  .page.layout-3 .page-content {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+  }
+  
+  .page.layout-4 .page-content {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  
+  .page.layout-8 .page-content {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
   }
   .product-card {
     display: flex;
@@ -412,7 +435,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     gap: 12px;
     margin-bottom: 0;
     page-break-inside: avoid;
-    height: fit-content;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .page.layout-2 .product-card {
     display: flex;
@@ -779,22 +805,36 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     font-size: 11px;
     line-height: 1.5;
     margin-bottom: 8px;
-    max-height: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 12;
-    -webkit-box-orient: vertical;
-  }
-  .page.layout-3 .product-description {
-    font-size: 10px;
-    line-height: 1.4;
-    margin-bottom: 6px;
-    max-height: 150px;
+    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+  }
+  
+  .page.layout-3 .product-description {
+    font-size: 10px;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+  }
+  
+  .page.layout-4 .product-description,
+  .page.layout-8 .product-description {
+    font-size: 9px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
   }
   .product-specs {

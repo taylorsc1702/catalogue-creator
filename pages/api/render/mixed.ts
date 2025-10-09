@@ -234,12 +234,17 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">
       <!-- Header Banner -->
-      <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm; grid-column: 1 / -1;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
-      ${cards}${emptyCards}
+      
+      <!-- Content Area -->
+      <div class="page-content">
+        ${cards}${emptyCards}
+      </div>
+      
       <!-- Footer Banner -->
-      <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm; grid-column: 1 / -1;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -268,29 +273,55 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     font-size: 12px;
   }
   .page { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    grid-template-rows: 1fr 1fr;
-    gap: 15mm; 
+    display: grid;
+    grid-template-areas: 
+      "header header"
+      "content content"
+      "footer footer";
+    grid-template-rows: auto 1fr auto;
+    gap: 10mm;
     page-break-after: always; 
     padding: 0;
     height: 100vh;
   }
-  .page.layout-1 {
+  
+  .page-header {
+    grid-area: header;
+  }
+  
+  .page-content {
+    grid-area: content;
+    display: grid;
+    gap: 15mm;
+    overflow: hidden;
+  }
+  
+  .page-footer {
+    grid-area: footer;
+  }
+  .page.layout-1 .page-content {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
   }
-  .page.layout-2 {
+  
+  .page.layout-2 .page-content {
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
     gap: 20mm;
   }
-  .page.layout-3 {
+  
+  .page.layout-3 .page-content {
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;
     gap: 15mm;
-    padding: 15mm;
   }
-  .page.layout-8 {
+  
+  .page.layout-4 .page-content {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  
+  .page.layout-8 .page-content {
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 10mm;
@@ -300,7 +331,10 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     gap: 8px;
     margin-bottom: 0;
     page-break-inside: avoid;
-    height: fit-content;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .product-card.empty {
     visibility: hidden;
