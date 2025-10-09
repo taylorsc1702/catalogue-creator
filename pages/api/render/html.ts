@@ -455,41 +455,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-  /* 1-up layout with proper page structure */
-  .page.layout-1up {
-    display: grid;
-    grid-template-areas: 
-      "header header"
-      "content content"
-      "footer footer";
-    grid-template-rows: auto 1fr auto;
-    gap: 10mm;
-    page-break-after: always; 
-    padding: 0;
-    height: 100vh;
-  }
-  
-  .page.layout-1up .page-header {
-    grid-area: header;
-  }
-  
-  .page.layout-1up .page-content {
-    grid-area: content;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  
-  .page.layout-1up .page-footer {
-    grid-area: footer;
-  }
+  /* 1-up layout inherits from base .page class */
   .product-card {
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin-bottom: 0;
     page-break-inside: avoid;
-    height: 100%;
     max-height: 100%;
     overflow: hidden;
     box-sizing: border-box;
