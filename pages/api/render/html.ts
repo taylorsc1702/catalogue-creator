@@ -202,7 +202,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 <div class="internals-section">
                   <div class="internals-title">Internals:</div>
                   <div class="internals-thumbnails">
-                    ${item.additionalImages.slice(0, 6).map((img, idx) => 
+                    ${item.additionalImages.slice(0, 4).map((img, idx) => 
                       `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
                     ).join('')}
                   </div>
@@ -453,8 +453,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   }
   
   .page.layout-1 .internal-thumbnail {
-    width: 35px;
-    height: 50px;
+    width: 39px;
+    height: 55px;
     object-fit: cover;
     border-radius: 3px;
     border: 1px solid #DEE2E6;
