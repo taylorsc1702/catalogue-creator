@@ -308,10 +308,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     
     if (layout === 1) {
       // 1-per-page: Two column layout - Left: image/bio/internals, Right: details
+      console.log('[1-UP LAYOUT] Generating page', pageIndex, 'with item:', page[0]?.title);
       if (page[0]) {
         const item = page[0];
         const globalIndex = pageIndex * perPage + 0;
         const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
+        console.log('[1-UP LAYOUT] Using inline code (not handler) for item:', item.title);
         
         // Generate barcode if needed
         let barcodeHtml = '';
