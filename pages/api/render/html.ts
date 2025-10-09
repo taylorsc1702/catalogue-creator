@@ -307,17 +307,38 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     let productsHtml = '';
     
     if (layout === 1) {
-      // 1-per-page: completely rewritten simple layout
+      // 1-per-page: Two column layout - Left: image/bio/internals, Right: details
       if (page[0]) {
         const item = page[0];
         const barcodeHtml = generateBarcodeHtml(item, 0, itemBarcodeTypes, barcodeType);
         
         productsHtml = `
           <div class="product-card layout-1up">
-            <div class="product-image">
-              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+            <!-- Left Column: Image, Author Bio, Internals -->
+            <div class="left-column">
+              <div class="product-image">
+                <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+              </div>
+              ${show.authorBio && item.authorBio ? `
+                <div class="author-bio">
+                  <div class="author-bio-title">Author Bio:</div>
+                  <div class="author-bio-content">${esc(item.authorBio)}</div>
+                </div>
+              ` : ""}
+              ${item.additionalImages && item.additionalImages.length > 0 ? `
+                <div class="internals-section">
+                  <div class="internals-title">Internals:</div>
+                  <div class="internals-thumbnails">
+                    ${item.additionalImages.slice(0, 6).map((img, idx) => 
+                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
+                    ).join('')}
+                  </div>
+                </div>
+              ` : ''}
             </div>
-            <div class="product-info">
+            
+            <!-- Right Column: All Product Details -->
+            <div class="right-column">
               <h3 class="product-title">${esc(item.title)}</h3>
               ${item.subtitle ? `<p class="product-subtitle">${esc(item.subtitle)}</p>` : ""}
               ${item.author ? `<p class="product-author">By ${esc(item.author)}</p>` : ""}
@@ -334,17 +355,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
-              ${show.authorBio && item.authorBio ? `<div class="author-bio">${esc(item.authorBio)}</div>` : ""}
-              ${item.additionalImages && item.additionalImages.length > 0 ? `
-                <div class="internals-section">
-                  <div class="internals-title">Internals:</div>
-                  <div class="internals-thumbnails">
-                    ${item.additionalImages.slice(0, 6).map((img, idx) => 
-                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
-                    ).join('')}
-                  </div>
-                </div>
-              ` : ''}
               ${barcodeHtml}
             </div>
           </div>
@@ -486,7 +496,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-      /* 1-up layout: completely rewritten simple CSS */
+      /* 1-up layout: Two columns - Left: image/bio/internals, Right: details */
       .page.layout-1up .page-content {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
@@ -496,33 +506,117 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       .page.layout-1up .product-card {
         display: flex;
         flex-direction: row;
-        gap: 20px;
+        gap: 24px;
         max-height: 100%;
         overflow: hidden;
         padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+      }
+      
+      .page.layout-1up .left-column {
+        flex-shrink: 0;
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
       }
       
       .page.layout-1up .product-image {
-        flex-shrink: 0;
-        width: 200px;
+        width: 100%;
       }
       
       .page.layout-1up .book-cover {
         width: 100%;
         height: auto;
-        max-height: 300px;
+        max-height: 350px;
         object-fit: contain;
         border-radius: 4px;
+        border: 1px solid #ddd;
       }
       
-      .page.layout-1up .product-info {
+      .page.layout-1up .author-bio {
+        background: #E3F2FD;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        line-height: 1.4;
+      }
+      
+      .page.layout-1up .author-bio-title {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #1565C0;
+      }
+      
+      .page.layout-1up .author-bio-content {
+        color: #333;
+      }
+      
+      .page.layout-1up .internals-section {
+        background: #F5F5F5;
+        padding: 12px;
+        border-radius: 6px;
+      }
+      
+      .page.layout-1up .internals-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 11px;
+        color: #495057;
+      }
+      
+      .page.layout-1up .internals-thumbnails {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      
+      .page.layout-1up .internal-thumbnail {
+        width: 35px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 3px;
+        border: 1px solid #DEE2E6;
+      }
+      
+      .page.layout-1up .right-column {
         flex: 1;
         display: flex;
         flex-direction: column;
         gap: 12px;
         min-width: 0;
+        overflow: hidden;
+      }
+      
+      .page.layout-1up .product-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+        line-height: 1.3;
+      }
+      
+      .page.layout-1up .product-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+        font-style: italic;
+      }
+      
+      .page.layout-1up .product-author {
+        font-size: 13px;
+        color: #444;
+        font-weight: 500;
+        margin: 0;
+      }
+      
+      .page.layout-1up .product-description {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #333;
+        margin: 0;
+        max-height: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
   .product-card {
     display: flex;
