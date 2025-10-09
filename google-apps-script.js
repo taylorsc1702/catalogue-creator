@@ -30,22 +30,22 @@ function createCatalogueDocument(data) {
     // Clear default content
     body.clear();
     
-    // Set document properties
-    doc.setHeaderMargin(20);
-    doc.setFooterMargin(20);
-    doc.setTopMargin(20);
-    doc.setBottomMargin(20);
+    // Set document margins (in points: 72 points = 1 inch)
+    body.setMarginTop(72);    // 1 inch
+    body.setMarginBottom(72); // 1 inch
+    body.setMarginLeft(72);   // 1 inch
+    body.setMarginRight(72);  // 1 inch
     
     // Add title
     const titleParagraph = body.appendParagraph(title);
     titleParagraph.setHeading(DocumentApp.ParagraphHeading.TITLE);
     titleParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    titleParagraph.getRange().getTextStyle().setFontSize(18).setBold(true);
+    titleParagraph.editAsText().setFontSize(18).setBold(true);
     
     // Add subtitle
     const subtitleParagraph = body.appendParagraph(`Generated on ${new Date().toLocaleDateString()}`);
     subtitleParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    subtitleParagraph.getRange().getTextStyle().setFontSize(12).setForegroundColor('#666666');
+    subtitleParagraph.editAsText().setFontSize(12).setForegroundColor('#666666');
     
     // Add spacing
     body.appendParagraph('').setSpacingAfter(40);
@@ -110,13 +110,12 @@ function addBanner(body, websiteName, bannerColor, isHeader) {
   const bannerParagraph = body.appendParagraph(websiteName);
   bannerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   
-  // Style the banner
-  const bannerStyle = bannerParagraph.getRange().getTextStyle();
-  bannerStyle.setFontSize(12).setBold(true).setForegroundColor('#FFFFFF');
-  
-  // Set background color (approximation - Google Docs doesn't support exact hex colors)
-  const backgroundColor = getGoogleDocsColor(bannerColor);
-  bannerParagraph.getRange().getBackgroundColor().setBackgroundColor(backgroundColor);
+  // Style the banner text
+  const bannerText = bannerParagraph.editAsText();
+  bannerText.setFontSize(12);
+  bannerText.setBold(true);
+  bannerText.setForegroundColor('#FFFFFF');
+  bannerText.setBackgroundColor(bannerColor);
   
   // Add spacing
   if (isHeader) {
@@ -174,18 +173,18 @@ function createLeftColumn(cell, item, showFields) {
   // Author Bio
   if (showFields.authorBio && item.authorBio) {
     const bioTitle = cell.appendParagraph('Author Bio:');
-    bioTitle.getRange().getTextStyle().setBold(true).setFontSize(12).setForegroundColor('#1565C0');
+    bioTitle.editAsText().setBold(true).setFontSize(12).setForegroundColor('#1565C0');
     bioTitle.setSpacingAfter(10);
     
     const bioContent = cell.appendParagraph(htmlToPlainText(item.authorBio));
-    bioContent.getRange().getTextStyle().setFontSize(11);
+    bioContent.editAsText().setFontSize(11);
     bioContent.setSpacingAfter(20);
   }
   
   // Internals (if available)
   if (item.additionalImages && item.additionalImages.length > 0) {
     const internalsTitle = cell.appendParagraph('Internals:');
-    internalsTitle.getRange().getTextStyle().setBold(true).setFontSize(12).setForegroundColor('#495057');
+    internalsTitle.editAsText().setBold(true).setFontSize(12).setForegroundColor('#495057');
     internalsTitle.setSpacingAfter(10);
     
     // Add up to 4 internal images in a 2x2 grid
@@ -212,27 +211,27 @@ function createLeftColumn(cell, item, showFields) {
 function createRightColumn(cell, item, utmParams) {
   // Product title (clickable)
   const title = cell.appendParagraph(item.title);
-  title.getRange().getTextStyle().setFontSize(20).setBold(true);
+  title.editAsText().setFontSize(20).setBold(true);
   title.setSpacingAfter(10);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = cell.appendParagraph(item.subtitle);
-    subtitle.getRange().getTextStyle().setFontSize(14).setItalic(true).setForegroundColor('#666666');
+    subtitle.editAsText().setFontSize(14).setItalic(true).setForegroundColor('#666666');
     subtitle.setSpacingAfter(10);
   }
   
   // Author
   if (item.author) {
     const author = cell.appendParagraph(`By ${item.author}`);
-    author.getRange().getTextStyle().setFontSize(13).setForegroundColor('#444444');
+    author.editAsText().setFontSize(13).setForegroundColor('#444444');
     author.setSpacingAfter(10);
   }
   
   // Description
   if (item.description) {
     const description = cell.appendParagraph(item.description);
-    description.getRange().getTextStyle().setFontSize(11).setForegroundColor('#333333');
+    description.editAsText().setFontSize(11).setForegroundColor('#333333');
     description.setSpacingAfter(15);
   }
   
@@ -248,21 +247,21 @@ function createRightColumn(cell, item, utmParams) {
   
   metaItems.forEach(metaItem => {
     const meta = cell.appendParagraph(metaItem);
-    meta.getRange().getTextStyle().setFontSize(10).setForegroundColor('#666666');
+    meta.editAsText().setFontSize(10).setForegroundColor('#666666');
     meta.setSpacingAfter(5);
   });
   
   // Price
   if (item.price) {
     const price = cell.appendParagraph(`AUD$ ${item.price}`);
-    price.getRange().getTextStyle().setFontSize(16).setBold(true).setForegroundColor('#d63384');
+    price.editAsText().setFontSize(16).setBold(true).setForegroundColor('#d63384');
     price.setSpacingAfter(15);
   }
   
   // Barcode (if SKU available)
   if (item.sku) {
     const barcodeText = cell.appendParagraph(`Barcode: ${item.sku}`);
-    barcodeText.getRange().getTextStyle().setFontSize(10).setForegroundColor('#999999');
+    barcodeText.editAsText().setFontSize(10).setForegroundColor('#999999');
     barcodeText.setSpacingAfter(10);
   }
 }
@@ -350,14 +349,14 @@ function createProductCard(cell, item, layout) {
   // Title
   const title = cell.appendParagraph(item.title);
   const titleSizes = { 2: 14, 3: 12, 4: 11, 8: 9 };
-  title.getRange().getTextStyle().setFontSize(titleSizes[layout] || 11).setBold(true);
+  title.editAsText().setFontSize(titleSizes[layout] || 11).setBold(true);
   title.setSpacingAfter(5);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = cell.appendParagraph(item.subtitle);
     const subtitleSizes = { 2: 11, 3: 10, 4: 9, 8: 7 };
-    subtitle.getRange().getTextStyle().setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666');
+    subtitle.editAsText().setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666');
     subtitle.setSpacingAfter(5);
   }
   
@@ -365,7 +364,7 @@ function createProductCard(cell, item, layout) {
   if (item.author) {
     const author = cell.appendParagraph(`By ${item.author}`);
     const authorSizes = { 2: 11, 3: 10, 4: 10, 8: 8 };
-    author.getRange().getTextStyle().setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000');
+    author.editAsText().setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000');
     author.setSpacingAfter(5);
   }
   
@@ -378,7 +377,7 @@ function createProductCard(cell, item, layout) {
     
     const desc = cell.appendParagraph(description);
     const descSizes = { 2: 10, 3: 9, 4: 8, 8: 6 };
-    desc.getRange().getTextStyle().setFontSize(descSizes[layout] || 8).setForegroundColor('#333333');
+    desc.editAsText().setFontSize(descSizes[layout] || 8).setForegroundColor('#333333');
     desc.setSpacingAfter(8);
   }
   
@@ -386,7 +385,7 @@ function createProductCard(cell, item, layout) {
   if (item.price) {
     const price = cell.appendParagraph(`AUD$ ${item.price}`);
     const priceSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };
-    price.getRange().getTextStyle().setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384');
+    price.editAsText().setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384');
     price.setSpacingAfter(5);
   }
   
@@ -394,22 +393,8 @@ function createProductCard(cell, item, layout) {
   if (item.sku) {
     const sku = cell.appendParagraph(`SKU: ${item.sku}`);
     const skuSizes = { 2: 8, 3: 8, 4: 7, 8: 6 };
-    sku.getRange().getTextStyle().setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999');
+    sku.editAsText().setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999');
   }
-}
-
-// Helper function to convert hex color to Google Docs color
-function getGoogleDocsColor(hexColor) {
-  // Remove # if present
-  hexColor = hexColor.replace('#', '');
-  
-  // Convert to RGB
-  const r = parseInt(hexColor.substr(0, 2), 16);
-  const g = parseInt(hexColor.substr(2, 2), 16);
-  const b = parseInt(hexColor.substr(4, 2), 16);
-  
-  // Return RGB color
-  return `#${hexColor}`;
 }
 
 // Helper function to convert HTML to plain text
