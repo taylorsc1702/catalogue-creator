@@ -198,7 +198,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 <meta charset="utf-8"/>
 <title>Catalogue with Barcodes (HTML)</title>
 <style>
-  @page { size: A4; margin: 14mm; }
+  @page { size: A4 portrait; margin: 14mm; }
   * { box-sizing: border-box; }
   body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#192C6B; }
   h1,h2,h3,p { margin:0; }

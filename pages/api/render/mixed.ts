@@ -257,7 +257,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 <title>Mixed Layout Product Catalogue</title>
 <style>
   @page { 
-    size: A4; 
+    size: A4 portrait; 
     margin: 15mm; 
   }
   * { 

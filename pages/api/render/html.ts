@@ -352,7 +352,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
 <title>Professional Product Catalogue</title>
 <style>
   @page { 
-    size: A4; 
+    size: A4 portrait; 
     margin: 15mm; 
   }
   * { 
