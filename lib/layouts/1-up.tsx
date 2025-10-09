@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
 import { Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
@@ -28,12 +29,12 @@ export function create1UpLayoutHandler(): LayoutHandler {
             flexShrink: 0,
             width: "80px"
           }}>
-            <img 
+            <Image 
               src={item.imageUrl || "https://via.placeholder.com/80x120?text=No+Image"} 
               alt={item.title}
+              width={80}
+              height={120}
               style={{ 
-                width: 80, 
-                height: 120, 
                 objectFit: "cover", 
                 borderRadius: 6, 
                 background: "#F8F9FA",

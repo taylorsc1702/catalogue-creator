@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
@@ -28,12 +29,12 @@ export function createCompactListLayoutHandler(): LayoutHandler {
             flexShrink: 0,
             width: "60px"
           }}>
-            <img 
+            <Image 
               src={item.imageUrl || "https://via.placeholder.com/60x90?text=No+Image"} 
               alt={item.title}
+              width={60}
+              height={90}
               style={{ 
-                width: 60, 
-                height: 90, 
                 objectFit: "cover", 
                 borderRadius: 4, 
                 background: "#F8F9FA",
