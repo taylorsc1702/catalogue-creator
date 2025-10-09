@@ -26,6 +26,28 @@ export interface LayoutHandler {
 export const esc = (s?: string) =>
   (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+// Helper function to convert HTML to plain text
+export function htmlToText(html?: string): string {
+  if (!html) return '';
+  
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')           // <br> → newline
+    .replace(/<\/p>/gi, '\n\n')              // </p> → double newline
+    .replace(/<\/div>/gi, '\n')              // </div> → newline
+    .replace(/<\/h[1-6]>/gi, '\n\n')         // </h1-6> → double newline
+    .replace(/<li>/gi, '\n• ')               // <li> → bullet point
+    .replace(/<[^>]*>/g, '')                 // Remove all other tags
+    .replace(/&nbsp;/g, ' ')                 // &nbsp; → space
+    .replace(/&amp;/g, '&')                  // &amp; → &
+    .replace(/&lt;/g, '<')                   // &lt; → <
+    .replace(/&gt;/g, '>')                   // &gt; → >
+    .replace(/&quot;/g, '"')                 // &quot; → "
+    .replace(/&#39;/g, "'")                  // &#39; → '
+    .replace(/&apos;/g, "'")                 // &apos; → '
+    .replace(/\n\s*\n\s*\n/g, '\n\n')        // Multiple newlines → double newline
+    .trim();
+}
+
 // Helper function to format date and determine badge type
 export function formatDateAndBadge(releaseDate?: string): { formattedDate: string; badgeType: 'current' | 'future' | null } {
   if (!releaseDate) return { formattedDate: '', badgeType: null };

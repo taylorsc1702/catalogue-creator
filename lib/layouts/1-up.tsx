@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
+import { LayoutHandler, Item, esc, formatDateAndBadge, htmlToText } from '../layout-handlers';
 import { Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
 export function create1UpLayoutHandler(): LayoutHandler {
@@ -223,7 +223,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
             ${item.authorBio ? `
               <div class="author-bio-box">
                 <div class="author-bio-title">Author Bio:</div>
-                <div class="author-bio-content">${esc(item.authorBio)}</div>
+                <div class="author-bio-content">${esc(htmlToText(item.authorBio))}</div>
               </div>
             ` : ''}
             
@@ -254,7 +254,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
             <!-- Description -->
             ${item.description ? `
               <div class="product-description-large">
-                ${esc(item.description)}
+                ${esc(htmlToText(item.description))}
               </div>
             ` : ''}
 
@@ -353,7 +353,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: item.authorBio.replace(/<[^>]*>/g, ''), // Strip HTML tags
+                          text: htmlToText(item.authorBio),
                           size: 12,
                           color: "1565C0",
                         }),
@@ -451,7 +451,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: item.description.replace(/<[^>]*>/g, ''), // Strip HTML tags
+                          text: htmlToText(item.description),
                           size: 14,
                           color: "495057",
                         }),
@@ -577,6 +577,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
       
       .author-bio-content {
         color: #1565C0;
+        white-space: pre-line;
       }
       
       .internals-section {
@@ -635,6 +636,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
         line-height: 1.6;
         color: #495057;
         margin-bottom: 16px;
+        white-space: pre-line;
       }
       
       .product-details-grid {
