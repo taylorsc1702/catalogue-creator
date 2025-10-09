@@ -216,7 +216,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
           ${websiteName || 'www.woodslane.com.au'}
         </div>
         
-        <div class="product-card layout-1up">
+        <div class="product-card layout-1up-content">
           <!-- Left Column -->
           <div class="left-column">
             <!-- Book Cover -->
@@ -538,7 +538,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
         margin: 15mm !important;
       }
       
-      .layout-1up {
+      .layout-1up-content {
         display: flex !important;
         flex-direction: row !important;
         gap: 24px;
@@ -547,7 +547,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
         box-sizing: border-box !important;
       }
       
-      .layout-1up .left-column {
+      .layout-1up-content .left-column {
         flex-shrink: 0;
         width: 300px;
         display: flex;
@@ -555,7 +555,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
         gap: 16px;
       }
       
-      .layout-1up .right-column {
+      .layout-1up-content .right-column {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -725,9 +725,29 @@ export function create1UpLayoutHandler(): LayoutHandler {
         font-weight: 600;
       }
       
+      /* Banner styles */
+      .banner {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        margin: 0 !important;
+        padding: 8px 0 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        page-break-inside: avoid;
+      }
+      
+      .header-banner {
+        margin-bottom: 10mm !important;
+      }
+      
+      .footer-banner {
+        margin-top: 10mm !important;
+      }
+      
       /* Force portrait display in browser */
       @media screen {
-        .layout-1up {
+        .layout-1up-content {
           max-width: 800px !important;
           margin: 0 auto !important;
         }
