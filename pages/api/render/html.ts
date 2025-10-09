@@ -471,10 +471,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   .page { 
     display: grid;
     grid-template-areas: 
-      "header header"
-      "content content"
-      "footer footer";
-    grid-template-columns: 1fr 1fr;
+      "header"
+      "content"
+      "footer";
+    grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
     page-break-after: always; 
     padding: 0;
