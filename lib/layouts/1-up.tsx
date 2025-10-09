@@ -523,6 +523,11 @@ export function create1UpLayoutHandler(): LayoutHandler {
 
     getCssStyles: () => `
       /* 1-up layout styles */
+      @page {
+        size: A4 portrait !important;
+        margin: 15mm !important;
+      }
+      
       .layout-1up {
         display: flex !important;
         flex-direction: row !important;
