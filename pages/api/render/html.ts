@@ -170,7 +170,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       }
 
       // Use handler system if available, otherwise fall back to legacy code
-      const layoutHandler = layoutRegistry.getHandler(layout.toString() as LayoutType);
+      const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout;
+      const layoutHandler = layoutRegistry.getHandler(layoutType);
       if (layoutHandler) {
         return layoutHandler.createHtmlExport(it, localIndex, generateProductUrl, barcodeHtml, bannerColor, websiteName);
       }
