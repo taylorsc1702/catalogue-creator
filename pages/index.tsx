@@ -933,7 +933,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle: _hyperlinkToggle, generateProductUrl }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8|'list'|'compact-list'; 
   showOrderEditor: boolean;
@@ -949,6 +949,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
 }) {
+  // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
+  void hyperlinkToggle; // Explicitly mark as intentionally unused here
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
