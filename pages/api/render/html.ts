@@ -327,7 +327,17 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     }
 
     const layoutClass = layout === 2 ? " layout-2" : layout === 3 ? " layout-3" : "";
-    return `<div class="page${layoutClass}">${productsHtml}</div>`;
+    return `<div class="page${layoutClass}">
+      <!-- Header Banner -->
+      <div class="banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm; grid-column: 1 / -1;">
+        ${websiteName}
+      </div>
+      ${productsHtml}
+      <!-- Footer Banner -->
+      <div class="banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm; grid-column: 1 / -1;">
+        ${websiteName}
+      </div>
+    </div>`;
   }).join("");
 
   return `<!doctype html>
@@ -919,17 +929,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     <span style="color: #666;">Use A4 paper, 15mm margins, hide headers/footers for best results.</span>
   </div>
   
-  <!-- Header Banner -->
-  <div class="banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
-    ${websiteName}
-  </div>
-  
   ${pagesHtml}
-  
-  <!-- Footer Banner -->
-  <div class="banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
-    ${websiteName}
-  </div>
 </body>
 </html>`;
 }

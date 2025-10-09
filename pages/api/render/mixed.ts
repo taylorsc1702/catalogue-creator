@@ -232,7 +232,17 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     const emptySlots = layout - page.items.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
-    return `<div class="page ${layoutClass}" data-layout="${layout}">${cards}${emptyCards}</div>`;
+    return `<div class="page ${layoutClass}" data-layout="${layout}">
+      <!-- Header Banner -->
+      <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm; grid-column: 1 / -1;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+      ${cards}${emptyCards}
+      <!-- Footer Banner -->
+      <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm; grid-column: 1 / -1;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+    </div>`;
   }).join("");
 
   return `<!doctype html>
@@ -489,17 +499,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 </style>
 </head>
 <body>
-  <!-- Header Banner -->
-  <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-bottom: 10mm;">
-    ${esc(websiteName || 'www.woodslane.com.au')}
-  </div>
-  
   ${pagesHtml}
-  
-  <!-- Footer Banner -->
-  <div style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; margin-top: 10mm;">
-    ${esc(websiteName || 'www.woodslane.com.au')}
-  </div>
 </body>
 </html>`;
 }

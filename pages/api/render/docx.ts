@@ -173,6 +173,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const productsPerPage = layout === 2 ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
     
+    // Helper function to create banner paragraph
+    const createBannerParagraph = (isHeader: boolean): Paragraph => {
+      return new Paragraph({
+        children: [
+          new TextRun({
+            text: websiteName,
+            bold: true,
+            size: 20,
+            color: "FFFFFF",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { 
+          before: isHeader ? 200 : 400, 
+          after: isHeader ? 200 : 200 
+        },
+        shading: {
+          type: "solid",
+          color: bannerColor.replace('#', ''),
+        },
+      });
+    };
+    
     for (let i = 0; i < itemsWithImages.length; i += productsPerPage) {
       const pageItems = itemsWithImages.slice(i, i + productsPerPage);
       
@@ -217,7 +240,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }),
           ],
         });
+        
+        // Add header banner, page content, and footer banner
+        pages.push(createBannerParagraph(true)); // Header banner
         pages.push(pageTable);
+        pages.push(createBannerParagraph(false)); // Footer banner
       } else if (layout === 3) {
         // 3-per-page layout (3 columns)
         const pageTable = new Table({
@@ -270,7 +297,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }),
           ],
         });
+        
+        // Add header banner, page content, and footer banner
+        pages.push(createBannerParagraph(true)); // Header banner
         pages.push(pageTable);
+        pages.push(createBannerParagraph(false)); // Footer banner
       } else {
         // 4-per-page layout (2x2 grid)
         const pageTable = new Table({
@@ -340,7 +371,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }),
           ],
         });
+        
+        // Add header banner, page content, and footer banner
+        pages.push(createBannerParagraph(true)); // Header banner
         pages.push(pageTable);
+        pages.push(createBannerParagraph(false)); // Footer banner
       }
     }
 
@@ -348,24 +383,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sections: [{
         properties: {},
         children: [
-          // Header Banner
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: websiteName,
-                bold: true,
-                size: 20,
-                color: "FFFFFF",
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-            spacing: { before: 200, after: 200 },
-            shading: {
-              type: "solid",
-              color: bannerColor.replace('#', ''),
-            },
-          }),
-          
           // Header
           new Paragraph({
             children: [
@@ -392,26 +409,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             spacing: { after: 400 },
           }),
           
-          // Pages with 4 products each
+          // Pages with banners included
           ...pages,
-          
-          // Footer Banner
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: websiteName,
-                bold: true,
-                size: 20,
-                color: "FFFFFF",
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-            spacing: { before: 400, after: 200 },
-            shading: {
-              type: "solid",
-              color: bannerColor.replace('#', ''),
-            },
-          }),
         ],
       }],
     });
