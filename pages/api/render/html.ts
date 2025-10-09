@@ -331,10 +331,23 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       productsHtml = cards.join('');
     }
 
-    // Special handling for 1-up layout - use simple page structure (banners included in layout)
+    // Special handling for 1-up layout - use same page structure as other layouts
     if (layout === 1) {
       return `<div class="page layout-1up">
-        ${productsHtml}
+        <!-- Header Banner -->
+        <div class="page-header banner header-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${websiteName}
+        </div>
+        
+        <!-- Content Area -->
+        <div class="page-content">
+          ${productsHtml}
+        </div>
+        
+        <!-- Footer Banner -->
+        <div class="page-footer banner footer-banner" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${websiteName}
+        </div>
       </div>`;
     }
     
@@ -442,11 +455,33 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     grid-template-rows: 1fr 1fr;
   }
   
-  /* Simple 1-up layout - banners included in layout handler */
+  /* 1-up layout with proper page structure */
   .page.layout-1up {
+    display: grid;
+    grid-template-areas: 
+      "header header"
+      "content content"
+      "footer footer";
+    grid-template-rows: auto 1fr auto;
+    gap: 10mm;
+    page-break-after: always; 
     padding: 0;
-    margin: 0;
-    page-break-after: always;
+    height: 100vh;
+  }
+  
+  .page.layout-1up .page-header {
+    grid-area: header;
+  }
+  
+  .page.layout-1up .page-content {
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .page.layout-1up .page-footer {
+    grid-area: footer;
   }
   .product-card {
     display: flex;
