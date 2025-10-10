@@ -209,7 +209,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
       );
     },
 
-    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, _bannerColor?: string, _websiteName?: string) => {
       return `
         <div class="product-card layout-1up-content">
           <!-- Left Column -->
