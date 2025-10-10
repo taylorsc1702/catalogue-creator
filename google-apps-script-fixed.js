@@ -34,6 +34,27 @@ function createCatalogueDocument(data) {
       utmParams = {}
     } = data;
     
+    // Validate and clean items data
+    if (items && items.length > 0) {
+      items.forEach((item, index) => {
+        // Ensure required fields exist with defaults
+        if (!item.title) item.title = `Item ${index + 1}`;
+        if (!item.author) item.author = 'Unknown Author';
+        if (!item.description) item.description = 'No description available';
+        if (!item.price) item.price = '0.00';
+        if (!item.sku) item.sku = `SKU${index + 1}`;
+        if (!item.additionalImages) item.additionalImages = [];
+        if (!item.authorBio) item.authorBio = '';
+        
+        console.log(`Item ${index + 1}:`, {
+          title: item.title,
+          hasImage: !!item.imageUrl,
+          hasAuthorBio: !!item.authorBio,
+          internalsCount: item.additionalImages ? item.additionalImages.length : 0
+        });
+      });
+    }
+    
     if (!items || items.length === 0) {
       throw new Error('No items provided');
     }
@@ -144,7 +165,12 @@ function addBanner(body, websiteName, bannerColor, isHeader) {
 
 // Create 1-up layout (two-column design) - ENHANCED with text boxes and grid structure
 function create1UpLayout(body, item, showFields, bannerColor, websiteName, utmParams) {
-  if (!item) return;
+  if (!item) {
+    console.warn('No item provided to create1UpLayout');
+    return;
+  }
+  
+  try {
   
   // Page breaks are handled in the outer loop, no need to add them here
   
@@ -157,9 +183,8 @@ function create1UpLayout(body, item, showFields, bannerColor, websiteName, utmPa
   const leftCell = row.getCell(0);
   const rightCell = row.getCell(1);
   
-  // Set precise cell dimensions for better control
-  leftCell.setWidth(200);  // 40% of page width
-  rightCell.setWidth(300); // 60% of page width
+  // Note: setWidth() is not available for table cells in DocumentApp
+  // Cell widths will be determined by content
   
   // Set cell padding and alignment
   leftCell.setPaddingTop(10).setPaddingBottom(10).setPaddingLeft(10).setPaddingRight(10);
@@ -170,6 +195,13 @@ function create1UpLayout(body, item, showFields, bannerColor, websiteName, utmPa
   
   // Right column: Product details (in structured sections)
   createStructuredRightColumn(rightCell, item, utmParams);
+  
+  } catch (error) {
+    console.error('Error in create1UpLayout:', error.toString());
+    // Fallback: create a simple layout
+    const fallbackText = body.appendParagraph(`Error creating layout for: ${item.title || 'Unknown item'}`);
+    styleParagraph(fallbackText, t => t.setFontSize(12).setForegroundColor('#FF0000'));
+  }
 }
 
 // Utility: truncate at word boundary
@@ -182,26 +214,32 @@ function truncateAtWord(str, maxChars) {
 
 // Create structured left column with defined sections
 function createStructuredLeftColumn(cell, item, showFields) {
-  // ----- Section 1: Product Image (unchanged) -----
-  if (item.imageUrl) {
-    const imageSection = cell.appendTable([['']]);
-    imageSection.setBorderWidth(1);
-    imageSection.setBorderColor('#e0e0e0');
-    const imageCell = imageSection.getRow(0).getCell(0);
-    imageCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
-    imageCell.setBackgroundColor('#FFFFFF');
-
-    try {
-      const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-      const image = imageCell.appendImage(imageBlob);
-      image.setWidth(120);
-      image.setHeight(160);
-    } catch (e) {
-      console.warn('Could not load image:', item.imageUrl);
-    }
-
-    cell.appendParagraph('').setSpacingAfter(10);
+  if (!item) {
+    console.warn('No item provided to createStructuredLeftColumn');
+    return;
   }
+  
+  try {
+    // ----- Section 1: Product Image (unchanged) -----
+    if (item.imageUrl) {
+      const imageSection = cell.appendTable([['']]);
+      imageSection.setBorderWidth(1);
+      imageSection.setBorderColor('#e0e0e0');
+      const imageCell = imageSection.getRow(0).getCell(0);
+      imageCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
+      imageCell.setBackgroundColor('#FFFFFF');
+
+      try {
+        const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
+        const image = imageCell.appendImage(imageBlob);
+        image.setWidth(120);
+        image.setHeight(160);
+      } catch (e) {
+        console.warn('Could not load image:', item.imageUrl);
+      }
+
+      cell.appendParagraph('').setSpacingAfter(10);
+    }
 
   // ----- Section 2: Author Bio (truncate to keep Internals on same page) -----
   const hasInternals = item.additionalImages && item.additionalImages.length > 0;
@@ -290,6 +328,13 @@ function createStructuredLeftColumn(cell, item, showFields) {
     const spacer = cell.appendParagraph('');
     spacer.setSpacingBefore(0).setSpacingAfter(0);
   }
+  
+  } catch (error) {
+    console.error('Error in createStructuredLeftColumn:', error.toString());
+    // Fallback: create a simple text
+    const fallbackText = cell.appendParagraph(`Error in left column: ${error.message}`);
+    styleParagraph(fallbackText, t => t.setFontSize(10).setForegroundColor('#FF0000'));
+  }
 }
 
 // Legacy function for backward compatibility
@@ -357,8 +402,14 @@ function createLeftColumn(cell, item, showFields) {
 
 // Create structured right column with defined sections
 function createStructuredRightColumn(cell, item, utmParams) {
-  // Section 1: Title and Basic Info (transparent box)
-  const titleSection = cell.appendTable([['']]); // single row
+  if (!item) {
+    console.warn('No item provided to createStructuredRightColumn');
+    return;
+  }
+  
+  try {
+    // Section 1: Title and Basic Info (transparent box)
+    const titleSection = cell.appendTable([['']]); // single row
   titleSection.setBorderWidth(1);
   titleSection.setBorderColor('#e0e0e0');
   
@@ -499,6 +550,13 @@ function createStructuredRightColumn(cell, item, utmParams) {
       const barcodeText = barcodeCell.appendParagraph(`SKU: ${item.sku}`);
       styleParagraph(barcodeText, t => t.setFontSize(9).setForegroundColor('#999999'));
     }
+  }
+  
+  } catch (error) {
+    console.error('Error in createStructuredRightColumn:', error.toString());
+    // Fallback: create a simple text
+    const fallbackText = cell.appendParagraph(`Error in right column: ${error.message}`);
+    styleParagraph(fallbackText, t => t.setFontSize(10).setForegroundColor('#FF0000'));
   }
 }
 
