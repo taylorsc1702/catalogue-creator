@@ -240,29 +240,24 @@ function createStructuredLeftColumn(cell, item, showFields) {
 
   // ----- Section 3: Internals (heading + grid inside one table) -----
   if (hasInternals) {
-    // Create a simple 3x2 table without trying to merge cells
+    // Build a 3x2 table with empty cells
     const internalsTable = cell.appendTable([
-      ['Internals:', 'Internals:'],   // row 0 (duplicate text for now)
-      ['', ''],                       // row 1 (images)
-      ['', '']                        // row 2 (images)
+      ['', ''],   // row 0 (will become merged heading)
+      ['', ''],   // row 1 (images)
+      ['', '']    // row 2 (images)
     ]);
     internalsTable.setBorderWidth(1);
     internalsTable.setBorderColor('#e0e0e0');
 
-    // Style the first cell and clear the second cell
-    const r0c0 = internalsTable.getRow(0).getCell(0);
-    const r0c1 = internalsTable.getRow(0).getCell(1);
-    
-    // Clear the second cell and merge
-    r0c1.clear();
-    r0c0.merge();
+    // Merge the first row so the heading spans both columns (merge() has NO args)
+    const headingCell = internalsTable.getRow(0).getCell(0);
+    headingCell.merge(); // merges with the cell to its right
 
-    // Style heading cell
-    r0c0.setBackgroundColor('#FFFFFF');
-    r0c0.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
-    
-    // Style the heading text
-    const headingPara = r0c0.getChild(0).asParagraph();
+    // Style heading cell and add the heading paragraph
+    headingCell.setBackgroundColor('#FFFFFF');
+    headingCell.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
+
+    const headingPara = headingCell.appendParagraph('Internals:');
     styleParagraph(headingPara, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
     headingPara.setSpacingAfter(6);
 
