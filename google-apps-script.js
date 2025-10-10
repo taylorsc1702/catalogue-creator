@@ -6,7 +6,14 @@
 // Main function to create catalogue document
 function createCatalogueDocument(data) {
   try {
-    console.log('Creating catalogue document with data:', JSON.stringify(data, null, 2));
+    console.log('Creating catalogue document');
+    console.log('Data received:', data ? 'Yes' : 'No');
+    
+    if (!data) {
+      throw new Error('No data received');
+    }
+    
+    console.log('Items count:', data.items ? data.items.length : 0);
     
     // Extract parameters
     const {
@@ -159,11 +166,7 @@ function createLeftColumn(cell, item, showFields) {
       image.setWidth(180); // Fixed width
       image.setHeight(270); // Fixed height
       
-      // Center the image
-      const imageParagraph = cell.getChild(0);
-      imageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-      
-      // Add spacing
+      // Center the image by creating a paragraph and adding spacing
       cell.appendParagraph('').setSpacingAfter(20);
     } catch (error) {
       console.warn('Could not load image:', item.imageUrl);
@@ -196,9 +199,7 @@ function createLeftColumn(cell, item, showFields) {
         image.setWidth(80); // Smaller thumbnails
         image.setHeight(120);
         
-        // Center the image
-        const imageParagraph = cell.getChild(cell.getNumChildren() - 1);
-        imageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        // Image is automatically centered in the cell
         
       } catch (error) {
         console.warn('Could not load internal image:', imageUrl);
@@ -337,10 +338,8 @@ function createProductCard(cell, item, layout) {
       image.setWidth(size.width);
       image.setHeight(size.height);
       
-      // Center the image
-      const imageParagraph = cell.getChild(0);
-      imageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-      imageParagraph.setSpacingAfter(10);
+      // Add spacing after image
+      cell.appendParagraph('').setSpacingAfter(10);
     } catch (error) {
       console.warn('Could not load image:', item.imageUrl);
     }
@@ -429,7 +428,17 @@ function htmlToPlainText(html) {
 // Web app function to handle HTTP requests
 function doPost(e) {
   try {
+    console.log('doPost called');
+    console.log('e.postData:', e.postData ? 'exists' : 'missing');
+    console.log('e.postData.contents:', e.postData ? e.postData.contents : 'N/A');
+    
+    if (!e.postData || !e.postData.contents) {
+      throw new Error('No POST data received');
+    }
+    
     const data = JSON.parse(e.postData.contents);
+    console.log('Parsed data successfully');
+    
     const result = createCatalogueDocument(data);
     
     return ContentService
@@ -437,6 +446,7 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
+    console.error('doPost error:', error.toString());
     return ContentService
       .createTextOutput(JSON.stringify({
         success: false,

@@ -312,6 +312,118 @@ export default function Home() {
     }
   }
 
+  async function openGoogleAppsScriptMixed() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      // Create layout assignments array
+      const layoutAssignments = items.map((_, i) => itemLayouts[i] || layout);
+      
+      const resp = await fetch("/api/render/googledocs-apps-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items, 
+          layoutAssignments, // Pass mixed layouts
+          title: catalogueName || `Catalogue - Mixed Layout - ${new Date().toLocaleDateString()}`,
+          showFields: { authorBio: true },
+          hyperlinkToggle,
+          itemBarcodeTypes,
+          barcodeType,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error creating Google Doc: ${error}`);
+        return;
+      }
+      
+      const result = await resp.json();
+      
+      // Handle the new pass-through response format
+      if (result.gasSuccess && result.body?.success) {
+        const gasResult = result.body;
+        
+        // Open the Google Doc in a new tab
+        window.open(gasResult.documentUrl, '_blank');
+        
+        // Show success message with clickable link
+        const successMessage = document.createElement('div');
+        successMessage.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 500px;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          ">
+            <div style="color: #28a745; font-size: 24px; margin-bottom: 15px;">✅</div>
+            <h3 style="color: #28a745; margin: 0 0 15px 0; font-size: 18px;">Google Doc Created Successfully!</h3>
+            <p style="margin: 0 0 10px 0; color: #333;">📄 <strong>${gasResult.documentName}</strong></p>
+            <p style="margin: 0 0 15px 0; color: #666;">Your mixed layout catalogue has been created with perfect formatting!</p>
+            <a href="${gasResult.documentUrl}" target="_blank" style="
+              display: inline-block;
+              background: #007bff;
+              color: white;
+              text-decoration: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              font-weight: bold;
+              margin: 10px 5px;
+            ">📖 Open Google Doc</a>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+              background: #6c757d;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              font-weight: bold;
+              margin: 10px 5px;
+              cursor: pointer;
+            ">Close</button>
+          </div>
+        `;
+        
+        // Add overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          z-index: 9999;
+        `;
+        overlay.onclick = () => {
+          document.body.removeChild(overlay);
+          document.body.removeChild(successMessage);
+        };
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(successMessage);
+        
+      } else {
+        // Handle error from Google Apps Script
+        const errorMessage = result.body?.error || result.error || 'Unknown error';
+        alert(`❌ Error creating Google Doc: ${errorMessage}\n\nGAS Status: ${result.status}\nResponse: ${JSON.stringify(result.body)}`);
+      }
+    } catch (error) {
+      alert("Error creating Google Doc: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   async function openGoogleAppsScript() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
@@ -332,23 +444,90 @@ export default function Home() {
         })
       });
       
-      if (!resp.ok) {
-        const error = await resp.text();
-        alert(`Error creating Google Doc: ${error}`);
-        return;
-      }
-      
-      const result = await resp.json();
-      
-      if (result.success) {
-        // Open the Google Doc in a new tab
-        window.open(result.documentUrl, '_blank');
+          if (!resp.ok) {
+            const error = await resp.text();
+            alert(`Error creating Google Doc: ${error}`);
+            return;
+          }
+          
+          const result = await resp.json();
+          
+          // Handle the new pass-through response format
+          if (result.gasSuccess && result.body?.success) {
+            const gasResult = result.body;
+            
+            // Open the Google Doc in a new tab
+            window.open(gasResult.documentUrl, '_blank');
+            
+            // Show success message with clickable link
+            const successMessage = document.createElement('div');
+        successMessage.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 500px;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          ">
+            <div style="color: #28a745; font-size: 24px; margin-bottom: 15px;">✅</div>
+            <h3 style="color: #28a745; margin: 0 0 15px 0; font-size: 18px;">Google Doc Created Successfully!</h3>
+                 <p style="margin: 0 0 10px 0; color: #333;">📄 <strong>${gasResult.documentName}</strong></p>
+            <p style="margin: 0 0 15px 0; color: #666;">Your catalogue has been created with perfect formatting!</p>
+            <a href="${gasResult.documentUrl}" target="_blank" style="
+              display: inline-block;
+              background: #007bff;
+              color: white;
+              text-decoration: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              font-weight: bold;
+              margin: 10px 5px;
+            ">📖 Open Google Doc</a>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+              background: #6c757d;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              font-weight: bold;
+              margin: 10px 5px;
+              cursor: pointer;
+            ">Close</button>
+          </div>
+        `;
         
-        // Show success message with document info
-        alert(`✅ Google Doc created successfully!\n\n📄 Document: ${result.documentName}\n🔗 URL: ${result.documentUrl}\n\nYour catalogue has been created with perfect formatting!`);
-      } else {
-        alert(`❌ Error creating Google Doc: ${result.error}\n\n${result.instructions || ''}`);
-      }
+        // Add overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          z-index: 9999;
+        `;
+        overlay.onclick = () => {
+          document.body.removeChild(overlay);
+          document.body.removeChild(successMessage);
+        };
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(successMessage);
+        
+          } else {
+            // Handle error from Google Apps Script
+            const errorMessage = result.body?.error || result.error || 'Unknown error';
+            alert(`❌ Error creating Google Doc: ${errorMessage}\n\nGAS Status: ${result.status}\nResponse: ${JSON.stringify(result.body)}`);
+          }
     } catch (error) {
       alert("Error creating Google Doc: " + (error instanceof Error ? error.message : "Unknown error"));
     }
@@ -991,6 +1170,9 @@ export default function Home() {
               </button>
               <button onClick={openMixedLayout} disabled={!items.length} style={btn()}>
                 🎨 Mixed Layout View
+              </button>
+              <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
+                🚀 Mixed Google Doc
               </button>
               {showOrderEditor && (
                 <span style={{ fontSize: 13, color: '#656F91' }}>
