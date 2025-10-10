@@ -252,8 +252,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
 
     // Merge the first row so the heading spans both columns
     const r0c0 = internalsTable.getRow(0).getCell(0);
-    const r0c1 = internalsTable.getRow(0).getCell(1);
-    r0c0.merge(r0c1);
+    r0c0.merge(); // <-- no parameters
 
     // Style heading cell
     r0c0.setBackgroundColor('#FFFFFF');
