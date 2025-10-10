@@ -226,7 +226,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 
     const layout = page.layout;
     const layoutClass = layout === 2 ? "layout-2" : layout === 3 ? "layout-3" : layout === 1 ? "layout-1" : layout === 8 ? "layout-8" : "";
-    const cards = page.items.map((item, localIndex) => createProductCard(item, localIndex)).join("");
+    const cards = page.items.map((item) => createProductCard(item)).join("");
     
     // Fill empty slots for proper grid layout
     const emptySlots = layout - page.items.length;
