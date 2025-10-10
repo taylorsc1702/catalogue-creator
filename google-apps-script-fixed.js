@@ -238,30 +238,35 @@ function createStructuredLeftColumn(cell, item, showFields) {
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
-  // ----- Section 3: Internals (heading + grid inside one table; no keepWithNext) -----
+  // ----- Section 3: Internals (heading + grid inside one table) -----
   if (hasInternals) {
-    // Build a 3x2 table: first row is heading (merged across 2 columns),
-    // next two rows are the 2x2 image grid.
+    // Create a simple 3x2 table without trying to merge cells
     const internalsTable = cell.appendTable([
-      ['Internals:', ''],   // row 0 (we'll merge these two cells)
-      ['', ''],             // row 1 (images)
-      ['', '']              // row 2 (images)
+      ['Internals:', 'Internals:'],   // row 0 (duplicate text for now)
+      ['', ''],                       // row 1 (images)
+      ['', '']                        // row 2 (images)
     ]);
     internalsTable.setBorderWidth(1);
     internalsTable.setBorderColor('#e0e0e0');
 
-    // Merge the first row so the heading spans both columns
+    // Style the first cell and clear the second cell
     const r0c0 = internalsTable.getRow(0).getCell(0);
-    r0c0.merge(); // <-- no parameters
+    const r0c1 = internalsTable.getRow(0).getCell(1);
+    
+    // Clear the second cell and merge
+    r0c1.clear();
+    r0c0.merge();
 
     // Style heading cell
     r0c0.setBackgroundColor('#FFFFFF');
     r0c0.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
+    
+    // Style the heading text
     const headingPara = r0c0.getChild(0).asParagraph();
     styleParagraph(headingPara, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
     headingPara.setSpacingAfter(6);
 
-    // Style grid cells + add images
+    // Style grid cells
     for (let r = 1; r <= 2; r++) {
       for (let c = 0; c < 2; c++) {
         const gridCell = internalsTable.getRow(r).getCell(c);
@@ -270,6 +275,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
       }
     }
 
+    // Add up to 4 images into the 2x2 grid
     const imagesToShow = item.additionalImages.slice(0, 4);
     imagesToShow.forEach((imageUrl, idx) => {
       try {
@@ -277,15 +283,15 @@ function createStructuredLeftColumn(cell, item, showFields) {
         const c = idx % 2;
         const gridCell = internalsTable.getRow(r).getCell(c);
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
-        const image = gridCell.appendImage(blob);
-        image.setWidth(50);
-        image.setHeight(75);
+        const img = gridCell.appendImage(blob);
+        img.setWidth(50);
+        img.setHeight(75);
       } catch (e) {
         console.warn('Could not load internal image:', imageUrl);
       }
     });
 
-    // optional tiny spacer after the table
+    // Optional tiny spacer after the table
     const spacer = cell.appendParagraph('');
     spacer.setSpacingBefore(0).setSpacingAfter(0);
   }
