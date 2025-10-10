@@ -235,8 +235,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
     // Spacer + pagination hint before Internals
     const bioAnchor = cell.appendParagraph('');
     bioAnchor.setSpacingAfter(10);
-    bioAnchor.setKeepWithNext(true);
-    bioAnchor.setKeepLinesTogether(true);
+    // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
   // ----- Section 3: Internals (keep block together) -----
