@@ -417,16 +417,16 @@ function createStructuredRightColumn(cell, item, utmParams) {
   titleCell.setPaddingTop(8).setPaddingBottom(8).setPaddingLeft(8).setPaddingRight(8);
   titleCell.setBackgroundColor('#FFFFFF'); // Transparent white background
   
-  // Product title
+  // Product title (smaller text)
   const title = titleCell.appendParagraph(item.title);
-  styleParagraph(title, t => t.setFontSize(18).setBold(true).setForegroundColor('#000000'));
-  title.setSpacingAfter(5);
+  styleParagraph(title, t => t.setFontSize(14).setBold(true).setForegroundColor('#000000'));
+  title.setSpacingAfter(3);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = titleCell.appendParagraph(item.subtitle);
-    styleParagraph(subtitle, t => t.setFontSize(12).setItalic(true).setForegroundColor('#666666'));
-    subtitle.setSpacingAfter(5);
+    styleParagraph(subtitle, t => t.setFontSize(10).setItalic(true).setForegroundColor('#666666'));
+    subtitle.setSpacingAfter(3);
   }
   
   // Author (fix duplication - don't add "By" if it's already in the metafield)
@@ -436,29 +436,24 @@ function createStructuredRightColumn(cell, item, utmParams) {
       authorText = `By ${authorText}`;
     }
     const author = titleCell.appendParagraph(authorText);
-    styleParagraph(author, t => t.setFontSize(11).setForegroundColor('#444444'));
-    author.setSpacingAfter(5);
+    styleParagraph(author, t => t.setFontSize(9).setForegroundColor('#444444'));
+    author.setSpacingAfter(3);
   }
   
-  // Description section (transparent box with fixed size)
+  // Description section (scales to fill available space)
   if (item.description) {
     const descSection = cell.appendTable([['']]);
     descSection.setBorderWidth(1);
     descSection.setBorderColor('#e0e0e0');
     
     const descCell = descSection.getRow(0).getCell(0);
-    descCell.setPaddingTop(8).setPaddingBottom(8).setPaddingLeft(8).setPaddingRight(8);
-    descCell.setBackgroundColor('#FFFFFF'); // Transparent white background
+    descCell.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
+    descCell.setBackgroundColor('#FFFFFF');
     
     let descText = item.description;
-    // Keep full text but it will be scrollable in fixed box
-    // if (descText.length > 300) {
-    //   descText = descText.substring(0, 300) + '...';
-    // }
     const description = descCell.appendParagraph(descText);
-    styleParagraph(description, t => t.setFontSize(10).setForegroundColor('#333333'));
-    
-    cell.appendParagraph('').setSpacingAfter(8);
+    styleParagraph(description, t => t.setFontSize(9).setForegroundColor('#333333'));
+    description.setSpacingAfter(0); // No extra spacing
   }
   
   // Section 2: Product Details (heading outside, data in table)
@@ -493,15 +488,19 @@ function createStructuredRightColumn(cell, item, utmParams) {
       labelCell.setBackgroundColor('#FFFFFF');
       valueCell.setBackgroundColor('#FFFFFF');
       
-      // Set padding
-      labelCell.setPaddingTop(3).setPaddingBottom(3).setPaddingLeft(8).setPaddingRight(4);
-      valueCell.setPaddingTop(3).setPaddingBottom(3).setPaddingLeft(4).setPaddingRight(8);
+      // Minimal padding for compact table
+      labelCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(6).setPaddingRight(2);
+      valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(2).setPaddingRight(6);
       
       // STYLE THE EXISTING PARAGRAPHS (no new paragraphs!)
       const labelPara = labelCell.getChild(0).asParagraph();
       const valuePara = valueCell.getChild(0).asParagraph();
-      styleParagraph(labelPara, t => t.setBold(true).setFontSize(10).setForegroundColor('#666666'));
-      styleParagraph(valuePara, t => t.setFontSize(10).setForegroundColor('#333333'));
+      styleParagraph(labelPara, t => t.setBold(true).setFontSize(9).setForegroundColor('#666666'));
+      styleParagraph(valuePara, t => t.setFontSize(9).setForegroundColor('#333333'));
+      
+      // Reduce spacing between rows
+      labelPara.setSpacingAfter(0);
+      valuePara.setSpacingAfter(0);
     }
   }
   
@@ -509,7 +508,7 @@ function createStructuredRightColumn(cell, item, utmParams) {
   const postDetailsSpacer = titleCell.appendParagraph('');
   postDetailsSpacer.setSpacingAfter(6);
   
-  // Section 3: Price and Barcode side by side (transparent box)
+  // Section 3: Price and Barcode (fixed position at bottom)
   const priceSection = cell.appendTable([['', '']]); // Two columns: price and barcode
   priceSection.setBorderWidth(1);
   priceSection.setBorderColor('#e0e0e0');
@@ -517,17 +516,19 @@ function createStructuredRightColumn(cell, item, utmParams) {
   const priceCell = priceSection.getRow(0).getCell(0);
   const barcodeCell = priceSection.getRow(0).getCell(1);
   
-  priceCell.setPaddingTop(8).setPaddingBottom(8).setPaddingLeft(8).setPaddingRight(8);
-  barcodeCell.setPaddingTop(8).setPaddingBottom(8).setPaddingLeft(8).setPaddingRight(8);
+  // Minimal padding for compact layout
+  priceCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
+  barcodeCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
   
   // Make cells transparent
   priceCell.setBackgroundColor('#FFFFFF');
   barcodeCell.setBackgroundColor('#FFFFFF');
   
-  // Price (left side)
+  // Price (left side) - smaller font
   if (item.price) {
     const price = priceCell.appendParagraph(`AUD$ ${item.price}`);
-    styleParagraph(price, t => t.setFontSize(14).setBold(true).setForegroundColor('#d63384'));
+    styleParagraph(price, t => t.setFontSize(10).setBold(true).setForegroundColor('#d63384'));
+    price.setSpacingAfter(0);
   }
   
   // Barcode (right side) - Show only EAN-13 barcode image
@@ -537,18 +538,18 @@ function createStructuredRightColumn(cell, item, utmParams) {
       const barcodeImage = generateEAN13Barcode(item.sku);
       if (barcodeImage) {
         const image = barcodeCell.appendImage(barcodeImage);
-        image.setWidth(120);
-        image.setHeight(40);
+        image.setWidth(100); // Smaller barcode
+        image.setHeight(30); // Smaller barcode
       } else {
         // Fallback: show SKU as text if barcode generation fails
         const barcodeText = barcodeCell.appendParagraph(`SKU: ${item.sku}`);
-        styleParagraph(barcodeText, t => t.setFontSize(9).setForegroundColor('#999999'));
+        styleParagraph(barcodeText, t => t.setFontSize(8).setForegroundColor('#999999'));
       }
     } catch (error) {
       console.warn('Could not generate barcode:', error);
       // Fallback: show SKU as text if barcode generation fails
       const barcodeText = barcodeCell.appendParagraph(`SKU: ${item.sku}`);
-      styleParagraph(barcodeText, t => t.setFontSize(9).setForegroundColor('#999999'));
+      styleParagraph(barcodeText, t => t.setFontSize(8).setForegroundColor('#999999'));
     }
   }
   
