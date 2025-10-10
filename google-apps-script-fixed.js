@@ -276,57 +276,45 @@ function createStructuredLeftColumn(cell, item, showFields) {
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
-  // ----- Section 3: Internals (heading + grid inside one table) -----
+  // ----- Section 3: Internals (simplified approach) -----
   if (hasInternals) {
-    // Build a 3x2 table with empty cells
-    const internalsTable = cell.appendTable([
-      ['', ''],   // row 0 (will become merged heading)
-      ['', ''],   // row 1 (images)
-      ['', '']    // row 2 (images)
-    ]);
-    internalsTable.setBorderWidth(1);
-    internalsTable.setBorderColor('#e0e0e0');
-
-    // Merge the first row so the heading spans both columns (merge() has NO args)
-    const headingCell = internalsTable.getRow(0).getCell(0);
-    headingCell.merge(); // merges with the cell to its right
-
-    // Style heading cell and add the heading paragraph
-    headingCell.setBackgroundColor('#FFFFFF');
-    headingCell.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
-
-    const headingPara = headingCell.appendParagraph('Internals:');
-    styleParagraph(headingPara, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
-    headingPara.setSpacingAfter(6);
-
-    // Style grid cells
-    for (let r = 1; r <= 2; r++) {
-      for (let c = 0; c < 2; c++) {
-        const gridCell = internalsTable.getRow(r).getCell(c);
-        gridCell.setBackgroundColor('#FFFFFF');
-        gridCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
-      }
-    }
-
-    // Add up to 4 images into the 2x2 grid
+    // Simple heading without table merge
+    const internalsHeading = cell.appendParagraph('Internals:');
+    styleParagraph(internalsHeading, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
+    internalsHeading.setSpacingAfter(3);
+    
+    // Create a simple 2x2 grid without complex table merging
     const imagesToShow = item.additionalImages.slice(0, 4);
-    imagesToShow.forEach((imageUrl, idx) => {
+    
+    // Add images in a simple 2x2 layout using individual tables
+    for (let i = 0; i < Math.min(4, imagesToShow.length); i++) {
+      const imageUrl = imagesToShow[i];
       try {
-        const r = idx < 2 ? 1 : 2;
-        const c = idx % 2;
-        const gridCell = internalsTable.getRow(r).getCell(c);
+        // Create a simple single-cell table for each image
+        const imageTable = cell.appendTable([['']]);
+        imageTable.setBorderWidth(0); // No borders for cleaner look
+        
+        const imageCell = imageTable.getRow(0).getCell(0);
+        imageCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(1).setPaddingRight(1);
+        imageCell.setBackgroundColor('#FFFFFF');
+        
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
-        const img = gridCell.appendImage(blob);
+        const img = imageCell.appendImage(blob);
         img.setWidth(50);
         img.setHeight(75);
+        
+        // Add line breaks between rows (every 2 images)
+        if ((i + 1) % 2 === 0 && i < imagesToShow.length - 1) {
+          cell.appendParagraph('');
+        }
       } catch (e) {
         console.warn('Could not load internal image:', imageUrl);
       }
-    });
-
-    // Optional tiny spacer after the table
+    }
+    
+    // Small spacer after internals
     const spacer = cell.appendParagraph('');
-    spacer.setSpacingBefore(0).setSpacingAfter(0);
+    spacer.setSpacingBefore(0).setSpacingAfter(3);
   }
   
   } catch (error) {
@@ -504,9 +492,7 @@ function createStructuredRightColumn(cell, item, utmParams) {
     }
   }
   
-  // Keep a small spacer before the price/barcode section
-  const postDetailsSpacer = titleCell.appendParagraph('');
-  postDetailsSpacer.setSpacingAfter(6);
+  // No spacer - price/barcode should be at the bottom
   
   // Section 3: Price and Barcode (fixed position at bottom)
   const priceSection = cell.appendTable([['', '']]); // Two columns: price and barcode
@@ -516,9 +502,9 @@ function createStructuredRightColumn(cell, item, utmParams) {
   const priceCell = priceSection.getRow(0).getCell(0);
   const barcodeCell = priceSection.getRow(0).getCell(1);
   
-  // Minimal padding for compact layout
-  priceCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
-  barcodeCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
+  // Minimal padding for compact layout - push to bottom
+  priceCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(6).setPaddingRight(6);
+  barcodeCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(6).setPaddingRight(6);
   
   // Make cells transparent
   priceCell.setBackgroundColor('#FFFFFF');
