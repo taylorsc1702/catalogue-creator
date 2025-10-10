@@ -238,35 +238,47 @@ function createStructuredLeftColumn(cell, item, showFields) {
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
-  // ----- Section 3: Internals (keep block together) -----
+  // ----- Section 3: Internals (heading + grid inside one table; no keepWithNext) -----
   if (hasInternals) {
-    const internalsHeading = cell.appendParagraph('Internals:');
-    styleParagraph(internalsHeading, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
-    internalsHeading.setSpacingAfter(8);
-    internalsHeading.setKeepWithNext(true);
-    internalsHeading.setKeepLinesTogether(true);
-
-    const internalsSection = cell.appendTable([
-      ['', ''],
-      ['', '']
+    // Build a 3x2 table: first row is heading (merged across 2 columns),
+    // next two rows are the 2x2 image grid.
+    const internalsTable = cell.appendTable([
+      ['Internals:', ''],   // row 0 (we'll merge these two cells)
+      ['', ''],             // row 1 (images)
+      ['', '']              // row 2 (images)
     ]);
-    internalsSection.setBorderWidth(1);
-    internalsSection.setBorderColor('#e0e0e0');
+    internalsTable.setBorderWidth(1);
+    internalsTable.setBorderColor('#e0e0e0');
 
-    for (let i = 0; i < internalsSection.getNumRows(); i++) {
-      for (let j = 0; j < internalsSection.getRow(i).getNumCells(); j++) {
-        internalsSection.getRow(i).getCell(j).setBackgroundColor('#FFFFFF');
+    // Merge the first row so the heading spans both columns
+    const r0c0 = internalsTable.getRow(0).getCell(0);
+    const r0c1 = internalsTable.getRow(0).getCell(1);
+    r0c0.merge(r0c1);
+
+    // Style heading cell
+    r0c0.setBackgroundColor('#FFFFFF');
+    r0c0.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
+    const headingPara = r0c0.getChild(0).asParagraph();
+    styleParagraph(headingPara, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
+    headingPara.setSpacingAfter(6);
+
+    // Style grid cells + add images
+    for (let r = 1; r <= 2; r++) {
+      for (let c = 0; c < 2; c++) {
+        const gridCell = internalsTable.getRow(r).getCell(c);
+        gridCell.setBackgroundColor('#FFFFFF');
+        gridCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
       }
     }
 
     const imagesToShow = item.additionalImages.slice(0, 4);
-    imagesToShow.forEach((imageUrl, index) => {
+    imagesToShow.forEach((imageUrl, idx) => {
       try {
-        const r = Math.floor(index / 2), c = index % 2;
-        const cellImg = internalsSection.getRow(r).getCell(c);
-        cellImg.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
+        const r = idx < 2 ? 1 : 2;
+        const c = idx % 2;
+        const gridCell = internalsTable.getRow(r).getCell(c);
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
-        const image = cellImg.appendImage(blob);
+        const image = gridCell.appendImage(blob);
         image.setWidth(50);
         image.setHeight(75);
       } catch (e) {
@@ -274,10 +286,9 @@ function createStructuredLeftColumn(cell, item, showFields) {
       }
     });
 
-    // Tiny anchor to help Docs keep table as a unit
-    const internalsAnchor = cell.appendParagraph('');
-    internalsAnchor.setSpacingBefore(0).setSpacingAfter(0);
-    internalsAnchor.setKeepLinesTogether(true);
+    // optional tiny spacer after the table
+    const spacer = cell.appendParagraph('');
+    spacer.setSpacingBefore(0).setSpacingAfter(0);
   }
 }
 
