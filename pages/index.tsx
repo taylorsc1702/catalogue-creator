@@ -382,7 +382,7 @@ export default function Home() {
               font-weight: bold;
               margin: 10px 5px;
             ">📖 Open Google Doc</a>
-            <button onclick="this.parentElement.parentElement.remove()" style="
+            <button id="closeModalBtnMixed" style="
               background: #6c757d;
               color: white;
               border: none;
@@ -406,13 +406,24 @@ export default function Home() {
           background: rgba(0,0,0,0.5);
           z-index: 9999;
         `;
-        overlay.onclick = () => {
-          document.body.removeChild(overlay);
-          document.body.removeChild(successMessage);
+        
+        const closeModal = () => {
+          try {
+            if (overlay.parentNode) document.body.removeChild(overlay);
+            if (successMessage.parentNode) document.body.removeChild(successMessage);
+          } catch (e) {
+            console.error('Error closing modal:', e);
+          }
         };
+        
+        overlay.onclick = closeModal;
         
         document.body.appendChild(overlay);
         document.body.appendChild(successMessage);
+        
+        // Add event listener to close button
+        const closeBtn = document.getElementById('closeModalBtnMixed');
+        if (closeBtn) closeBtn.onclick = closeModal;
         
       } else {
         // Handle error from Google Apps Script
@@ -491,7 +502,7 @@ export default function Home() {
               font-weight: bold;
               margin: 10px 5px;
             ">📖 Open Google Doc</a>
-            <button onclick="this.parentElement.parentElement.remove()" style="
+            <button id="closeModalBtn" style="
               background: #6c757d;
               color: white;
               border: none;
@@ -515,13 +526,24 @@ export default function Home() {
           background: rgba(0,0,0,0.5);
           z-index: 9999;
         `;
-        overlay.onclick = () => {
-          document.body.removeChild(overlay);
-          document.body.removeChild(successMessage);
+        
+        const closeModal = () => {
+          try {
+            if (overlay.parentNode) document.body.removeChild(overlay);
+            if (successMessage.parentNode) document.body.removeChild(successMessage);
+          } catch (e) {
+            console.error('Error closing modal:', e);
+          }
         };
+        
+        overlay.onclick = closeModal;
         
         document.body.appendChild(overlay);
         document.body.appendChild(successMessage);
+        
+        // Add event listener to close button
+        const closeBtn = document.getElementById('closeModalBtn');
+        if (closeBtn) closeBtn.onclick = closeModal;
         
           } else {
             // Handle error from Google Apps Script
