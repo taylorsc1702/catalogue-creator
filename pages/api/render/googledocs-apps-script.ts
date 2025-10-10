@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Google Apps Script response text:', responseText);
 
     // Try to parse JSON but don't crash if it's plain text
-    let jsonResponse: any;
+    let jsonResponse: unknown;
     try { 
       jsonResponse = JSON.parse(responseText); 
     } catch { 
@@ -57,10 +57,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       originalResponse: responseText
     });
 
-  } catch (e: any) {
-    console.error('Route error:', e);
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error('Route error:', error);
     return res.status(500).json({ 
-      error: e?.message || String(e),
+      error: error?.message || String(e),
       type: 'route_error'
     });
   }

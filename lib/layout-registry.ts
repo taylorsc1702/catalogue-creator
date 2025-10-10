@@ -1,5 +1,5 @@
 import { LayoutHandler } from './layout-handlers';
-import { create1UpLayoutHandler } from './layouts/1-up';
+// import { create1UpLayoutHandler } from './layouts/1-up'; // Disabled - using inline code
 import { create2UpLayoutHandler } from './layouts/2-up';
 import { create3UpLayoutHandler } from './layouts/3-up';
 import { create4UpLayoutHandler } from './layouts/4-up';

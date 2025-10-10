@@ -195,7 +195,8 @@ export function createListLayoutHandler(): LayoutHandler {
       );
     },
 
-    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, _bannerColor?: string, _websiteName?: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
       return `
         <div class="list-item">
           <div class="list-image">

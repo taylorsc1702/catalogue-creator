@@ -170,7 +170,8 @@ export function create2UpLayoutHandler(): LayoutHandler {
       );
     },
 
-    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, _bannerColor?: string, _websiteName?: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
       return `
         <div class="product-card">
           <div class="product-image">

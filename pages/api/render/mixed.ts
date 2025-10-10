@@ -166,8 +166,8 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     pages.push({ items: currentPage, layout: currentLayout });
   }
 
-  const pagesHtml = pages.map((page, pageIndex) => {
-    const createProductCard = (it: Item, localIndex: number) => {
+  const pagesHtml = pages.map((page) => {
+    const createProductCard = (it: Item) => {
       // Find the global index of this item
       const globalIndex = items.findIndex(item => item.handle === it.handle);
       
