@@ -155,11 +155,11 @@ function addBanner(body, websiteName, bannerColor, isHeader) {
     t.setFontSize(12).setBold(true).setForegroundColor('#FFFFFF').setBackgroundColor(bannerColor);
   });
   
-  // Set spacing
+  // Set spacing (reduced for tighter layout)
   if (isHeader) {
-    bannerText.setSpacingAfter(20);
+    bannerText.setSpacingAfter(10); // Reduced from 20
   } else {
-    bannerText.setSpacingBefore(20);
+    bannerText.setSpacingBefore(10); // Reduced from 20
   }
 }
 
@@ -186,9 +186,9 @@ function create1UpLayout(body, item, showFields, bannerColor, websiteName, utmPa
   // Note: setWidth() is not available for table cells in DocumentApp
   // Cell widths will be determined by content
   
-  // Set cell padding and alignment
-  leftCell.setPaddingTop(10).setPaddingBottom(10).setPaddingLeft(10).setPaddingRight(10);
-  rightCell.setPaddingTop(10).setPaddingBottom(10).setPaddingLeft(10).setPaddingRight(10);
+  // Set cell padding and alignment (reduced for tighter layout)
+  leftCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(8).setPaddingRight(8);
+  rightCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(8).setPaddingRight(8);
   
   // Left column: Image, Author Bio, Internals (in structured sections)
   createStructuredLeftColumn(leftCell, item, showFields);
@@ -238,7 +238,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
         console.warn('Could not load image:', item.imageUrl);
       }
 
-      cell.appendParagraph('').setSpacingAfter(5); // Reduced for footer space
+      cell.appendParagraph('').setSpacingAfter(3); // Further reduced for tighter layout
     }
 
   // ----- Section 2: Author Bio (truncate to keep Internals on same page) -----
@@ -272,7 +272,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
 
     // Minimal spacer before Internals
     const bioAnchor = cell.appendParagraph('');
-    bioAnchor.setSpacingAfter(5); // Reduced for footer space
+    bioAnchor.setSpacingAfter(3); // Further reduced for tighter layout
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
@@ -303,8 +303,8 @@ function createStructuredLeftColumn(cell, item, showFields) {
         
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
         const img = gridCell.appendImage(blob);
-        img.setWidth(60); // Larger images since we only have 2
-        img.setHeight(85); // Larger images since we only have 2
+        img.setWidth(70); // Increased size with tighter layout
+        img.setHeight(95); // Increased size with tighter layout
       } catch (e) {
         console.warn('Could not load internal image:', imageUrl);
       }
@@ -400,7 +400,7 @@ function createStructuredRightColumn(cell, item, utmParams) {
   titleSection.setBorderColor('#e0e0e0');
   
   const titleCell = titleSection.getRow(0).getCell(0);
-  titleCell.setPaddingTop(8).setPaddingBottom(8).setPaddingLeft(8).setPaddingRight(8);
+  titleCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(6).setPaddingRight(6);
   titleCell.setBackgroundColor('#FFFFFF'); // Transparent white background
   
   // Product title (smaller text)
@@ -433,7 +433,7 @@ function createStructuredRightColumn(cell, item, utmParams) {
     descSection.setBorderColor('#e0e0e0');
     
     const descCell = descSection.getRow(0).getCell(0);
-    descCell.setPaddingTop(6).setPaddingBottom(6).setPaddingLeft(8).setPaddingRight(8);
+    descCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
     descCell.setBackgroundColor('#FFFFFF');
     
     let descText = item.description;
