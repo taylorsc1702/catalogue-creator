@@ -666,7 +666,7 @@ function createMultiItemLayout(body, pageItems, layout) {
   }
 }
 
-// Create individual product card (enhanced for 2-per-page with table structure)
+// Create individual product card (enhanced for 2-per-page with fixed bottom price/barcode)
 function createProductCard(cell, item, layout) {
   if (!item) {
     console.warn('No item provided to createProductCard');
@@ -678,11 +678,29 @@ function createProductCard(cell, item, layout) {
     cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     cell.setBackgroundColor('#FFFFFF');
     
+    // Create a main content table with 2 rows: content and price/barcode
+    const mainTable = cell.appendTable([
+      [''], // Row 0: Main content (image, title, description, details)
+      ['']  // Row 1: Price and barcode (fixed at bottom)
+    ]);
+    mainTable.setBorderWidth(0);
+    
+    const contentCell = mainTable.getRow(0).getCell(0);
+    const priceBarcodeCell = mainTable.getRow(1).getCell(0);
+    
+    // Style cells
+    contentCell.setBackgroundColor('#FFFFFF');
+    priceBarcodeCell.setBackgroundColor('#FFFFFF');
+    contentCell.setPaddingTop(0).setPaddingBottom(5).setPaddingLeft(0).setPaddingRight(0);
+    priceBarcodeCell.setPaddingTop(5).setPaddingBottom(0).setPaddingLeft(0).setPaddingRight(0);
+    
+    // === MAIN CONTENT SECTION ===
+    
     // Image
     if (item.imageUrl) {
       try {
         const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-        const image = cell.appendImage(imageBlob);
+        const image = contentCell.appendImage(imageBlob);
         
         // Set image size based on layout
         const sizes = {
@@ -697,21 +715,21 @@ function createProductCard(cell, item, layout) {
         image.setHeight(size.height);
         
         // Add spacing after image
-        cell.appendParagraph('').setSpacingAfter(5);
+        contentCell.appendParagraph('').setSpacingAfter(5);
       } catch (error) {
         console.warn('Could not load image:', item.imageUrl);
       }
     }
     
     // Title
-    const title = cell.appendParagraph(item.title);
+    const title = contentCell.appendParagraph(item.title);
     const titleSizes = { 2: 12, 3: 10, 4: 9, 8: 7 };
     styleParagraph(title, t => t.setFontSize(titleSizes[layout] || 9).setBold(true).setForegroundColor('#000000'));
     title.setSpacingAfter(3);
     
     // Subtitle
     if (item.subtitle) {
-      const subtitle = cell.appendParagraph(item.subtitle);
+      const subtitle = contentCell.appendParagraph(item.subtitle);
       const subtitleSizes = { 2: 9, 3: 8, 4: 7, 8: 6 };
       styleParagraph(subtitle, t => t.setFontSize(subtitleSizes[layout] || 7).setItalic(true).setForegroundColor('#666666'));
       subtitle.setSpacingAfter(3);
@@ -723,20 +741,15 @@ function createProductCard(cell, item, layout) {
       if (!authorText.toLowerCase().startsWith('by ')) {
         authorText = `By ${authorText}`;
       }
-      const author = cell.appendParagraph(authorText);
+      const author = contentCell.appendParagraph(authorText);
       const authorSizes = { 2: 8, 3: 7, 4: 7, 8: 6 };
       styleParagraph(author, t => t.setFontSize(authorSizes[layout] || 7).setForegroundColor('#444444'));
       author.setSpacingAfter(3);
     }
     
-    // Description (truncated for smaller layouts)
+    // Description (let it scale naturally, no artificial truncation)
     if (item.description) {
-      const maxLength = layout === 8 ? 50 : layout === 4 ? 80 : layout === 3 ? 100 : 120;
-      const description = item.description.length > maxLength ? 
-        item.description.substring(0, maxLength) + '...' : 
-        item.description;
-      
-      const desc = cell.appendParagraph(description);
+      const desc = contentCell.appendParagraph(item.description);
       const descSizes = { 2: 8, 3: 7, 4: 6, 8: 5 };
       styleParagraph(desc, t => t.setFontSize(descSizes[layout] || 6).setForegroundColor('#333333'));
       desc.setSpacingAfter(5);
@@ -753,7 +766,7 @@ function createProductCard(cell, item, layout) {
       if (item.weight) metaItems.push([`Weight:`, item.weight]);
       
       if (metaItems.length > 0) {
-        const detailsTable = cell.appendTable(metaItems);
+        const detailsTable = contentCell.appendTable(metaItems);
         detailsTable.setBorderWidth(1);
         detailsTable.setBorderColor('#e0e0e0');
         
@@ -781,14 +794,12 @@ function createProductCard(cell, item, layout) {
           labelPara.setSpacingAfter(0);
           valuePara.setSpacingAfter(0);
         }
-        
-        cell.appendParagraph('').setSpacingAfter(3);
       }
     }
     
-    // Price and Barcode section
+    // === PRICE/BARCODE SECTION (FIXED AT BOTTOM) ===
     if (item.price || item.sku) {
-      const priceBarcodeTable = cell.appendTable([['', '']]); // Two columns: price and barcode
+      const priceBarcodeTable = priceBarcodeCell.appendTable([['', '']]); // Two columns: price and barcode
       priceBarcodeTable.setBorderWidth(1);
       priceBarcodeTable.setBorderColor('#e0e0e0');
       
