@@ -150,10 +150,13 @@ function addBanner(body, websiteName, bannerColor, isHeader) {
   const bannerText = body.appendParagraph(websiteName);
   bannerText.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   
-  // Style the text
+  // Style the text (only foreground color, no background on text)
   styleParagraph(bannerText, t => {
-    t.setFontSize(12).setBold(true).setForegroundColor('#FFFFFF').setBackgroundColor(bannerColor);
+    t.setFontSize(12).setBold(true).setForegroundColor('#FFFFFF');
   });
+  
+  // Set background color on the paragraph itself, not the text
+  bannerText.setBackgroundColor(bannerColor);
   
   // Set spacing (reduced for tighter layout)
   if (isHeader) {
@@ -228,6 +231,12 @@ function createStructuredLeftColumn(cell, item, showFields) {
       const imageCell = imageSection.getRow(0).getCell(0);
       imageCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
       imageCell.setBackgroundColor('#FFFFFF');
+      
+      // Ensure no text highlighting in image section
+      const imagePara = imageCell.getChild(0).asParagraph();
+      if (imagePara) {
+        styleParagraph(imagePara, t => t.setBackgroundColor(null));
+      }
 
       try {
         const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
@@ -252,6 +261,12 @@ function createStructuredLeftColumn(cell, item, showFields) {
     const bioContent = bioSection.getRow(0).getCell(0);
     bioContent.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     bioContent.setBackgroundColor('#FFFFFF');
+    
+    // Ensure no text highlighting in bio section
+    const bioPara = bioContent.getChild(0).asParagraph();
+    if (bioPara) {
+      styleParagraph(bioPara, t => t.setBackgroundColor(null));
+    }
 
     const bioHeading = bioContent.appendParagraph('Author Bio:');
     styleParagraph(bioHeading, t => t.setBold(true).setFontSize(11).setForegroundColor('#1565C0'));
@@ -403,6 +418,12 @@ function createStructuredRightColumn(cell, item, utmParams) {
   titleCell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(6).setPaddingRight(6);
   titleCell.setBackgroundColor('#FFFFFF'); // Transparent white background
   
+  // Ensure no text highlighting in title section
+  const titlePara = titleCell.getChild(0).asParagraph();
+  if (titlePara) {
+    styleParagraph(titlePara, t => t.setBackgroundColor(null));
+  }
+  
   // Product title (smaller text)
   const title = titleCell.appendParagraph(item.title);
   styleParagraph(title, t => t.setFontSize(14).setBold(true).setForegroundColor('#000000'));
@@ -435,6 +456,12 @@ function createStructuredRightColumn(cell, item, utmParams) {
     const descCell = descSection.getRow(0).getCell(0);
     descCell.setPaddingTop(4).setPaddingBottom(4).setPaddingLeft(6).setPaddingRight(6);
     descCell.setBackgroundColor('#FFFFFF');
+    
+    // Ensure no text highlighting in description section
+    const descPara = descCell.getChild(0).asParagraph();
+    if (descPara) {
+      styleParagraph(descPara, t => t.setBackgroundColor(null));
+    }
     
     let descText = item.description;
     const description = descCell.appendParagraph(descText);
