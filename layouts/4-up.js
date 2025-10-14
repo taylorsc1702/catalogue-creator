@@ -34,7 +34,7 @@ function create4UpLayout(body, items, options) {
   }
 }
 
-// Create product card for 4-up layout (reuse from 2-up with different layout parameter)
+// Create product card for 4-up layout
 function createProductCard(cell, item, layout) {
   if (!item) {
     console.warn('No item provided to createProductCard');
@@ -46,77 +46,64 @@ function createProductCard(cell, item, layout) {
     cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     cell.setBackgroundColor('#FFFFFF');
     
-    // Create a main content table with 2 rows: content and price/barcode
-    const mainTable = cell.appendTable([
-      [''], // Row 0: Main content (image, title, description, details)
-      ['']  // Row 1: Price and barcode (fixed at bottom)
-    ]);
-    mainTable.setBorderWidth(0);
-    
-    const contentCell = mainTable.getRow(0).getCell(0);
-    const priceBarcodeCell = mainTable.getRow(1).getCell(0);
-    
-    // Style cells
-    contentCell.setBackgroundColor('#FFFFFF');
-    priceBarcodeCell.setBackgroundColor('#FFFFFF');
-    contentCell.setPaddingTop(0).setPaddingBottom(5).setPaddingLeft(0).setPaddingRight(0);
-    priceBarcodeCell.setPaddingTop(5).setPaddingBottom(0).setPaddingLeft(0).setPaddingRight(0);
-    
-    // === MAIN CONTENT SECTION ===
-    
-    // Image
+    // === IMAGE (CENTERED) ===
     if (item.imageUrl) {
       try {
         const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-        const image = contentCell.appendImage(imageBlob);
+        const imagePara = cell.appendParagraph('');
+        const image = imagePara.appendInlineImage(imageBlob);
         const size = getImageSize('product', layout);
         image.setWidth(size.width);
         image.setHeight(size.height);
         
-        // Add spacing after image
-        contentCell.appendParagraph('').setSpacingAfter(5);
+        // Center the image
+        imagePara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        imagePara.setSpacingAfter(5);
       } catch (error) {
         console.warn('Could not load image:', item.imageUrl);
       }
     }
     
-    // Title
-    const title = contentCell.appendParagraph(item.title);
+    // === TITLE ===
+    const title = cell.appendParagraph(item.title);
     styleParagraph(title, t => t.setFontSize(getFontSize('title', layout)).setBold(true).setForegroundColor('#000000'));
     title.setSpacingAfter(3);
     
-    // Subtitle
+    // === SUBTITLE ===
     if (item.subtitle) {
-      const subtitle = contentCell.appendParagraph(item.subtitle);
+      const subtitle = cell.appendParagraph(item.subtitle);
       styleParagraph(subtitle, t => t.setFontSize(getFontSize('subtitle', layout)).setItalic(true).setForegroundColor('#666666'));
       subtitle.setSpacingAfter(3);
     }
     
-    // Author
+    // === AUTHOR ===
     if (item.author) {
       let authorText = item.author;
       if (!authorText.toLowerCase().startsWith('by ')) {
         authorText = `By ${authorText}`;
       }
-      const author = contentCell.appendParagraph(authorText);
+      const author = cell.appendParagraph(authorText);
       styleParagraph(author, t => t.setFontSize(getFontSize('author', layout)).setForegroundColor('#444444'));
       author.setSpacingAfter(3);
     }
     
-    // Description (let it scale naturally, no artificial truncation)
+    // === DESCRIPTION (TRUNCATED FOR PREDICTABLE SIZE) ===
     if (item.description) {
-      const desc = contentCell.appendParagraph(item.description);
+      let descText = item.description;
+      
+      // Truncate description to 150 chars for 4-up to ensure it fits on page
+      const maxChars = 150;
+      if (descText.length > maxChars) {
+        descText = truncateAtWord(descText, maxChars);
+      }
+      
+      const desc = cell.appendParagraph(descText);
       styleParagraph(desc, t => t.setFontSize(getFontSize('description', layout)).setForegroundColor('#333333'));
       desc.setSpacingAfter(5);
     }
     
-    // Product Details Table (for 4-per-page and larger layouts)
-    if (layout >= 2) {
-      createProductDetailsTable(contentCell, item, layout);
-    }
-    
-    // === PRICE/BARCODE SECTION (FIXED AT BOTTOM) ===
-    createPriceBarcodeTable(priceBarcodeCell, item, layout);
+    // === PRODUCT DETAILS TABLE (WITH PRICE AND BARCODE) ===
+    createProductDetailsTableWithPriceBarcode(cell, item, layout);
     
   } catch (error) {
     console.error('Error in createProductCard:', error.toString());

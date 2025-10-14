@@ -193,7 +193,86 @@ function createProductDetailsTable(cell, item, layout) {
   return detailsTable;
 }
 
-// Create price and barcode table
+// Create product details table WITH price and barcode (for multi-item layouts)
+function createProductDetailsTableWithPriceBarcode(cell, item, layout) {
+  const metaItems = [];
+  if (item.imprint) metaItems.push([`Publisher:`, item.imprint]);
+  if (item.releaseDate) metaItems.push([`Release Date:`, item.releaseDate]);
+  if (item.binding) metaItems.push([`Binding:`, item.binding]);
+  if (item.pages) metaItems.push([`Pages:`, `${item.pages} pages`]);
+  if (item.dimensions) metaItems.push([`Dimensions:`, item.dimensions]);
+  if (item.weight) metaItems.push([`Weight:`, item.weight]);
+  
+  // Add price and barcode as the last row
+  if (item.price || item.sku) {
+    metaItems.push([`Price:`, item.price ? `AUD$ ${item.price}` : '']);
+  }
+  
+  if (metaItems.length === 0) return null;
+  
+  const detailsTable = cell.appendTable(metaItems);
+  detailsTable.setBorderWidth(1);
+  detailsTable.setBorderColor('#e0e0e0');
+  
+  // Style all cells
+  for (let i = 0; i < detailsTable.getNumRows(); i++) {
+    const row = detailsTable.getRow(i);
+    const labelCell = row.getCell(0);
+    const valueCell = row.getCell(1);
+    
+    // Make cells transparent
+    labelCell.setBackgroundColor('#FFFFFF');
+    valueCell.setBackgroundColor('#FFFFFF');
+    
+    // Minimal padding for compact table
+    labelCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(2);
+    valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(2).setPaddingRight(4);
+    
+    // Check if this is the price row (last row with price)
+    const labelText = labelCell.getChild(0).asParagraph().getText();
+    const isLastRow = i === detailsTable.getNumRows() - 1;
+    
+    if (labelText === 'Price:' && item.sku && isLastRow) {
+      // For the price row, add barcode in the value cell instead of text
+      // Clear the cell first
+      valueCell.clear();
+      
+      // Add price text
+      if (item.price) {
+        const pricePara = valueCell.appendParagraph(`AUD$ ${item.price}`);
+        styleParagraph(pricePara, t => t.setFontSize(getFontSize('price', layout)).setBold(true).setForegroundColor('#d63384'));
+        pricePara.setSpacingAfter(2);
+      }
+      
+      // Add barcode below price
+      try {
+        const barcodeImage = generateEAN13Barcode(item.sku);
+        if (barcodeImage) {
+          const image = valueCell.appendImage(barcodeImage);
+          const size = getImageSize('barcode', layout);
+          image.setWidth(size.width);
+          image.setHeight(size.height);
+        }
+      } catch (error) {
+        console.warn('Could not generate barcode:', error);
+      }
+    } else {
+      // Style the existing paragraphs for normal rows
+      const labelPara = labelCell.getChild(0).asParagraph();
+      const valuePara = valueCell.getChild(0).asParagraph();
+      styleParagraph(labelPara, t => t.setBold(true).setFontSize(getFontSize('details', layout)).setForegroundColor('#666666'));
+      styleParagraph(valuePara, t => t.setFontSize(getFontSize('details', layout)).setForegroundColor('#333333'));
+      
+      // Reduce spacing between rows
+      labelPara.setSpacingAfter(0);
+      valuePara.setSpacingAfter(0);
+    }
+  }
+  
+  return detailsTable;
+}
+
+// Create price and barcode table (for 1-up layout)
 function createPriceBarcodeTable(cell, item, layout) {
   if (!item.price && !item.sku) return null;
   
@@ -690,77 +769,73 @@ function createProductCard(cell, item, layout) {
     cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     cell.setBackgroundColor('#FFFFFF');
     
-    // Create a main content table with 2 rows: content and price/barcode
-    const mainTable = cell.appendTable([
-      [''], // Row 0: Main content (image, title, description, details)
-      ['']  // Row 1: Price and barcode (fixed at bottom)
-    ]);
-    mainTable.setBorderWidth(0);
-    
-    const contentCell = mainTable.getRow(0).getCell(0);
-    const priceBarcodeCell = mainTable.getRow(1).getCell(0);
-    
-    // Style cells
-    contentCell.setBackgroundColor('#FFFFFF');
-    priceBarcodeCell.setBackgroundColor('#FFFFFF');
-    contentCell.setPaddingTop(0).setPaddingBottom(5).setPaddingLeft(0).setPaddingRight(0);
-    priceBarcodeCell.setPaddingTop(5).setPaddingBottom(0).setPaddingLeft(0).setPaddingRight(0);
-    
-    // === MAIN CONTENT SECTION ===
-    
-    // Image
+    // === IMAGE (CENTERED) ===
     if (item.imageUrl) {
       try {
         const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-        const image = contentCell.appendImage(imageBlob);
+        const imagePara = cell.appendParagraph('');
+        const image = imagePara.appendInlineImage(imageBlob);
         const size = getImageSize('product', layout);
         image.setWidth(size.width);
         image.setHeight(size.height);
         
-        // Add spacing after image
-        contentCell.appendParagraph('').setSpacingAfter(5);
+        // Center the image
+        imagePara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        imagePara.setSpacingAfter(5);
       } catch (error) {
         console.warn('Could not load image:', item.imageUrl);
       }
     }
     
-    // Title
-    const title = contentCell.appendParagraph(item.title);
+    // === TITLE ===
+    const title = cell.appendParagraph(item.title);
     styleParagraph(title, t => t.setFontSize(getFontSize('title', layout)).setBold(true).setForegroundColor('#000000'));
     title.setSpacingAfter(3);
     
-    // Subtitle
+    // === SUBTITLE ===
     if (item.subtitle) {
-      const subtitle = contentCell.appendParagraph(item.subtitle);
+      const subtitle = cell.appendParagraph(item.subtitle);
       styleParagraph(subtitle, t => t.setFontSize(getFontSize('subtitle', layout)).setItalic(true).setForegroundColor('#666666'));
       subtitle.setSpacingAfter(3);
     }
     
-    // Author
+    // === AUTHOR ===
     if (item.author) {
       let authorText = item.author;
       if (!authorText.toLowerCase().startsWith('by ')) {
         authorText = `By ${authorText}`;
       }
-      const author = contentCell.appendParagraph(authorText);
+      const author = cell.appendParagraph(authorText);
       styleParagraph(author, t => t.setFontSize(getFontSize('author', layout)).setForegroundColor('#444444'));
       author.setSpacingAfter(3);
     }
     
-    // Description (let it scale naturally, no artificial truncation)
+    // === DESCRIPTION (TRUNCATED FOR 4-UP AND 8-UP) ===
     if (item.description) {
-      const desc = contentCell.appendParagraph(item.description);
+      let descText = item.description;
+      
+      // Truncate description for smaller layouts to ensure predictable size
+      const maxDescChars = {
+        2: 400,  // 2-up: longer description
+        3: 250,  // 3-up: medium description
+        4: 150,  // 4-up: shorter description (to fit on page)
+        8: 80    // 8-up: very short description
+      };
+      
+      const maxChars = maxDescChars[layout] || 200;
+      if (descText.length > maxChars) {
+        descText = truncateAtWord(descText, maxChars);
+      }
+      
+      const desc = cell.appendParagraph(descText);
       styleParagraph(desc, t => t.setFontSize(getFontSize('description', layout)).setForegroundColor('#333333'));
       desc.setSpacingAfter(5);
     }
     
-    // Product Details Table (for 2-per-page and larger layouts)
+    // === PRODUCT DETAILS TABLE (WITH PRICE AND BARCODE) ===
     if (layout >= 2) {
-      createProductDetailsTable(contentCell, item, layout);
+      createProductDetailsTableWithPriceBarcode(cell, item, layout);
     }
-    
-    // === PRICE/BARCODE SECTION (FIXED AT BOTTOM) ===
-    createPriceBarcodeTable(priceBarcodeCell, item, layout);
     
   } catch (error) {
     console.error('Error in createProductCard:', error.toString());
