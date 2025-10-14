@@ -789,6 +789,11 @@ function createProductCard3Up(cell, item) {
   const contentCell = mainTable.getRow(0).getCell(1);
   const detailsCell = mainTable.getRow(0).getCell(2);
   
+  // Set explicit column widths: Image (120px), Content (expanded), Details (reduced to 100px)
+  imageCell.setWidth(120);
+  contentCell.setWidth(350); // Expanded to fill space
+  detailsCell.setWidth(100); // Reduced from default to fit content only
+  
   // Style cells
   imageCell.setPaddingTop(0).setPaddingBottom(0).setPaddingLeft(0).setPaddingRight(5);
   contentCell.setPaddingTop(0).setPaddingBottom(0).setPaddingLeft(5).setPaddingRight(5);
@@ -833,19 +838,28 @@ function createProductCard3Up(cell, item) {
     author.setSpacingAfter(1); // Minimal spacing after author
   }
   
-  // Description (longer for 3-up - more space without left column)
+  // Description (in a fixed-height box to prevent overflow)
   if (item.description) {
     let descText = item.description;
     
-    // Truncate description to 600 chars for 3-up (more space available)
-    const maxChars = 600;
+    // Truncate description to 500 chars for 3-up (fits in fixed box)
+    const maxChars = 500;
     if (descText.length > maxChars) {
       descText = truncateAtWord(descText, maxChars);
     }
     
-    const desc = contentCell.appendParagraph(descText);
-    styleParagraph(desc, t => t.setFontSize(9).setForegroundColor('#333333'));
-    desc.setSpacingAfter(0);
+    // Create a bordered box for description to contain overflow
+    const descTable = contentCell.appendTable([[descText]]);
+    descTable.setBorderWidth(0.5);
+    descTable.setBorderColor('#e0e0e0');
+    
+    const descCell = descTable.getRow(0).getCell(0);
+    descCell.setBackgroundColor('#FFFFFF');
+    descCell.setPaddingTop(3).setPaddingBottom(3).setPaddingLeft(5).setPaddingRight(5);
+    
+    const descPara = descCell.getChild(0).asParagraph();
+    styleParagraph(descPara, t => t.setFontSize(9).setForegroundColor('#333333'));
+    descPara.setSpacingAfter(0);
   }
   
   // === RIGHT CELL: PUBLICATION DETAILS AND BARCODE (NO LABELS) ===
