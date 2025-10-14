@@ -813,13 +813,13 @@ function createProductCard3Up(cell, item) {
   // Title
   const title = contentCell.appendParagraph(item.title);
   styleParagraph(title, t => t.setFontSize(12).setBold(true).setForegroundColor('#000000'));
-  title.setSpacingAfter(1); // Reduced from 3 to 1
+  title.setSpacingAfter(0); // No spacing after title
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = contentCell.appendParagraph(item.subtitle);
     styleParagraph(subtitle, t => t.setFontSize(10).setItalic(true).setForegroundColor('#666666'));
-    subtitle.setSpacingAfter(1); // Reduced from 3 to 1
+    subtitle.setSpacingAfter(0); // No spacing after subtitle
   }
   
   // Author
@@ -830,15 +830,15 @@ function createProductCard3Up(cell, item) {
     }
     const author = contentCell.appendParagraph(authorText);
     styleParagraph(author, t => t.setFontSize(10).setForegroundColor('#444444'));
-    author.setSpacingAfter(2); // Reduced from 5 to 2
+    author.setSpacingAfter(1); // Minimal spacing after author
   }
   
-  // Description (longer for 3-up)
+  // Description (longer for 3-up - more space without left column)
   if (item.description) {
     let descText = item.description;
     
-    // Truncate description to 400 chars for 3-up
-    const maxChars = 400;
+    // Truncate description to 600 chars for 3-up (more space available)
+    const maxChars = 600;
     if (descText.length > maxChars) {
       descText = truncateAtWord(descText, maxChars);
     }
@@ -848,21 +848,21 @@ function createProductCard3Up(cell, item) {
     desc.setSpacingAfter(0);
   }
   
-  // === RIGHT CELL: PUBLICATION DETAILS AND BARCODE ===
-  // Publication details
+  // === RIGHT CELL: PUBLICATION DETAILS AND BARCODE (NO LABELS) ===
+  // Publication details - just values, no labels
   const detailsItems = [];
-  if (item.imprint) detailsItems.push([`Publisher:`, item.imprint]);
-  if (item.category) detailsItems.push([`Category:`, item.category]);
-  if (item.discount) detailsItems.push([`Disc:`, item.discount]);
-  if (item.binding) detailsItems.push([`Format:`, item.binding]);
-  if (item.dimensions) detailsItems.push([`Dimensions:`, item.dimensions]);
-  if (item.pages) detailsItems.push([`Pages:`, `${item.pages} Pages`]);
-  if (item.colorInfo) detailsItems.push([`Color:`, item.colorInfo]);
-  if (item.releaseDate) detailsItems.push([`Release Date:`, item.releaseDate]);
-  if (item.sku) detailsItems.push([`ISBN:`, item.sku]);
-  if (item.price) detailsItems.push([`Price:`, `AUD$ ${item.price}`]);
+  if (item.imprint) detailsItems.push([item.imprint]);
+  if (item.category) detailsItems.push([item.category]);
+  if (item.discount) detailsItems.push([item.discount]);
+  if (item.binding) detailsItems.push([item.binding]);
+  if (item.dimensions) detailsItems.push([item.dimensions]);
+  if (item.pages) detailsItems.push([`${item.pages} Pages`]);
+  if (item.colorInfo) detailsItems.push([item.colorInfo]);
+  if (item.releaseDate) detailsItems.push([item.releaseDate]);
+  if (item.sku) detailsItems.push([item.sku]);
+  if (item.price) detailsItems.push([`AUD$ ${item.price}`]);
   
-  // Create details table
+  // Create details table (single column - no labels)
   if (detailsItems.length > 0) {
     const detailsTable = detailsCell.appendTable(detailsItems);
     detailsTable.setBorderWidth(1);
@@ -871,25 +871,19 @@ function createProductCard3Up(cell, item) {
     // Style all cells
     for (let i = 0; i < detailsTable.getNumRows(); i++) {
       const row = detailsTable.getRow(i);
-      const labelCell = row.getCell(0);
-      const valueCell = row.getCell(1);
+      const valueCell = row.getCell(0);
       
-      // Make cells transparent
-      labelCell.setBackgroundColor('#FFFFFF');
+      // Make cell transparent
       valueCell.setBackgroundColor('#FFFFFF');
       
       // Minimal padding for compact table
-      labelCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(2);
-      valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(2).setPaddingRight(4);
+      valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(4);
       
-      // Style the existing paragraphs
-      const labelPara = labelCell.getChild(0).asParagraph();
+      // Style the existing paragraph
       const valuePara = valueCell.getChild(0).asParagraph();
-      styleParagraph(labelPara, t => t.setBold(true).setFontSize(8).setForegroundColor('#666666'));
       styleParagraph(valuePara, t => t.setFontSize(8).setForegroundColor('#333333'));
       
       // Reduce spacing between rows
-      labelPara.setSpacingAfter(0);
       valuePara.setSpacingAfter(0);
     }
     
