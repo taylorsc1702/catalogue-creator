@@ -755,9 +755,9 @@ function createProductCard(cell, item, layout) {
     cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     cell.setBackgroundColor('#FFFFFF');
     
-    if (layout === 4) {
-      // Special layout for 4-up: image left, title/author/barcode right, description below
-      createProductCard4Up(cell, item);
+    if (layout === 3 || layout === 4) {
+      // Special layout for 3-up and 4-up: image left, title/author/barcode right, description below
+      createProductCard3Up4Up(cell, item, layout);
     } else {
       // Standard layout for other multi-item layouts
       createProductCardStandard(cell, item, layout);
@@ -771,8 +771,8 @@ function createProductCard(cell, item, layout) {
   }
 }
 
-// Special 4-up layout: image left, title/author/barcode right, description below
-function createProductCard4Up(cell, item) {
+// Special 3-up and 4-up layout: image left, title/author/barcode right, description below
+function createProductCard3Up4Up(cell, item, layout) {
   // === TOP SECTION: IMAGE LEFT, TITLE/AUTHOR/BARCODE RIGHT ===
   const topTable = cell.appendTable([['', '']]); // Left: image, Right: title/author/barcode
   topTable.setBorderWidth(0);
@@ -791,24 +791,39 @@ function createProductCard4Up(cell, item) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = imageCell.appendImage(imageBlob);
-      // Bigger image for 4-up layout
-      image.setWidth(80);
-      image.setHeight(110);
+      
+      // Image sizes based on layout
+      const imageSizes = {
+        3: { width: 90, height: 120 },  // 3-up: slightly bigger
+        4: { width: 80, height: 110 }   // 4-up: smaller
+      };
+      
+      const size = imageSizes[layout] || imageSizes[4];
+      image.setWidth(size.width);
+      image.setHeight(size.height);
     } catch (error) {
       console.warn('Could not load image:', item.imageUrl);
     }
   }
   
   // === RIGHT CELL: TITLE, SUBTITLE, AUTHOR, BARCODE ===
+  // Font sizes based on layout
+  const fontSizes = {
+    3: { title: 11, subtitle: 9, author: 9, description: 8 },  // 3-up: slightly bigger
+    4: { title: 10, subtitle: 8, author: 8, description: 7 }   // 4-up: smaller
+  };
+  
+  const fonts = fontSizes[layout] || fontSizes[4];
+  
   // Title
   const title = infoCell.appendParagraph(item.title);
-  styleParagraph(title, t => t.setFontSize(10).setBold(true).setForegroundColor('#000000'));
+  styleParagraph(title, t => t.setFontSize(fonts.title).setBold(true).setForegroundColor('#000000'));
   title.setSpacingAfter(2);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = infoCell.appendParagraph(item.subtitle);
-    styleParagraph(subtitle, t => t.setFontSize(8).setItalic(true).setForegroundColor('#666666'));
+    styleParagraph(subtitle, t => t.setFontSize(fonts.subtitle).setItalic(true).setForegroundColor('#666666'));
     subtitle.setSpacingAfter(2);
   }
   
@@ -819,7 +834,7 @@ function createProductCard4Up(cell, item) {
       authorText = `By ${authorText}`;
     }
     const author = infoCell.appendParagraph(authorText);
-    styleParagraph(author, t => t.setFontSize(8).setForegroundColor('#444444'));
+    styleParagraph(author, t => t.setFontSize(fonts.author).setForegroundColor('#444444'));
     author.setSpacingAfter(3);
   }
   
@@ -829,8 +844,15 @@ function createProductCard4Up(cell, item) {
       const barcodeImage = generateEAN13Barcode(item.sku);
       if (barcodeImage) {
         const barcode = infoCell.appendImage(barcodeImage);
-        barcode.setWidth(60);
-        barcode.setHeight(18);
+        // Barcode sizes based on layout
+        const barcodeSizes = {
+          3: { width: 70, height: 20 },  // 3-up: slightly bigger
+          4: { width: 60, height: 18 }   // 4-up: smaller
+        };
+        
+        const barcodeSize = barcodeSizes[layout] || barcodeSizes[4];
+        barcode.setWidth(barcodeSize.width);
+        barcode.setHeight(barcodeSize.height);
       }
     } catch (error) {
       console.warn('Could not generate barcode:', error);
@@ -841,22 +863,27 @@ function createProductCard4Up(cell, item) {
   if (item.description) {
     let descText = item.description;
     
-    // Truncate description to 200 chars for 4-up
-    const maxChars = 200;
+    // Truncate description based on layout
+    const maxDescChars = {
+      3: 300,  // 3-up: longer description
+      4: 200   // 4-up: shorter description
+    };
+    
+    const maxChars = maxDescChars[layout] || 200;
     if (descText.length > maxChars) {
       descText = truncateAtWord(descText, maxChars);
     }
     
     const desc = cell.appendParagraph(descText);
-    styleParagraph(desc, t => t.setFontSize(7).setForegroundColor('#333333'));
+    styleParagraph(desc, t => t.setFontSize(fonts.description).setForegroundColor('#333333'));
     desc.setSpacingAfter(3);
   }
   
   // === PRODUCT DETAILS TABLE (FULL WIDTH) ===
-  createProductDetailsTableWithPriceBarcode(cell, item, 4);
+  createProductDetailsTableWithPriceBarcode(cell, item, layout);
 }
 
-// Standard layout for 2-up, 3-up, 8-up
+// Standard layout for 2-up, 8-up
 function createProductCardStandard(cell, item, layout) {
   // === IMAGE (CENTERED) ===
   if (item.imageUrl) {
@@ -906,7 +933,6 @@ function createProductCardStandard(cell, item, layout) {
     // Truncate description for smaller layouts to ensure predictable size
     const maxDescChars = {
       2: 400,  // 2-up: longer description
-      3: 250,  // 3-up: medium description
       8: 80    // 8-up: very short description
     };
     
