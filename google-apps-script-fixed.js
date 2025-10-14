@@ -238,7 +238,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
         console.warn('Could not load image:', item.imageUrl);
       }
 
-      cell.appendParagraph('').setSpacingAfter(10);
+      cell.appendParagraph('').setSpacingAfter(5); // Reduced for footer space
     }
 
   // ----- Section 2: Author Bio (truncate to keep Internals on same page) -----
@@ -270,48 +270,41 @@ function createStructuredLeftColumn(cell, item, showFields) {
     styleParagraph(bioParagraph, t => t.setFontSize(9).setForegroundColor('#000000'));
     bioParagraph.setLineSpacing(1.0); // tighter so the box is compact
 
-    // Spacer + pagination hint before Internals
+    // Minimal spacer before Internals
     const bioAnchor = cell.appendParagraph('');
-    bioAnchor.setSpacingAfter(10);
+    bioAnchor.setSpacingAfter(5); // Reduced for footer space
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
-  // ----- Section 3: Internals (proper 2x2 grid) -----
+  // ----- Section 3: Internals (2 images side by side) -----
   if (hasInternals) {
-    // Simple heading
+    // Compact heading
     const internalsHeading = cell.appendParagraph('Internals:');
-    styleParagraph(internalsHeading, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
+    styleParagraph(internalsHeading, t => t.setBold(true).setFontSize(10).setForegroundColor('#495057'));
     internalsHeading.setSpacingAfter(3);
     
-    // Create a proper 2x2 grid table
-    const internalsTable = cell.appendTable([
-      ['', ''], // Row 1: 2 cells
-      ['', '']  // Row 2: 2 cells
-    ]);
+    // Create a simple 1x2 horizontal table for 2 images
+    const internalsTable = cell.appendTable([['', '']]); // Single row, 2 columns
     internalsTable.setBorderWidth(1);
     internalsTable.setBorderColor('#e0e0e0');
     
-    // Style all cells with minimal padding
-    for (let r = 0; r < 2; r++) {
-      for (let c = 0; c < 2; c++) {
-        const gridCell = internalsTable.getRow(r).getCell(c);
-        gridCell.setBackgroundColor('#FFFFFF');
-        gridCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
-      }
+    // Style both cells with minimal padding
+    for (let c = 0; c < 2; c++) {
+      const gridCell = internalsTable.getRow(0).getCell(c);
+      gridCell.setBackgroundColor('#FFFFFF');
+      gridCell.setPaddingTop(3).setPaddingBottom(3).setPaddingLeft(3).setPaddingRight(3);
     }
     
-    // Add up to 4 images into the 2x2 grid
-    const imagesToShow = item.additionalImages.slice(0, 4);
+    // Add up to 2 images side by side (larger images)
+    const imagesToShow = item.additionalImages.slice(0, 2);
     imagesToShow.forEach((imageUrl, idx) => {
       try {
-        const r = idx < 2 ? 0 : 1; // First 2 images in row 0, next 2 in row 1
-        const c = idx % 2;         // Alternate between columns 0 and 1
-        const gridCell = internalsTable.getRow(r).getCell(c);
+        const gridCell = internalsTable.getRow(0).getCell(idx);
         
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
         const img = gridCell.appendImage(blob);
-        img.setWidth(45); // Slightly smaller to fit better
-        img.setHeight(65); // Slightly smaller to fit better
+        img.setWidth(60); // Larger images since we only have 2
+        img.setHeight(85); // Larger images since we only have 2
       } catch (e) {
         console.warn('Could not load internal image:', imageUrl);
       }
