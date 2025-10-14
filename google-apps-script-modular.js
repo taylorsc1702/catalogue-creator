@@ -661,8 +661,8 @@ function create3UpLayout(body, items, options) {
     // Create 3 separate rows (one for each item)
     for (let i = 0; i < 3; i++) {
       if (i > 0) {
-        // Add spacing between rows
-        body.appendParagraph('').setSpacingAfter(10);
+        // Add minimal spacing between rows
+        body.appendParagraph('').setSpacingAfter(5); // Reduced from 10 to 5
       }
       
       if (i < items.length) {
@@ -813,13 +813,13 @@ function createProductCard3Up(cell, item) {
   // Title
   const title = contentCell.appendParagraph(item.title);
   styleParagraph(title, t => t.setFontSize(12).setBold(true).setForegroundColor('#000000'));
-  title.setSpacingAfter(3);
+  title.setSpacingAfter(1); // Reduced from 3 to 1
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = contentCell.appendParagraph(item.subtitle);
     styleParagraph(subtitle, t => t.setFontSize(10).setItalic(true).setForegroundColor('#666666'));
-    subtitle.setSpacingAfter(3);
+    subtitle.setSpacingAfter(1); // Reduced from 3 to 1
   }
   
   // Author
@@ -830,7 +830,7 @@ function createProductCard3Up(cell, item) {
     }
     const author = contentCell.appendParagraph(authorText);
     styleParagraph(author, t => t.setFontSize(10).setForegroundColor('#444444'));
-    author.setSpacingAfter(5);
+    author.setSpacingAfter(2); // Reduced from 5 to 2
   }
   
   // Description (longer for 3-up)
