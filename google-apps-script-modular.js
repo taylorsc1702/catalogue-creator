@@ -666,7 +666,13 @@ function create3UpLayout(body, items, options) {
       }
       
       if (i < items.length) {
-        createProductCard(body, items[i], 3);
+        // Create a single-cell table for each item to act as a container
+        const itemTable = body.appendTable([['']]);
+        itemTable.setBorderWidth(0);
+        const itemCell = itemTable.getRow(0).getCell(0);
+        
+        // Now call createProductCard with the proper cell
+        createProductCard(itemCell, items[i], 3);
       }
     }
     
