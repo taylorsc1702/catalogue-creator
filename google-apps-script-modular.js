@@ -650,7 +650,7 @@ function create2UpLayout(body, items, options) {
   }
 }
 
-// Create 3-up layout (1 row, 3 columns)
+// Create 3-up layout (3 rows stacked vertically)
 function create3UpLayout(body, items, options) {
   if (!items || items.length === 0) {
     console.warn('No items provided to create3UpLayout');
@@ -658,16 +658,15 @@ function create3UpLayout(body, items, options) {
   }
   
   try {
-    // Create a 1x3 grid table
-    const data = Array.from({length: 1}, () => Array.from({length: 3}, () => ''));
-    const table = body.appendTable(data);
-    table.setBorderWidth(0);
-    
-    // Fill the grid with items
-    for (let c = 0; c < 3; c++) {
-      const cell = table.getRow(0).getCell(c);
-      if (c < items.length) {
-        createProductCard(cell, items[c], 3);
+    // Create 3 separate rows (one for each item)
+    for (let i = 0; i < 3; i++) {
+      if (i > 0) {
+        // Add spacing between rows
+        body.appendParagraph('').setSpacingAfter(10);
+      }
+      
+      if (i < items.length) {
+        createProductCard(body, items[i], 3);
       }
     }
     
@@ -755,9 +754,12 @@ function createProductCard(cell, item, layout) {
     cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
     cell.setBackgroundColor('#FFFFFF');
     
-    if (layout === 3 || layout === 4) {
-      // Special layout for 3-up and 4-up: image left, title/author/barcode right, description below
-      createProductCard3Up4Up(cell, item, layout);
+    if (layout === 3) {
+      // Special layout for 3-up: image left, title/author/description middle, details/barcode right
+      createProductCard3Up(cell, item);
+    } else if (layout === 4) {
+      // Special layout for 4-up: image left, title/author/barcode right, description below
+      createProductCard4Up(cell, item);
     } else {
       // Standard layout for other multi-item layouts
       createProductCardStandard(cell, item, layout);
@@ -771,8 +773,143 @@ function createProductCard(cell, item, layout) {
   }
 }
 
-// Special 3-up and 4-up layout: image left, title/author/barcode right, description below
-function createProductCard3Up4Up(cell, item, layout) {
+// Special 3-up layout: image left, title/author/description middle, details/barcode right
+function createProductCard3Up(cell, item) {
+  // === THREE COLUMN LAYOUT: IMAGE LEFT, CONTENT MIDDLE, DETAILS RIGHT ===
+  const mainTable = cell.appendTable([['', '', '']]); // Left: image, Middle: content, Right: details
+  mainTable.setBorderWidth(0);
+  
+  const imageCell = mainTable.getRow(0).getCell(0);
+  const contentCell = mainTable.getRow(0).getCell(1);
+  const detailsCell = mainTable.getRow(0).getCell(2);
+  
+  // Style cells
+  imageCell.setPaddingTop(0).setPaddingBottom(0).setPaddingLeft(0).setPaddingRight(5);
+  contentCell.setPaddingTop(0).setPaddingBottom(0).setPaddingLeft(5).setPaddingRight(5);
+  detailsCell.setPaddingTop(0).setPaddingBottom(0).setPaddingLeft(5).setPaddingRight(0);
+  imageCell.setBackgroundColor('#FFFFFF');
+  contentCell.setBackgroundColor('#FFFFFF');
+  detailsCell.setBackgroundColor('#FFFFFF');
+  
+  // === LEFT CELL: IMAGE ===
+  if (item.imageUrl) {
+    try {
+      const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
+      const image = imageCell.appendImage(imageBlob);
+      image.setWidth(90);
+      image.setHeight(120);
+    } catch (error) {
+      console.warn('Could not load image:', item.imageUrl);
+    }
+  }
+  
+  // === MIDDLE CELL: TITLE, SUBTITLE, AUTHOR, DESCRIPTION ===
+  // Title
+  const title = contentCell.appendParagraph(item.title);
+  styleParagraph(title, t => t.setFontSize(12).setBold(true).setForegroundColor('#000000'));
+  title.setSpacingAfter(3);
+  
+  // Subtitle
+  if (item.subtitle) {
+    const subtitle = contentCell.appendParagraph(item.subtitle);
+    styleParagraph(subtitle, t => t.setFontSize(10).setItalic(true).setForegroundColor('#666666'));
+    subtitle.setSpacingAfter(3);
+  }
+  
+  // Author
+  if (item.author) {
+    let authorText = item.author;
+    if (!authorText.toLowerCase().startsWith('by ')) {
+      authorText = `By ${authorText}`;
+    }
+    const author = contentCell.appendParagraph(authorText);
+    styleParagraph(author, t => t.setFontSize(10).setForegroundColor('#444444'));
+    author.setSpacingAfter(5);
+  }
+  
+  // Description (longer for 3-up)
+  if (item.description) {
+    let descText = item.description;
+    
+    // Truncate description to 400 chars for 3-up
+    const maxChars = 400;
+    if (descText.length > maxChars) {
+      descText = truncateAtWord(descText, maxChars);
+    }
+    
+    const desc = contentCell.appendParagraph(descText);
+    styleParagraph(desc, t => t.setFontSize(9).setForegroundColor('#333333'));
+    desc.setSpacingAfter(0);
+  }
+  
+  // === RIGHT CELL: PUBLICATION DETAILS AND BARCODE ===
+  // Publication details
+  const detailsItems = [];
+  if (item.imprint) detailsItems.push([`Publisher:`, item.imprint]);
+  if (item.category) detailsItems.push([`Category:`, item.category]);
+  if (item.discount) detailsItems.push([`Disc:`, item.discount]);
+  if (item.binding) detailsItems.push([`Format:`, item.binding]);
+  if (item.dimensions) detailsItems.push([`Dimensions:`, item.dimensions]);
+  if (item.pages) detailsItems.push([`Pages:`, `${item.pages} Pages`]);
+  if (item.colorInfo) detailsItems.push([`Color:`, item.colorInfo]);
+  if (item.releaseDate) detailsItems.push([`Release Date:`, item.releaseDate]);
+  if (item.sku) detailsItems.push([`ISBN:`, item.sku]);
+  if (item.price) detailsItems.push([`Price:`, `AUD$ ${item.price}`]);
+  
+  // Create details table
+  if (detailsItems.length > 0) {
+    const detailsTable = detailsCell.appendTable(detailsItems);
+    detailsTable.setBorderWidth(1);
+    detailsTable.setBorderColor('#e0e0e0');
+    
+    // Style all cells
+    for (let i = 0; i < detailsTable.getNumRows(); i++) {
+      const row = detailsTable.getRow(i);
+      const labelCell = row.getCell(0);
+      const valueCell = row.getCell(1);
+      
+      // Make cells transparent
+      labelCell.setBackgroundColor('#FFFFFF');
+      valueCell.setBackgroundColor('#FFFFFF');
+      
+      // Minimal padding for compact table
+      labelCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(2);
+      valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(2).setPaddingRight(4);
+      
+      // Style the existing paragraphs
+      const labelPara = labelCell.getChild(0).asParagraph();
+      const valuePara = valueCell.getChild(0).asParagraph();
+      styleParagraph(labelPara, t => t.setBold(true).setFontSize(8).setForegroundColor('#666666'));
+      styleParagraph(valuePara, t => t.setFontSize(8).setForegroundColor('#333333'));
+      
+      // Reduce spacing between rows
+      labelPara.setSpacingAfter(0);
+      valuePara.setSpacingAfter(0);
+    }
+    
+    // Add barcode below the table
+    if (item.sku) {
+      try {
+        const barcodeImage = generateEAN13Barcode(item.sku);
+        if (barcodeImage) {
+          const barcode = detailsCell.appendImage(barcodeImage);
+          barcode.setWidth(80);
+          barcode.setHeight(24);
+          
+          // Add ISBN below barcode
+          const isbnText = detailsCell.appendParagraph(item.sku);
+          styleParagraph(isbnText, t => t.setFontSize(7).setForegroundColor('#999999'));
+          isbnText.setSpacingAfter(0);
+        }
+      } catch (error) {
+        console.warn('Could not generate barcode:', error);
+      }
+    }
+  }
+}
+
+// Special 4-up layout: image left, title/author/barcode right, description below
+function createProductCard4Up(cell, item) {
   // === TOP SECTION: IMAGE LEFT, TITLE/AUTHOR/BARCODE RIGHT ===
   const topTable = cell.appendTable([['', '']]); // Left: image, Right: title/author/barcode
   topTable.setBorderWidth(0);
@@ -883,7 +1020,7 @@ function createProductCard3Up4Up(cell, item, layout) {
   createProductDetailsTableWithPriceBarcode(cell, item, layout);
 }
 
-// Standard layout for 2-up, 8-up
+// Standard layout for 2-up, 8-up (centered images)
 function createProductCardStandard(cell, item, layout) {
   // === IMAGE (CENTERED) ===
   if (item.imageUrl) {
