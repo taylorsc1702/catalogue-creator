@@ -276,41 +276,46 @@ function createStructuredLeftColumn(cell, item, showFields) {
     // Note: setKeepWithNext and setKeepLinesTogether are not available in DocumentApp
   }
 
-  // ----- Section 3: Internals (simplified approach) -----
+  // ----- Section 3: Internals (proper 2x2 grid) -----
   if (hasInternals) {
-    // Simple heading without table merge
+    // Simple heading
     const internalsHeading = cell.appendParagraph('Internals:');
     styleParagraph(internalsHeading, t => t.setBold(true).setFontSize(11).setForegroundColor('#495057'));
     internalsHeading.setSpacingAfter(3);
     
-    // Create a simple 2x2 grid without complex table merging
-    const imagesToShow = item.additionalImages.slice(0, 4);
+    // Create a proper 2x2 grid table
+    const internalsTable = cell.appendTable([
+      ['', ''], // Row 1: 2 cells
+      ['', '']  // Row 2: 2 cells
+    ]);
+    internalsTable.setBorderWidth(1);
+    internalsTable.setBorderColor('#e0e0e0');
     
-    // Add images in a simple 2x2 layout using individual tables
-    for (let i = 0; i < Math.min(4, imagesToShow.length); i++) {
-      const imageUrl = imagesToShow[i];
+    // Style all cells with minimal padding
+    for (let r = 0; r < 2; r++) {
+      for (let c = 0; c < 2; c++) {
+        const gridCell = internalsTable.getRow(r).getCell(c);
+        gridCell.setBackgroundColor('#FFFFFF');
+        gridCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
+      }
+    }
+    
+    // Add up to 4 images into the 2x2 grid
+    const imagesToShow = item.additionalImages.slice(0, 4);
+    imagesToShow.forEach((imageUrl, idx) => {
       try {
-        // Create a simple single-cell table for each image
-        const imageTable = cell.appendTable([['']]);
-        imageTable.setBorderWidth(0); // No borders for cleaner look
-        
-        const imageCell = imageTable.getRow(0).getCell(0);
-        imageCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(1).setPaddingRight(1);
-        imageCell.setBackgroundColor('#FFFFFF');
+        const r = idx < 2 ? 0 : 1; // First 2 images in row 0, next 2 in row 1
+        const c = idx % 2;         // Alternate between columns 0 and 1
+        const gridCell = internalsTable.getRow(r).getCell(c);
         
         const blob = UrlFetchApp.fetch(imageUrl).getBlob();
-        const img = imageCell.appendImage(blob);
-        img.setWidth(50);
-        img.setHeight(75);
-        
-        // Add line breaks between rows (every 2 images)
-        if ((i + 1) % 2 === 0 && i < imagesToShow.length - 1) {
-          cell.appendParagraph('');
-        }
+        const img = gridCell.appendImage(blob);
+        img.setWidth(45); // Slightly smaller to fit better
+        img.setHeight(65); // Slightly smaller to fit better
       } catch (e) {
         console.warn('Could not load internal image:', imageUrl);
       }
-    }
+    });
     
     // Small spacer after internals
     const spacer = cell.appendParagraph('');
