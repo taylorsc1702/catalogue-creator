@@ -666,81 +666,178 @@ function createMultiItemLayout(body, pageItems, layout) {
   }
 }
 
-// Create individual product card
+// Create individual product card (enhanced for 2-per-page with table structure)
 function createProductCard(cell, item, layout) {
-  // Image
-  if (item.imageUrl) {
-    try {
-      const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-      const image = cell.appendImage(imageBlob);
-      
-      // Set image size based on layout
-      const sizes = {
-        2: { width: 120, height: 180 },
-        3: { width: 100, height: 150 },
-        4: { width: 80, height: 120 },
-        8: { width: 40, height: 60 }
-      };
-      
-      const size = sizes[layout] || sizes[4];
-      image.setWidth(size.width);
-      image.setHeight(size.height);
-      
-      // Add spacing after image
-      cell.appendParagraph('').setSpacingAfter(10);
-    } catch (error) {
-      console.warn('Could not load image:', item.imageUrl);
-    }
+  if (!item) {
+    console.warn('No item provided to createProductCard');
+    return;
   }
   
-  // Title
-  const title = cell.appendParagraph(item.title);
-  const titleSizes = { 2: 14, 3: 12, 4: 11, 8: 9 };
-  styleParagraph(title, t => t.setFontSize(titleSizes[layout] || 11).setBold(true));
-  title.setSpacingAfter(5);
-  
-  // Subtitle
-  if (item.subtitle) {
-    const subtitle = cell.appendParagraph(item.subtitle);
-    const subtitleSizes = { 2: 11, 3: 10, 4: 9, 8: 7 };
-    styleParagraph(subtitle, t => t.setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666'));
-    subtitle.setSpacingAfter(5);
-  }
-  
-  // Author
-  if (item.author) {
-    const author = cell.appendParagraph(`By ${item.author}`);
-    const authorSizes = { 2: 11, 3: 10, 4: 10, 8: 8 };
-    styleParagraph(author, t => t.setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000'));
-    author.setSpacingAfter(5);
-  }
-  
-  // Description (truncated for smaller layouts)
-  if (item.description) {
-    const maxLength = layout === 8 ? 50 : layout === 4 ? 100 : 150;
-    const description = item.description.length > maxLength ? 
-      item.description.substring(0, maxLength) + '...' : 
-      item.description;
+  try {
+    // Set cell padding
+    cell.setPaddingTop(5).setPaddingBottom(5).setPaddingLeft(5).setPaddingRight(5);
+    cell.setBackgroundColor('#FFFFFF');
     
-    const desc = cell.appendParagraph(description);
-    const descSizes = { 2: 10, 3: 9, 4: 8, 8: 6 };
-    styleParagraph(desc, t => t.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333'));
-    desc.setSpacingAfter(8);
-  }
-  
-  // Price
-  if (item.price) {
-    const price = cell.appendParagraph(`AUD$ ${item.price}`);
-    const priceSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };
-    styleParagraph(price, t => t.setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384'));
-    price.setSpacingAfter(5);
-  }
-  
-  // SKU/Barcode
-  if (item.sku) {
-    const sku = cell.appendParagraph(`SKU: ${item.sku}`);
-    const skuSizes = { 2: 8, 3: 8, 4: 7, 8: 6 };
-    styleParagraph(sku, t => t.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999'));
+    // Image
+    if (item.imageUrl) {
+      try {
+        const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
+        const image = cell.appendImage(imageBlob);
+        
+        // Set image size based on layout
+        const sizes = {
+          2: { width: 100, height: 140 }, // Slightly smaller for 2-per-page
+          3: { width: 80, height: 120 },
+          4: { width: 60, height: 90 },
+          8: { width: 30, height: 45 }
+        };
+        
+        const size = sizes[layout] || sizes[4];
+        image.setWidth(size.width);
+        image.setHeight(size.height);
+        
+        // Add spacing after image
+        cell.appendParagraph('').setSpacingAfter(5);
+      } catch (error) {
+        console.warn('Could not load image:', item.imageUrl);
+      }
+    }
+    
+    // Title
+    const title = cell.appendParagraph(item.title);
+    const titleSizes = { 2: 12, 3: 10, 4: 9, 8: 7 };
+    styleParagraph(title, t => t.setFontSize(titleSizes[layout] || 9).setBold(true).setForegroundColor('#000000'));
+    title.setSpacingAfter(3);
+    
+    // Subtitle
+    if (item.subtitle) {
+      const subtitle = cell.appendParagraph(item.subtitle);
+      const subtitleSizes = { 2: 9, 3: 8, 4: 7, 8: 6 };
+      styleParagraph(subtitle, t => t.setFontSize(subtitleSizes[layout] || 7).setItalic(true).setForegroundColor('#666666'));
+      subtitle.setSpacingAfter(3);
+    }
+    
+    // Author
+    if (item.author) {
+      let authorText = item.author;
+      if (!authorText.toLowerCase().startsWith('by ')) {
+        authorText = `By ${authorText}`;
+      }
+      const author = cell.appendParagraph(authorText);
+      const authorSizes = { 2: 8, 3: 7, 4: 7, 8: 6 };
+      styleParagraph(author, t => t.setFontSize(authorSizes[layout] || 7).setForegroundColor('#444444'));
+      author.setSpacingAfter(3);
+    }
+    
+    // Description (truncated for smaller layouts)
+    if (item.description) {
+      const maxLength = layout === 8 ? 50 : layout === 4 ? 80 : layout === 3 ? 100 : 120;
+      const description = item.description.length > maxLength ? 
+        item.description.substring(0, maxLength) + '...' : 
+        item.description;
+      
+      const desc = cell.appendParagraph(description);
+      const descSizes = { 2: 8, 3: 7, 4: 6, 8: 5 };
+      styleParagraph(desc, t => t.setFontSize(descSizes[layout] || 6).setForegroundColor('#333333'));
+      desc.setSpacingAfter(5);
+    }
+    
+    // Product Details Table (for 2-per-page and larger layouts)
+    if (layout >= 2) {
+      const metaItems = [];
+      if (item.imprint) metaItems.push([`Publisher:`, item.imprint]);
+      if (item.releaseDate) metaItems.push([`Release Date:`, item.releaseDate]);
+      if (item.binding) metaItems.push([`Binding:`, item.binding]);
+      if (item.pages) metaItems.push([`Pages:`, `${item.pages} pages`]);
+      if (item.dimensions) metaItems.push([`Dimensions:`, item.dimensions]);
+      if (item.weight) metaItems.push([`Weight:`, item.weight]);
+      
+      if (metaItems.length > 0) {
+        const detailsTable = cell.appendTable(metaItems);
+        detailsTable.setBorderWidth(1);
+        detailsTable.setBorderColor('#e0e0e0');
+        
+        // Style all cells
+        for (let i = 0; i < detailsTable.getNumRows(); i++) {
+          const row = detailsTable.getRow(i);
+          const labelCell = row.getCell(0);
+          const valueCell = row.getCell(1);
+          
+          // Make cells transparent
+          labelCell.setBackgroundColor('#FFFFFF');
+          valueCell.setBackgroundColor('#FFFFFF');
+          
+          // Minimal padding for compact table
+          labelCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(2);
+          valueCell.setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(2).setPaddingRight(4);
+          
+          // Style the existing paragraphs
+          const labelPara = labelCell.getChild(0).asParagraph();
+          const valuePara = valueCell.getChild(0).asParagraph();
+          styleParagraph(labelPara, t => t.setBold(true).setFontSize(7).setForegroundColor('#666666'));
+          styleParagraph(valuePara, t => t.setFontSize(7).setForegroundColor('#333333'));
+          
+          // Reduce spacing between rows
+          labelPara.setSpacingAfter(0);
+          valuePara.setSpacingAfter(0);
+        }
+        
+        cell.appendParagraph('').setSpacingAfter(3);
+      }
+    }
+    
+    // Price and Barcode section
+    if (item.price || item.sku) {
+      const priceBarcodeTable = cell.appendTable([['', '']]); // Two columns: price and barcode
+      priceBarcodeTable.setBorderWidth(1);
+      priceBarcodeTable.setBorderColor('#e0e0e0');
+      
+      const priceCell = priceBarcodeTable.getRow(0).getCell(0);
+      const barcodeCell = priceBarcodeTable.getRow(0).getCell(1);
+      
+      // Minimal padding
+      priceCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(4).setPaddingRight(4);
+      barcodeCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(4).setPaddingRight(4);
+      priceCell.setBackgroundColor('#FFFFFF');
+      barcodeCell.setBackgroundColor('#FFFFFF');
+      
+      // Price (left side)
+      if (item.price) {
+        const price = priceCell.appendParagraph(`AUD$ ${item.price}`);
+        const priceSizes = { 2: 10, 3: 9, 4: 8, 8: 6 };
+        styleParagraph(price, t => t.setFontSize(priceSizes[layout] || 8).setBold(true).setForegroundColor('#d63384'));
+        price.setSpacingAfter(0);
+      }
+      
+      // Barcode (right side) - Show EAN-13 barcode image
+      if (item.sku) {
+        try {
+          const barcodeImage = generateEAN13Barcode(item.sku);
+          if (barcodeImage) {
+            const image = barcodeCell.appendImage(barcodeImage);
+            const barcodeSizes = { 2: { width: 80, height: 25 }, 3: { width: 70, height: 20 }, 4: { width: 60, height: 18 }, 8: { width: 40, height: 12 } };
+            const size = barcodeSizes[layout] || barcodeSizes[4];
+            image.setWidth(size.width);
+            image.setHeight(size.height);
+          } else {
+            // Fallback: show SKU as text
+            const barcodeText = barcodeCell.appendParagraph(`SKU: ${item.sku}`);
+            styleParagraph(barcodeText, t => t.setFontSize(6).setForegroundColor('#999999'));
+          }
+        } catch (error) {
+          console.warn('Could not generate barcode:', error);
+          // Fallback: show SKU as text
+          const barcodeText = barcodeCell.appendParagraph(`SKU: ${item.sku}`);
+          styleParagraph(barcodeText, t => t.setFontSize(6).setForegroundColor('#999999'));
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error in createProductCard:', error.toString());
+    // Fallback: create a simple text
+    const fallbackText = cell.appendParagraph(`Error creating product card: ${error.message}`);
+    styleParagraph(fallbackText, t => t.setFontSize(8).setForegroundColor('#FF0000'));
   }
 }
 
