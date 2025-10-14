@@ -802,8 +802,8 @@ function createProductCard3Up(cell, item) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = imageCell.appendImage(imageBlob);
-      image.setWidth(90);
-      image.setHeight(120);
+      image.setWidth(113); // Increased by 25% (90 * 1.25 = 112.5, rounded to 113)
+      image.setHeight(150); // Increased by 25% (120 * 1.25 = 150)
     } catch (error) {
       console.warn('Could not load image:', item.imageUrl);
     }
