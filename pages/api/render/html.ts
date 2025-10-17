@@ -305,6 +305,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     font-size: 12px;
   }
   
+  /* Force portrait orientation in browser display */
+  @media screen {
+    .page { 
+      width: 210mm;  /* A4 portrait width */
+      min-height: 297mm;  /* A4 portrait height */
+      margin: 0 auto;  /* Center the page */
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);  /* Add subtle shadow for visual separation */
+    }
+    
+    body {
+      padding: 20px 0;  /* Add vertical padding for centered pages */
+      background: #f5f5f5;  /* Light gray background to show page boundaries */
+    }
+  }
+  
   /* Page structure - EXACTLY like working mixed layout */
   .page { 
     display: grid; 
