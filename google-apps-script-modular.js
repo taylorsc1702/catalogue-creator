@@ -835,7 +835,7 @@ function createProductCard3Up(cell, item) {
     }
     const author = contentCell.appendParagraph(authorText);
     styleParagraph(author, t => t.setFontSize(10).setForegroundColor('#444444'));
-    author.setSpacingAfter(1); // Minimal spacing after author
+    author.setSpacingAfter(0); // No spacing after author
   }
   
   // Description (in a fixed-height box to prevent overflow)
@@ -866,14 +866,12 @@ function createProductCard3Up(cell, item) {
   // Publication details - just values, no labels
   const detailsItems = [];
   if (item.imprint) detailsItems.push([item.imprint]);
-  if (item.category) detailsItems.push([item.category]);
-  if (item.discount) detailsItems.push([item.discount]);
   if (item.binding) detailsItems.push([item.binding]);
-  if (item.dimensions) detailsItems.push([item.dimensions]);
   if (item.pages) detailsItems.push([`${item.pages} Pages`]);
-  if (item.colorInfo) detailsItems.push([item.colorInfo]);
+  if (item.dimensions) detailsItems.push([item.dimensions]);
   if (item.releaseDate) detailsItems.push([item.releaseDate]);
-  if (item.sku) detailsItems.push([item.sku]);
+  if (item.weight) detailsItems.push([item.weight]);
+  if (item.sku) detailsItems.push([`ISBN: ${item.sku}`]);
   if (item.price) detailsItems.push([`AUD$ ${item.price}`]);
   
   // Create details table (single column - no labels)
