@@ -91,19 +91,25 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
 
   const generateEAN13Barcode = (code: string) => {
     try {
+      console.log('generateEAN13Barcode called with:', code);
       let cleanCode = code.replace(/[^0-9]/g, '');
+      console.log('Cleaned code:', cleanCode);
       
       if (cleanCode.length === 0) {
         cleanCode = '1234567890123';
+        console.log('Using default code:', cleanCode);
       }
       
       if (cleanCode.length < 13) {
         cleanCode = cleanCode.padStart(13, '0');
+        console.log('Padded code:', cleanCode);
       } else if (cleanCode.length > 13) {
         cleanCode = cleanCode.substring(0, 13);
+        console.log('Truncated code:', cleanCode);
       }
       
       const canvas = createCanvas(150, 60);
+      console.log('Canvas created:', canvas.width, 'x', canvas.height);
       
       JsBarcode(canvas, cleanCode, {
         format: "EAN13",
@@ -116,7 +122,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         textMargin: 2
       });
       
-      return canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/png');
+      console.log('Barcode data URL generated, length:', dataUrl.length);
+      return dataUrl;
     } catch (error) {
       console.error('EAN-13 barcode generation error:', error);
       return '';
@@ -169,9 +177,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
           const barcodeCode = item.sku || item.handle;
+          console.log('Generating EAN-13 barcode for:', barcodeCode);
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+          console.log('Barcode data URL length:', barcodeDataUrl ? barcodeDataUrl.length : 0);
           if (barcodeDataUrl) {
             barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+          } else {
+            console.log('Barcode generation failed for:', barcodeCode);
           }
         } else if (itemBarcodeType === "QR Code") {
           const productUrl = generateProductUrl(item.handle);
@@ -180,6 +192,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
             barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
           }
         }
+      } else {
+        console.log('No barcode type specified for item:', item.title);
       }
 
       // For 1-up layout, use special two-column layout
