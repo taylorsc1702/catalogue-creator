@@ -678,6 +678,56 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     margin-top: 4px;
   }
   
+  /* Print styles - hide borders and boxes for clean printing */
+  @media print {
+    .layout-3-row {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .product-description-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up .detail-value {
+      border-bottom: none !important;
+    }
+    
+    .barcode-fallback {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .book-cover {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .internal-thumbnail {
+      border: none !important;
+    }
+    
+    .author-bio {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .internals-section {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .internals-thumbnails {
+      border: none !important;
+    }
+  }
+  
   /* Other layouts: Standard vertical card */
   .product-card {
     flex-direction: column;
