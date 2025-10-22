@@ -172,13 +172,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       let barcodeHtml = '';
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          // Try to get a valid ISBN from various fields
-          let barcodeCode = item.sku || item.handle || '';
+          // Use SKU (ISBN) for barcode generation, not handle
+          let barcodeCode = item.sku || '';
           
-          // If no valid code, try to extract ISBN from the product details
+          // If no SKU available, use a default
           if (!barcodeCode || barcodeCode.length < 10) {
-            // Look for ISBN in the product data - this should match what's shown in details
-            barcodeCode = item.sku || item.handle || '1234567890123';
+            barcodeCode = '1234567890123';
           }
           
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
