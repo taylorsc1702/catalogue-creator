@@ -231,6 +231,37 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         `;
       }
 
+      // For 3-up layout, use horizontal row layout (image, content, details)
+      if (layout === 3) {
+        const plainDescription = item.description ? htmlToPlainText(item.description) : '';
+        const truncatedDesc = plainDescription.length > 500 ? plainDescription.substring(0, 497) + '...' : plainDescription;
+        
+        return `
+          <div class="product-card layout-3-row">
+            <div class="product-image-3up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+            </div>
+            <div class="product-content-3up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+              ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+              ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
+              ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
+            </div>
+            <div class="product-details-3up">
+              ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
+              ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
+              ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
+              ${item.releaseDate ? `<div class="detail-value">${esc(item.releaseDate)}</div>` : ""}
+              ${item.weight ? `<div class="detail-value">${esc(item.weight)}</div>` : ""}
+              ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
+              ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
+
       // For other layouts, use standard card layout
       return `
         <div class="product-card">
@@ -362,9 +393,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
   }
   
   .page.layout-3 .page-content {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 15mm;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 8mm;
   }
   
   .page.layout-4 .page-content {
@@ -519,6 +550,105 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     font-size: 16px;
     font-weight: bold;
     color: #d63384;
+  }
+  
+  /* Layout 3: Horizontal row (Image | Content | Details) */
+  .layout-3-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 180px;
+  }
+  
+  .product-image-3up {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  
+  .product-image-3up .book-cover {
+    width: 113px;
+    height: 150px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .product-content-3up {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .product-content-3up .product-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .product-content-3up .product-subtitle {
+    font-size: 10px;
+    font-style: italic;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .product-content-3up .product-author {
+    font-size: 10px;
+    color: #444;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .product-description-3up {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.3;
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid #e0e0e0;
+    background: #fafafa;
+    max-height: 120px;
+    overflow: hidden;
+    text-align: justify;
+  }
+  
+  .product-details-3up {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 8px;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 6px;
+    background: #ffffff;
+  }
+  
+  .product-details-3up .detail-value {
+    padding: 2px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    line-height: 1.3;
+  }
+  
+  .product-details-3up .detail-value:last-child {
+    border-bottom: none;
+  }
+  
+  .product-details-3up .barcode {
+    margin-top: 8px;
+    padding: 0;
+  }
+  
+  .product-details-3up .barcode img {
+    max-width: 100%;
+    height: auto;
   }
   
   /* Other layouts: Standard vertical card */
