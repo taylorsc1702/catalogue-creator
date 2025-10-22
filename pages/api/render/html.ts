@@ -127,6 +127,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     }
   };
 
+  // Format release date from YYYY-MM-DD to MM/YYYY
+  const formatReleaseDate = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    // Handle YYYY-MM-DD format
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month] = dateString.split('-');
+      return `${month}/${year}`;
+    }
+    
+    // If already in MM/YYYY format or other format, return as-is
+    return dateString;
+  };
+
   // Convert HTML to plain text
   const htmlToPlainText = (html: string): string => {
     if (!html) return '';
@@ -175,9 +189,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
           // Use SKU (ISBN) for barcode generation, not handle
           let barcodeCode = item.sku || '';
           
+          // Debug: log what we're getting
+          console.log('Barcode code from SKU:', barcodeCode, 'for item:', item.title);
+          
           // If no SKU available, use a default
           if (!barcodeCode || barcodeCode.length < 10) {
             barcodeCode = '1234567890123';
+            console.log('Using default barcode code:', barcodeCode);
           }
           
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
@@ -261,7 +279,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
             <div class="product-content-3up">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
+              ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
               ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
             </div>
             <div class="product-details-3up">
@@ -269,7 +287,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
               ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
               ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
-              ${item.releaseDate ? `<div class="detail-value">${esc(item.releaseDate)}</div>` : ""}
+              ${item.releaseDate ? `<div class="detail-value">${esc(formatReleaseDate(item.releaseDate))}</div>` : ""}
               ${item.weight ? `<div class="detail-value">${esc(item.weight)}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
