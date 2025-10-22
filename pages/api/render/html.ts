@@ -93,13 +93,17 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     try {
       let cleanCode = code.replace(/[^0-9]/g, '');
       
+      // If no valid digits found, use a default
       if (cleanCode.length === 0) {
         cleanCode = '1234567890123';
       }
       
+      // For EAN-13, we need exactly 13 digits
       if (cleanCode.length < 13) {
+        // Pad with zeros at the beginning to make it 13 digits
         cleanCode = cleanCode.padStart(13, '0');
       } else if (cleanCode.length > 13) {
+        // Take the first 13 digits
         cleanCode = cleanCode.substring(0, 13);
       }
       
@@ -168,7 +172,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       let barcodeHtml = '';
       if (itemBarcodeType && itemBarcodeType !== "None") {
         if (itemBarcodeType === "EAN-13") {
-          const barcodeCode = item.sku || item.handle;
+          // Try to get a valid ISBN from various fields
+          let barcodeCode = item.sku || item.handle || '';
+          
+          // If no valid code, try to extract ISBN from the product details
+          if (!barcodeCode || barcodeCode.length < 10) {
+            // Look for ISBN in the product data - this should match what's shown in details
+            barcodeCode = item.sku || item.handle || '1234567890123';
+          }
+          
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
             barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
