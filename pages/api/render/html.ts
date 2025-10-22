@@ -234,7 +234,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       // For 3-up layout, use horizontal row layout (image, content, details)
       if (layout === 3) {
         const plainDescription = item.description ? htmlToPlainText(item.description) : '';
-        const truncatedDesc = plainDescription.length > 500 ? plainDescription.substring(0, 497) + '...' : plainDescription;
+        const truncatedDesc = plainDescription.length > 1000 ? plainDescription.substring(0, 997) + '...' : plainDescription;
         
         return `
           <div class="product-card layout-3-row">
