@@ -20,6 +20,20 @@ const schema = z.object({
 
     const items = products.map((p) => {
       const mf = p.metafields;
+      
+      // Debug: Log metafields for products with IMIDIS
+      if (p.title && (mf["IMIDIS"] || mf["my_fields.IMIDIS"] || mf["imidis"] || mf["my_fields.imidis"])) {
+        console.log(`=== METAFIELDS DEBUG for ${p.title} ===`);
+        console.log("All metafield keys:", Object.keys(mf));
+        console.log("IMIDIS values found:", {
+          "mf['IMIDIS']": mf["IMIDIS"],
+          "mf['my_fields.IMIDIS']": mf["my_fields.IMIDIS"],
+          "mf['imidis']": mf["imidis"],
+          "mf['my_fields.imidis']": mf["my_fields.imidis"]
+        });
+        console.log("=== END DEBUG ===");
+      }
+      
       return {
         title: p.title,
         subtitle: mf["Subtitle"],

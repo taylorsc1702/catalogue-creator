@@ -300,6 +300,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.imidis ? `<div class="detail-value">IMIDIS: ${esc(item.imidis)}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
+              <!-- DEBUG: Show all available fields -->
+              <div class="detail-value" style="font-size: 8px; color: #999; border: 1px solid #ccc; padding: 2px;">
+                DEBUG: ${Object.keys(item).filter(k => item[k as keyof typeof item]).join(', ')}
+              </div>
               ${barcodeHtml}
             </div>
           </div>
