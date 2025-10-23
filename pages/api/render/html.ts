@@ -340,7 +340,47 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
 
     // Handle list layouts differently
     if (layout === 'list' || layout === 'compact-list') {
-      const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
+      const createListCard = (item: Item, localIndex: number) => {
+        const globalIndex = pageIndex * perPage + localIndex;
+        const barcodeHtml = generateBarcodeHtml(item, globalIndex, itemBarcodeTypes, barcodeType);
+        
+        if (layout === 'list') {
+          // List view: Image, Title, Discount, Author, AURRP, Quantity
+          return `
+            <div class="product-card layout-list">
+              <div class="product-image">
+                <img src="${esc(item.imageUrl || 'https://via.placeholder.com/60x80?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+              </div>
+              <div class="product-content">
+                <h3 class="product-title">${esc(item.title)}</h3>
+                <div class="product-details">
+                  <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
+                  <span class="detail-item">Author: ${esc(item.author || '')}</span>
+                  <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  <span class="detail-item">Quantity: </span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          // Compact list view: Title, Discount, Author, AURRP, Quantity (no image)
+          return `
+            <div class="product-card layout-compact-list">
+              <div class="product-content">
+                <h3 class="product-title">${esc(item.title)}</h3>
+                <div class="product-details">
+                  <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
+                  <span class="detail-item">Author: ${esc(item.author || '')}</span>
+                  <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  <span class="detail-item">Quantity: </span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      };
+      
+      const cards = page.map((item, localIndex) => createListCard(item, localIndex)).join("");
       const layoutClass = layout === 'list' ? "layout-list" : "layout-compact-list";
       
       return `<div class="page ${layoutClass}">
@@ -789,11 +829,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     font-weight: bold;
   }
   
-  /* List Layout Styles */
+  /* List Layout Styles - Landscape */
   .page.layout-list .page-content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
   
   .page.layout-list .product-card {
@@ -803,13 +843,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     padding: 8px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    min-height: 80px;
+    min-height: 60px;
+    align-items: center;
   }
   
   .page.layout-list .product-image {
     flex-shrink: 0;
-    width: 60px;
-    height: 80px;
+    width: 50px;
+    height: 60px;
   }
   
   .page.layout-list .book-cover {
@@ -822,8 +863,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .page.layout-list .product-content {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
   }
   
   .page.layout-list .product-title {
@@ -832,33 +874,23 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     color: #1a1a1a;
     margin: 0;
     line-height: 1.2;
+    flex: 1;
   }
   
-  .page.layout-list .product-subtitle {
-    font-size: 12px;
-    color: #666;
-    margin: 0;
-    font-style: italic;
+  .page.layout-list .product-details {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: center;
   }
   
-  .page.layout-list .product-author {
+  .page.layout-list .detail-item {
     font-size: 11px;
-    color: #444;
-    margin: 0;
+    color: #333;
+    white-space: nowrap;
   }
   
-  .page.layout-list .product-meta {
-    font-size: 9px;
-    color: #666;
-  }
-  
-  .page.layout-list .product-price {
-    font-size: 12px;
-    font-weight: bold;
-    color: #d63384;
-  }
-  
-  /* Compact List Layout Styles */
+  /* Compact List Layout Styles - Landscape, No Image */
   .page.layout-compact-list .page-content {
     display: flex;
     flex-direction: column;
@@ -872,27 +904,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     padding: 6px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    min-height: 50px;
-  }
-  
-  .page.layout-compact-list .product-image {
-    flex-shrink: 0;
-    width: 40px;
-    height: 50px;
-  }
-  
-  .page.layout-compact-list .book-cover {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 2px;
+    min-height: 40px;
+    align-items: center;
   }
   
   .page.layout-compact-list .product-content {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
   }
   
   .page.layout-compact-list .product-title {
@@ -901,30 +922,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     color: #1a1a1a;
     margin: 0;
     line-height: 1.1;
+    flex: 1;
   }
   
-  .page.layout-compact-list .product-subtitle {
+  .page.layout-compact-list .product-details {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .page.layout-compact-list .detail-item {
     font-size: 10px;
-    color: #666;
-    margin: 0;
-    font-style: italic;
-  }
-  
-  .page.layout-compact-list .product-author {
-    font-size: 9px;
-    color: #444;
-    margin: 0;
-  }
-  
-  .page.layout-compact-list .product-meta {
-    font-size: 8px;
-    color: #666;
-  }
-  
-  .page.layout-compact-list .product-price {
-    font-size: 10px;
-    font-weight: bold;
-    color: #d63384;
+    color: #333;
+    white-space: nowrap;
   }
   
   /* Table Layout Styles */
