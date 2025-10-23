@@ -1312,7 +1312,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
-  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout;
+  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === 'table' ? 'table' : layout;
   
   // Get the handler for the current layout
   const layoutHandler = layoutRegistry.getHandler(layoutType);
