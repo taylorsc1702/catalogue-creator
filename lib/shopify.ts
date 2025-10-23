@@ -52,7 +52,7 @@ const query = `
           images(first: 5) { edges { node { url altText } } }
           variants(first: 1) { edges { node { price sku } } }
           description
-          metafields(first: 10) { 
+          metafields(first: 50) { 
             edges { 
               node { 
                 key 
