@@ -953,7 +953,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .table-header {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
-    padding: 8px 6px;
+    padding: 1px 3px;
     text-align: left;
     font-weight: 600;
     font-size: 10px;
@@ -962,10 +962,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   .table-cell {
     border: 1px solid #dee2e6;
-    padding: 2px 4px;
+    padding: 0.2px 2px;
     vertical-align: top;
     font-size: 9px;
-    line-height: 1.0;
+    line-height: 0.8;
     height: auto;
   }
   
