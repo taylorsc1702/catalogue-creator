@@ -41,6 +41,8 @@ const schema = z.object({
         icauth: mf["ICAUTH"] || mf["my_fields.ICAUTH"] || mf["icauth"],
         publicity: mf["publicity"],
         reviews: mf["reviews"],
+        imidis: mf["IMIDIS"] || mf["my_fields.IMIDIS"] || mf["imidis"],
+        discount: mf["Discount"] || mf["my_fields.Discount"] || mf["discount"],
         imageUrl: p.featuredImageUrl,
         additionalImages: p.additionalImages,
         handle: p.handle,
