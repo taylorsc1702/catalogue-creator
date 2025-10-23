@@ -106,16 +106,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       
       const canvas = createCanvas(150, 60);
       
-      // Use CODE128 format which is more reliable for displaying text
+      // Use CODE128 format without displayValue (we'll add our own text)
       JsBarcode(canvas, cleanCode, {
         format: "CODE128",
         width: 1.5,
         height: 40,
-        displayValue: true,
-        fontSize: 10,
-        textAlign: "center",
-        textPosition: "bottom",
-        textMargin: 2,
+        displayValue: false,
         background: "#ffffff",
         lineColor: "#000000"
       });
@@ -209,7 +205,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
           
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div><div class="barcode-text">${esc(barcodeCode)}</div>`;
           } else {
             // Fallback: show the code as text if barcode generation fails
             barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
@@ -711,6 +707,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     text-align: center;
     margin-top: 2px;
     font-family: monospace;
+  }
+  
+  .barcode-text {
+    font-size: 10px;
+    color: #000;
+    text-align: center;
+    margin-top: 4px;
+    font-family: monospace;
+    font-weight: bold;
   }
   
   /* Print styles - hide borders and boxes for clean printing */
