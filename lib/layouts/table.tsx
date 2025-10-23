@@ -42,7 +42,7 @@ export function TableLayout({
             <th>Author</th>
             <th>Title</th>
             <th>AURRP</th>
-            <th>IMDIS</th>
+            <th>Discount</th>
             <th>Quantity</th>
           </tr>
         </thead>
@@ -134,10 +134,11 @@ export function createTableLayoutHandler(): LayoutHandler {
       
       .table-cell {
         border: 1px solid #dee2e6;
-        padding: 6px;
+        padding: 4px 6px;
         vertical-align: top;
         font-size: 9px;
-        line-height: 1.2;
+        line-height: 1.1;
+        height: auto;
       }
       
       .quantity-cell {
@@ -148,10 +149,10 @@ export function createTableLayoutHandler(): LayoutHandler {
       
       .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; }
       .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; }
-      .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 35%; }
-      .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 10%; }
-      .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 10%; }
-      .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 15%; }
+      .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 45%; }
+      .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 8%; }
+      .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 8%; }
+      .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 9%; }
     `,
     getPerPage: () => 50
   };

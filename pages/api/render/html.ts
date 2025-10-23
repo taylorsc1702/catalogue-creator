@@ -386,7 +386,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
                 <th class="table-header">Author</th>
                 <th class="table-header">Title</th>
                 <th class="table-header">AURRP</th>
-                <th class="table-header">IMDIS</th>
+                <th class="table-header">Discount</th>
                 <th class="table-header">Quantity</th>
               </tr>
             </thead>
@@ -951,10 +951,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   .table-cell {
     border: 1px solid #dee2e6;
-    padding: 6px;
+    padding: 4px 6px;
     vertical-align: top;
     font-size: 9px;
-    line-height: 1.2;
+    line-height: 1.1;
+    height: auto;
   }
   
   .quantity-cell {
@@ -963,13 +964,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     background-color: #f8f9fa;
   }
   
-  /* Column widths optimized for A4 */
+  /* Column widths optimized for A4 - reduced AURRP, IMDIS, Quantity; expanded Title */
   .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; } /* ISBN */
   .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; } /* Author */
-  .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 35%; } /* Title */
-  .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 10%; } /* AURRP */
-  .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 10%; } /* IMDIS */
-  .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 15%; } /* Quantity */
+  .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 45%; } /* Title - expanded */
+  .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 8%; } /* AURRP - reduced */
+  .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 8%; } /* Discount - reduced */
+  .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 9%; } /* Quantity - reduced */
 
   /* Print styles - hide borders and boxes for clean printing */
   @media print {
