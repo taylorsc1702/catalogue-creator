@@ -341,11 +341,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     // Handle list layouts differently
     if (layout === 'list' || layout === 'compact-list') {
       const createListCard = (item: Item, localIndex: number) => {
-        const globalIndex = pageIndex * perPage + localIndex;
-        const barcodeHtml = generateBarcodeHtml(item, globalIndex, itemBarcodeTypes, barcodeType);
         
         if (layout === 'list') {
-          // List view: Image, Title, Discount, Author, AURRP, Quantity
+          // List view: Image, Title, Discount, Author, AURRP, Barcode, Quantity
           return `
             <div class="product-card layout-list">
               <div class="product-image">
@@ -357,13 +355,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
                   <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
                   <span class="detail-item">Author: ${esc(item.author || '')}</span>
                   <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  <span class="detail-item">Barcode: ${esc(item.sku || '')}</span>
                   <span class="detail-item">Quantity: </span>
                 </div>
               </div>
             </div>
           `;
         } else {
-          // Compact list view: Title, Discount, Author, AURRP, Quantity (no image)
+          // Compact list view: Title, Discount, Author, AURRP, Barcode, Quantity (no image)
           return `
             <div class="product-card layout-compact-list">
               <div class="product-content">
@@ -372,6 +371,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
                   <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
                   <span class="detail-item">Author: ${esc(item.author || '')}</span>
                   <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  <span class="detail-item">Barcode: ${esc(item.sku || '')}</span>
                   <span class="detail-item">Quantity: </span>
                 </div>
               </div>
@@ -962,10 +962,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   .table-cell {
     border: 1px solid #dee2e6;
-    padding: 4px 6px;
+    padding: 2px 4px;
     vertical-align: top;
     font-size: 9px;
-    line-height: 1.1;
+    line-height: 1.0;
     height: auto;
   }
   
