@@ -123,7 +123,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         format: "EAN13",
         width: 1.5,
         height: 40,
-        displayValue: cleanCode, // Use the processed code, not true
+        displayValue: true, // Show the barcode value
         fontSize: 10,
         textAlign: "center",
         textPosition: "bottom",
