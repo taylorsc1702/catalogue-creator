@@ -108,7 +108,7 @@ export function createTableLayoutHandler(): LayoutHandler {
         </tr>
       `;
     },
-    createDocxExport: (item: Item, index: number, imageData?: { base64: string; width: number; height: number; mimeType: string } | null, generateProductUrl?: (handle: string) => string, barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => {
+    createDocxExport: (item: Item, index: number, _imageData?: { base64: string; width: number; height: number; mimeType: string } | null, _generateProductUrl?: (handle: string) => string, _barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => {
       // For table layout, we'll create a simple paragraph with the item data
       return [
         new Paragraph({

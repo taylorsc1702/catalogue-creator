@@ -5,9 +5,9 @@ export type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   icauth?: string; // Australian author metafield
-  publicity?: string; reviews?: string;
+  publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
 };
