@@ -83,7 +83,7 @@ export default function Home() {
   const [collectionId, setCollectionId] = useState("");
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|2|3|4|8|'list'|'compact-list'>(4);
+  const [layout, setLayout] = useState<1|2|3|4|8|'list'|'compact-list'|'table'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
@@ -993,6 +993,7 @@ export default function Home() {
         ))}
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
+        <button onClick={()=>setLayout('table')} style={btn(layout==='table')}>📊 Table</button>
         <span style={{ marginLeft: 16, fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
         {["EAN-13", "QR Code", "None"].map(type => (
           <button 

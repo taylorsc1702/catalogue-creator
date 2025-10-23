@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list'; 
+      layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -349,6 +349,51 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
         
         <div class="page-content">
           ${cards}
+        </div>
+        
+        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+      </div>`;
+    }
+    
+    // Handle table layout
+    if (layout === 'table') {
+      const tableRows = page.map((item, localIndex) => {
+        const barcodeHtml = generateBarcodeHtml(item, localIndex, itemBarcodeTypes, barcodeType);
+        return `
+          <tr>
+            <td class="table-cell">${esc(item.sku || '')}</td>
+            <td class="table-cell">${esc(item.author || '')}</td>
+            <td class="table-cell">${esc(item.title)}</td>
+            <td class="table-cell">${esc(item.price || '')}</td>
+            <td class="table-cell">${esc(item.imidis || '')}</td>
+            <td class="table-cell quantity-cell"></td>
+          </tr>
+        `;
+      }).join("");
+      
+      return `<div class="page layout-table">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+        
+        <div class="page-content">
+          <table class="product-table">
+            <thead>
+              <tr>
+                <th class="table-header">ISBN</th>
+                <th class="table-header">Author</th>
+                <th class="table-header">Title</th>
+                <th class="table-header">AURRP</th>
+                <th class="table-header">IMDIS</th>
+                <th class="table-header">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
         </div>
         
         <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
@@ -881,6 +926,50 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     font-weight: bold;
     color: #d63384;
   }
+  
+  /* Table Layout Styles */
+  .page.layout-table .page-content {
+    padding: 0;
+  }
+  
+  .product-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin: 0;
+  }
+  
+  .table-header {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 8px 6px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    color: #495057;
+  }
+  
+  .table-cell {
+    border: 1px solid #dee2e6;
+    padding: 6px;
+    vertical-align: top;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  
+  .quantity-cell {
+    width: 60px;
+    text-align: center;
+    background-color: #f8f9fa;
+  }
+  
+  /* Column widths optimized for A4 */
+  .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; } /* ISBN */
+  .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; } /* Author */
+  .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 35%; } /* Title */
+  .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 10%; } /* AURRP */
+  .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 10%; } /* IMDIS */
+  .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 15%; } /* Quantity */
 
   /* Print styles - hide borders and boxes for clean printing */
   @media print {
