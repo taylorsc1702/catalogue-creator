@@ -167,7 +167,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   };
 
   // Chunk items into pages
-  const perPage = layout;
+  // Handle pagination based on layout type
+  const perPage = typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
   const pages: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) {
     pages.push(items.slice(i, i + perPage));
@@ -360,7 +361,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     // Handle table layout
     if (layout === 'table') {
       const tableRows = page.map((item, localIndex) => {
-        const barcodeHtml = generateBarcodeHtml(item, localIndex, itemBarcodeTypes, barcodeType);
         return `
           <tr>
             <td class="table-cell">${esc(item.sku || '')}</td>
