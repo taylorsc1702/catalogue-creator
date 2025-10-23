@@ -119,15 +119,18 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       
       const canvas = createCanvas(150, 60);
       
+      // Try different approach - use CODE128 format which is more reliable
       JsBarcode(canvas, cleanCode, {
-        format: "EAN13",
+        format: "CODE128",
         width: 1.5,
         height: 40,
-        displayValue: true, // Show the barcode value
+        displayValue: true,
         fontSize: 10,
         textAlign: "center",
         textPosition: "bottom",
-        textMargin: 2
+        textMargin: 2,
+        background: "#ffffff",
+        lineColor: "#000000"
       });
       
       return canvas.toDataURL('image/png');
