@@ -20,22 +20,6 @@ const schema = z.object({
 
     const items = products.map((p) => {
       const mf = p.metafields;
-      // Debug: Log available metafields for first product
-      if (p.title === "Hey Warrior") {
-        console.log("=== METAFIELDS DEBUG ===");
-        console.log("Available metafields:", Object.keys(mf));
-        console.log("IMIDIS values:", {
-          "mf['IMIDIS']": mf["IMIDIS"],
-          "mf['my_fields.IMIDIS']": mf["my_fields.IMIDIS"],
-          "mf['imidis']": mf["imidis"]
-        });
-        console.log("Discount values:", {
-          "mf['Discount']": mf["Discount"],
-          "mf['my_fields.Discount']": mf["my_fields.Discount"],
-          "mf['discount']": mf["discount"]
-        });
-        console.log("=== END METAFIELDS DEBUG ===");
-      }
       return {
         title: p.title,
         subtitle: mf["Subtitle"],
@@ -57,8 +41,8 @@ const schema = z.object({
         icauth: mf["ICAUTH"] || mf["my_fields.ICAUTH"] || mf["icauth"],
         publicity: mf["publicity"],
         reviews: mf["reviews"],
-        imidis: mf["IMIDIS"] || mf["my_fields.IMIDIS"] || mf["imidis"],
-        discount: mf["Discount"] || mf["my_fields.Discount"] || mf["discount"],
+        imidis: mf["IMIDIS"] || mf["my_fields.IMIDIS"] || mf["imidis"] || mf["my_fields.imidis"],
+        discount: mf["Discount"] || mf["my_fields.Discount"] || mf["discount"] || mf["my_fields.discount"],
         imageUrl: p.featuredImageUrl,
         additionalImages: p.additionalImages,
         handle: p.handle,
