@@ -21,13 +21,6 @@ const schema = z.object({
     const items = products.map((p) => {
       const mf = p.metafields;
       
-      // Debug: Log ALL metafields for first product to see what's available
-      if (p.title === "Hey Warrior") {
-        console.log(`=== ALL METAFIELDS DEBUG for ${p.title} ===`);
-        console.log("All metafield keys:", Object.keys(mf));
-        console.log("All metafield values:", mf);
-        console.log("=== END DEBUG ===");
-      }
       
       return {
         title: p.title,
