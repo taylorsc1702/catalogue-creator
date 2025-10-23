@@ -191,11 +191,26 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
           
           // Debug: log what we're getting
           console.log('Barcode code from SKU:', barcodeCode, 'for item:', item.title);
+          console.log('Full item data:', JSON.stringify(item, null, 2));
           
-          // If no SKU available, use a default
+          // If no SKU available, try to extract ISBN from the displayed ISBN text
           if (!barcodeCode || barcodeCode.length < 10) {
-            barcodeCode = '1234567890123';
-            console.log('Using default barcode code:', barcodeCode);
+            // Try to find a valid ISBN in the item data
+            const possibleISBN = item.sku || item.handle || '';
+            console.log('Possible ISBN sources:', { sku: item.sku, handle: item.handle });
+            
+            if (possibleISBN && possibleISBN.match(/\d{13}/)) {
+              // Extract 13-digit number
+              const match = possibleISBN.match(/\d{13}/);
+              barcodeCode = match ? match[0] : '1234567890123';
+            } else if (possibleISBN && possibleISBN.match(/\d{10,13}/)) {
+              // Extract any 10-13 digit number
+              const match = possibleISBN.match(/\d{10,13}/);
+              barcodeCode = match ? match[0].padStart(13, '0') : '1234567890123';
+            } else {
+              barcodeCode = '1234567890123';
+            }
+            console.log('Using fallback barcode code:', barcodeCode);
           }
           
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
