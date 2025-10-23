@@ -91,23 +91,31 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
 
   const generateEAN13Barcode = (code: string) => {
     try {
+      console.log('generateEAN13Barcode input:', code);
       let cleanCode = code.replace(/[^0-9]/g, '');
+      console.log('Cleaned code:', cleanCode);
       
       // If no valid digits found, use a default
       if (cleanCode.length === 0) {
         cleanCode = '1234567890123';
+        console.log('Using default code (no digits found)');
       }
       
       // For EAN-13, we need exactly 13 digits
       if (cleanCode.length < 13) {
         // Pad with zeros at the beginning to make it 13 digits
         cleanCode = cleanCode.padStart(13, '0');
+        console.log('Padded code:', cleanCode);
       } else if (cleanCode.length > 13) {
         // Take the first 13 digits
         cleanCode = cleanCode.substring(0, 13);
+        console.log('Truncated code:', cleanCode);
       }
       
+      console.log('Final barcode code:', cleanCode);
+      
       const canvas = createCanvas(150, 60);
+      console.log('Canvas created');
       
       JsBarcode(canvas, cleanCode, {
         format: "EAN13",
@@ -120,7 +128,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         textMargin: 2
       });
       
-      return canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/png');
+      console.log('Barcode generated, data URL length:', dataUrl.length);
+      return dataUrl;
     } catch (error) {
       console.error('EAN-13 barcode generation error:', error);
       return '';
