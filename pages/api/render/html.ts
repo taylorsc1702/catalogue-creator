@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | 3 | 4 | 8; 
+      layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact-list', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -337,6 +337,26 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
       `;
     };
 
+    // Handle list layouts differently
+    if (layout === 'list' || layout === 'compact-list') {
+      const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
+      const layoutClass = layout === 'list' ? "layout-list" : "layout-compact-list";
+      
+      return `<div class="page ${layoutClass}">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+        
+        <div class="page-content">
+          ${cards}
+        </div>
+        
+        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+      </div>`;
+    }
+    
     const layoutClass = layout === 1 ? "layout-1" : layout === 2 ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : "layout-8";
     const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
@@ -724,6 +744,144 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     font-weight: bold;
   }
   
+  /* List Layout Styles */
+  .page.layout-list .page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .page.layout-list .product-card {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 80px;
+  }
+  
+  .page.layout-list .product-image {
+    flex-shrink: 0;
+    width: 60px;
+    height: 80px;
+  }
+  
+  .page.layout-list .book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+  }
+  
+  .page.layout-list .product-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .page.layout-list .product-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .page.layout-list .product-subtitle {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+  }
+  
+  .page.layout-list .product-author {
+    font-size: 11px;
+    color: #444;
+    margin: 0;
+  }
+  
+  .page.layout-list .product-meta {
+    font-size: 9px;
+    color: #666;
+  }
+  
+  .page.layout-list .product-price {
+    font-size: 12px;
+    font-weight: bold;
+    color: #d63384;
+  }
+  
+  /* Compact List Layout Styles */
+  .page.layout-compact-list .page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .page.layout-compact-list .product-card {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 50px;
+  }
+  
+  .page.layout-compact-list .product-image {
+    flex-shrink: 0;
+    width: 40px;
+    height: 50px;
+  }
+  
+  .page.layout-compact-list .book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+  
+  .page.layout-compact-list .product-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .page.layout-compact-list .product-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.1;
+  }
+  
+  .page.layout-compact-list .product-subtitle {
+    font-size: 10px;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+  }
+  
+  .page.layout-compact-list .product-author {
+    font-size: 9px;
+    color: #444;
+    margin: 0;
+  }
+  
+  .page.layout-compact-list .product-meta {
+    font-size: 8px;
+    color: #666;
+  }
+  
+  .page.layout-compact-list .product-price {
+    font-size: 10px;
+    font-weight: bold;
+    color: #d63384;
+  }
+
   /* Print styles - hide borders and boxes for clean printing */
   @media print {
     .layout-3-row {
