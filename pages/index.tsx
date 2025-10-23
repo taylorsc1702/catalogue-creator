@@ -643,6 +643,53 @@ export default function Home() {
     }
   }
 
+  async function openTableView() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      const resp = await fetch("/api/render/html", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items,
+          layout: 'table',
+          title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
+          bannerColor: getBannerColor(hyperlinkToggle),
+          websiteName: getWebsiteName(hyperlinkToggle),
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating table view: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      const w = window.open("", "_blank", "noopener,noreferrer");
+      if (w) { 
+        w.document.open(); 
+        w.document.write(html); 
+        w.document.close();
+        w.focus();
+      } else {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `catalogue-table-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Popup blocked. HTML file downloaded instead.");
+      }
+    } catch (error) {
+      alert("Error generating table view: " + (error instanceof Error ? error.message : "Unknown error"));
+    }
+  }
+
   function moveItemUp(index: number) {
     if (index === 0) return;
     const newItems = [...items];
@@ -1180,6 +1227,7 @@ export default function Home() {
             <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
+            <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
           </div>
 
 
