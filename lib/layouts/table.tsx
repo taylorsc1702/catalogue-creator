@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paragraph } from 'docx';
+import { Paragraph, TextRun } from 'docx';
 import { Item, LayoutHandler, esc } from '../layout-handlers';
 
 interface TableLayoutProps {
@@ -113,7 +113,9 @@ export function createTableLayoutHandler(): LayoutHandler {
       return [
         new Paragraph({
           children: [
-            { text: `${item.sku || ''} | ${item.author || ''} | ${item.title} | ${item.price || ''} | ${item.imidis || ''}` }
+            new TextRun({
+              text: `${item.sku || ''} | ${item.author || ''} | ${item.title} | ${item.price || ''} | ${item.imidis || ''}`
+            })
           ]
         })
       ];
