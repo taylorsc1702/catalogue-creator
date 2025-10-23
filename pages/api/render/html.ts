@@ -263,7 +263,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
                 ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
                 ${item.discount ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.discount)}</div>` : ""}
-                ${item.imidis ? `<div class="meta-item"><strong>IMIDIS:</strong> ${esc(item.imidis)}</div>` : ""}
+                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
@@ -297,7 +297,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.releaseDate ? `<div class="detail-value">${esc(formatReleaseDate(item.releaseDate))}</div>` : ""}
               ${item.weight ? `<div class="detail-value">${esc(item.weight)}</div>` : ""}
               ${item.discount ? `<div class="detail-value">Discount: ${esc(item.discount)}</div>` : ""}
-              ${item.imidis ? `<div class="detail-value">IMIDIS: ${esc(item.imidis)}</div>` : ""}
+              ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
               ${barcodeHtml}
@@ -327,7 +327,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
               ${item.discount ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.discount)}</div>` : ""}
-              ${item.imidis ? `<div class="meta-item"><strong>IMIDIS:</strong> ${esc(item.imidis)}</div>` : ""}
+              ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
               ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
             </div>
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
