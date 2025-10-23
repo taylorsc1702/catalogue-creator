@@ -1,5 +1,6 @@
 import React from 'react';
-import { Item } from '../../pages/index';
+import { Paragraph } from 'docx';
+import { Item, LayoutHandler, esc } from '../layout-handlers';
 
 interface TableLayoutProps {
   items: Item[];
@@ -71,10 +72,85 @@ export function TableLayout({
   );
 }
 
-export function createTableLayoutHandler() {
+export function createTableLayoutHandler(): LayoutHandler {
   return {
     name: 'Table',
-    component: TableLayout,
-    description: 'Tabular view with ISBN, Author, Title, AURRP, IMDIS, and Quantity columns'
+    createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
+      return React.createElement('tr', { key: index },
+        React.createElement('td', null, item.sku || ''),
+        React.createElement('td', null, item.author || ''),
+        React.createElement('td', null,
+          React.createElement('a', {
+            href: generateProductUrl(item.handle),
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            style: { color: 'inherit', textDecoration: 'none' }
+          }, item.title)
+        ),
+        React.createElement('td', null, item.price || ''),
+        React.createElement('td', null, item.imidis || ''),
+        React.createElement('td', { className: 'quantity-cell' })
+      );
+    },
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
+      return `
+        <tr>
+          <td class="table-cell">${esc(item.sku || '')}</td>
+          <td class="table-cell">${esc(item.author || '')}</td>
+          <td class="table-cell">
+            <a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+              ${esc(item.title)}
+            </a>
+          </td>
+          <td class="table-cell">${esc(item.price || '')}</td>
+          <td class="table-cell">${esc(item.imidis || '')}</td>
+          <td class="table-cell quantity-cell"></td>
+        </tr>
+      `;
+    },
+    createDocxExport: (item: Item, index: number, imageData?: { base64: string; width: number; height: number; mimeType: string } | null, generateProductUrl?: (handle: string) => string, barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => {
+      // For table layout, we'll create a simple paragraph with the item data
+      return [
+        new Paragraph({
+          children: [
+            { text: `${item.sku || ''} | ${item.author || ''} | ${item.title} | ${item.price || ''} | ${item.imidis || ''}` }
+          ]
+        })
+      ];
+    },
+    getCssStyles: () => `
+      .table-layout {
+        width: 100%;
+      }
+      
+      .product-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+        margin: 0;
+      }
+      
+      .table-cell {
+        border: 1px solid #dee2e6;
+        padding: 6px;
+        vertical-align: top;
+        font-size: 9px;
+        line-height: 1.2;
+      }
+      
+      .quantity-cell {
+        width: 60px;
+        text-align: center;
+        background-color: #f8f9fa;
+      }
+      
+      .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; }
+      .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; }
+      .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 35%; }
+      .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 10%; }
+      .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 10%; }
+      .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 15%; }
+    `,
+    getPerPage: () => 50
   };
 }
