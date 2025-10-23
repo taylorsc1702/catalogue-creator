@@ -91,21 +91,31 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
 
   const generateEAN13Barcode = (code: string) => {
     try {
+      console.log('=== BARCODE GENERATION DEBUG ===');
+      console.log('Input code:', code);
+      
       let cleanCode = code.replace(/[^0-9]/g, '');
+      console.log('After cleaning:', cleanCode);
       
       // If no valid digits found, use a default
       if (cleanCode.length === 0) {
         cleanCode = '1234567890123';
+        console.log('Using default (no digits found)');
       }
       
       // For EAN-13, we need exactly 13 digits
       if (cleanCode.length < 13) {
         // Pad with zeros at the beginning to make it 13 digits
         cleanCode = cleanCode.padStart(13, '0');
+        console.log('Padded to 13 digits:', cleanCode);
       } else if (cleanCode.length > 13) {
         // Take the first 13 digits
         cleanCode = cleanCode.substring(0, 13);
+        console.log('Truncated to 13 digits:', cleanCode);
       }
+      
+      console.log('Final code for barcode:', cleanCode);
+      console.log('=== END BARCODE GENERATION DEBUG ===');
       
       const canvas = createCanvas(150, 60);
       
@@ -113,7 +123,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         format: "EAN13",
         width: 1.5,
         height: 40,
-        displayValue: true,
+        displayValue: cleanCode, // Use the processed code, not true
         fontSize: 10,
         textAlign: "center",
         textPosition: "bottom",
@@ -193,11 +203,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
           console.log('=== BARCODE DEBUG ===');
           console.log('Item title:', item.title);
           console.log('Item SKU:', item.sku);
+          console.log('Item SKU type:', typeof item.sku);
+          console.log('Item SKU length:', item.sku ? item.sku.length : 'undefined');
           console.log('Item handle:', item.handle);
           console.log('Initial barcode code:', barcodeCode);
           
           // If no SKU available, try to extract ISBN from the displayed ISBN text
           if (!barcodeCode || barcodeCode.length < 10) {
+            console.log('SKU is empty or too short, trying fallback...');
             // Try to find a valid ISBN in the item data
             const possibleISBN = item.sku || item.handle || '';
             console.log('Possible ISBN sources:', { sku: item.sku, handle: item.handle });
@@ -206,14 +219,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               // Extract 13-digit number
               const match = possibleISBN.match(/\d{13}/);
               barcodeCode = match ? match[0] : '1234567890123';
+              console.log('Found 13-digit ISBN:', barcodeCode);
             } else if (possibleISBN && possibleISBN.match(/\d{10,13}/)) {
               // Extract any 10-13 digit number
               const match = possibleISBN.match(/\d{10,13}/);
               barcodeCode = match ? match[0].padStart(13, '0') : '1234567890123';
+              console.log('Found 10-13 digit ISBN:', barcodeCode);
             } else {
               barcodeCode = '1234567890123';
+              console.log('No ISBN found, using default');
             }
             console.log('Using fallback barcode code:', barcodeCode);
+          } else {
+            console.log('SKU is valid, using it directly');
           }
           
           console.log('Final barcode code being used:', barcodeCode);
