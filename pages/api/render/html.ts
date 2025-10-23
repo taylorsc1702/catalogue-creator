@@ -91,31 +91,23 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
 
   const generateEAN13Barcode = (code: string) => {
     try {
-      console.log('generateEAN13Barcode input:', code);
       let cleanCode = code.replace(/[^0-9]/g, '');
-      console.log('Cleaned code:', cleanCode);
       
       // If no valid digits found, use a default
       if (cleanCode.length === 0) {
         cleanCode = '1234567890123';
-        console.log('Using default code (no digits found)');
       }
       
       // For EAN-13, we need exactly 13 digits
       if (cleanCode.length < 13) {
         // Pad with zeros at the beginning to make it 13 digits
         cleanCode = cleanCode.padStart(13, '0');
-        console.log('Padded code:', cleanCode);
       } else if (cleanCode.length > 13) {
         // Take the first 13 digits
         cleanCode = cleanCode.substring(0, 13);
-        console.log('Truncated code:', cleanCode);
       }
       
-      console.log('Final barcode code:', cleanCode);
-      
       const canvas = createCanvas(150, 60);
-      console.log('Canvas created');
       
       JsBarcode(canvas, cleanCode, {
         format: "EAN13",
@@ -128,9 +120,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
         textMargin: 2
       });
       
-      const dataUrl = canvas.toDataURL('image/png');
-      console.log('Barcode generated, data URL length:', dataUrl.length);
-      return dataUrl;
+      return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('EAN-13 barcode generation error:', error);
       return '';
@@ -199,9 +189,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
           // Use SKU (ISBN) for barcode generation, not handle
           let barcodeCode = item.sku || '';
           
-          // Debug: log what we're getting
-          console.log('Barcode code from SKU:', barcodeCode, 'for item:', item.title);
-          console.log('Full item data:', JSON.stringify(item, null, 2));
+          // Debug: log what we're getting (this will show in Vercel logs)
+          console.log('=== BARCODE DEBUG ===');
+          console.log('Item title:', item.title);
+          console.log('Item SKU:', item.sku);
+          console.log('Item handle:', item.handle);
+          console.log('Initial barcode code:', barcodeCode);
           
           // If no SKU available, try to extract ISBN from the displayed ISBN text
           if (!barcodeCode || barcodeCode.length < 10) {
@@ -223,9 +216,12 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
             console.log('Using fallback barcode code:', barcodeCode);
           }
           
+          console.log('Final barcode code being used:', barcodeCode);
+          console.log('=== END BARCODE DEBUG ===');
+          
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div><div class="barcode-debug">Code: ${esc(barcodeCode)}</div>`;
           } else {
             // Fallback: show the code as text if barcode generation fails
             barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
@@ -719,6 +715,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
     border: 1px dashed #ccc;
     background: #f9f9f9;
     margin-top: 4px;
+  }
+  
+  .barcode-debug {
+    font-size: 7px;
+    color: #999;
+    text-align: center;
+    margin-top: 2px;
+    font-family: monospace;
   }
   
   /* Print styles - hide borders and boxes for clean printing */
