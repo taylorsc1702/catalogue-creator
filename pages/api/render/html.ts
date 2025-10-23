@@ -8,7 +8,7 @@ type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
-  publicity?: string; reviews?: string;
+  publicity?: string; reviews?: string; imidis?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
 };
@@ -262,6 +262,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
                 ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
                 ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
                 ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+                ${item.imidis ? `<div class="meta-item"><strong>IMIDIS:</strong> ${esc(item.imidis)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
@@ -294,6 +295,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
               ${item.releaseDate ? `<div class="detail-value">${esc(formatReleaseDate(item.releaseDate))}</div>` : ""}
               ${item.weight ? `<div class="detail-value">${esc(item.weight)}</div>` : ""}
+              ${item.imidis ? `<div class="detail-value">IMIDIS: ${esc(item.imidis)}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
               ${barcodeHtml}
@@ -322,6 +324,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8, show: Record<strin
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+              ${item.imidis ? `<div class="meta-item"><strong>IMIDIS:</strong> ${esc(item.imidis)}</div>` : ""}
               ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
             </div>
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
