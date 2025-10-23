@@ -1293,7 +1293,7 @@ function btn(active = false): React.CSSProperties {
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
-  layout: 1|2|3|4|8|'list'|'compact-list'; 
+  layout: 1|2|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;

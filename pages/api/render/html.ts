@@ -360,7 +360,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     
     // Handle table layout
     if (layout === 'table') {
-      const tableRows = page.map((item, localIndex) => {
+      const tableRows = page.map((item) => {
         return `
           <tr>
             <td class="table-cell">${esc(item.sku || '')}</td>
