@@ -386,7 +386,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   
   .page.layout-1 .left-column {
     flex-shrink: 0;
-    width: 375px;
+    width: 250px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -445,6 +445,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+    width: 375px;
   }
   
   .page.layout-1 .internal-thumbnail {
