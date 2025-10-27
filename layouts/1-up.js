@@ -175,9 +175,11 @@ function createStructuredRightColumn(cell, item, utmParams) {
     // Author (fix duplication - don't add "By" if it's already in the metafield)
     if (item.author) {
       let authorText = item.author;
-      if (!authorText.toLowerCase().startsWith('by ')) {
-        authorText = `By ${authorText}`;
+      // Remove "By " prefix if it already exists to avoid duplication
+      if (authorText.toLowerCase().startsWith('by ')) {
+        authorText = authorText.substring(3).trim();
       }
+      authorText = `By ${authorText}`;
       const author = titleCell.appendParagraph(authorText);
       styleParagraph(author, t => t.setFontSize(getFontSize('author', 1)).setForegroundColor('#444444'));
       author.setSpacingAfter(3);

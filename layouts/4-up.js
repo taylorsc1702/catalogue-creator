@@ -79,9 +79,11 @@ function createProductCard(cell, item, layout) {
     // === AUTHOR ===
     if (item.author) {
       let authorText = item.author;
-      if (!authorText.toLowerCase().startsWith('by ')) {
-        authorText = `By ${authorText}`;
+      // Remove "By " prefix if it already exists to avoid duplication
+      if (authorText.toLowerCase().startsWith('by ')) {
+        authorText = authorText.substring(3).trim();
       }
+      authorText = `By ${authorText}`;
       const author = cell.appendParagraph(authorText);
       styleParagraph(author, t => t.setFontSize(getFontSize('author', layout)).setForegroundColor('#444444'));
       author.setSpacingAfter(3);
