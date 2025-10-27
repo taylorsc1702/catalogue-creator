@@ -662,9 +662,29 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .page.layout-1 .internal-thumbnail {
     width: 39px;
     height: 55px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 3px;
     border: 1px solid #DEE2E6;
+  }
+  
+  .page.layout-1 .product-card {
+    position: relative;
+  }
+  
+  .page.layout-1 .right-column {
+    padding-bottom: 60px;
+  }
+  
+  .barcode-bottom-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    text-align: right;
+  }
+  
+  .barcode-bottom-right .barcode img {
+    max-width: 150px;
+    height: auto;
   }
   
   .page.layout-1 .product-title {
@@ -733,7 +753,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .product-image-3up .book-cover {
     width: 113px;
     height: 150px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -1120,7 +1140,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .book-cover {
     width: 60px;
     height: 90px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
