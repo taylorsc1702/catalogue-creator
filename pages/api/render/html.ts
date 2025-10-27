@@ -400,7 +400,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
       const layoutClass = layout === 'list' ? "layout-list" : "layout-compact-list";
       
       return `<div class="page ${layoutClass}">
-        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
           ${esc(websiteName || 'www.woodslane.com.au')}
         </div>
         
@@ -408,7 +408,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
           ${cards}
         </div>
         
-        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
           ${esc(websiteName || 'www.woodslane.com.au')}
         </div>
       </div>`;
@@ -430,7 +430,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
       }).join("");
       
       return `<div class="page layout-table">
-        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 3px 0; font-weight: 600; font-size: 10px;">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 3px 0; font-weight: 600; font-size: 10px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
           ${esc(websiteName || 'www.woodslane.com.au')}
         </div>
         
@@ -462,7 +462,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
     return `<div class="page ${layoutClass}">
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       
@@ -470,7 +470,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
         ${cards}${emptyCards}
       </div>
       
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -526,6 +526,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     page-break-after: always; 
     padding: 0;
     height: 100vh;
+  }
+  
+  .page-header, .page-footer {
+    width: 100% !important;
+    margin: 0 !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   
   .page-header {
@@ -738,12 +746,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   /* Layout 3: Horizontal row (Image | Content | Details) */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 120px 1fr 120px;
-    gap: 12px;
-    padding: 12px;
+    grid-template-columns: 100px 1fr 100px;
+    gap: 10px;
+    padding: 10px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
     min-height: 180px;
+    max-width: 100%;
+    overflow: hidden;
   }
   
   .product-image-3up {

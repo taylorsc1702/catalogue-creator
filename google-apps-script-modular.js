@@ -449,7 +449,8 @@ function createStructuredLeftColumn(cell, item, showFields) {
         }
       });
       
-      cell.appendParagraph('').setSpacingAfter(3); // Further reduced for tighter layout
+      const spacer = cell.appendParagraph(' '); // Use space instead of empty string
+      spacer.setSpacingAfter(3); // Further reduced for tighter layout
     }
 
     // ----- Section 2: Author Bio (truncate to keep Internals on same page) -----
@@ -475,7 +476,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
       });
 
       // Minimal spacer before Internals
-      const bioAnchor = cell.appendParagraph('');
+      const bioAnchor = cell.appendParagraph(' '); // Use space instead of empty string
       bioAnchor.setSpacingAfter(3); // Further reduced for tighter layout
     }
 
@@ -515,7 +516,7 @@ function createStructuredLeftColumn(cell, item, showFields) {
       });
       
       // Small spacer after internals
-      const spacer = cell.appendParagraph('');
+      const spacer = cell.appendParagraph(' '); // Use space instead of empty string
       spacer.setSpacingBefore(0).setSpacingAfter(3);
     }
     
@@ -607,7 +608,7 @@ function createStructuredRightColumn(cell, item, utmParams) {
     // Create product details table
     const detailsTable = createProductDetailsTable(titleCell, item, 1);
     if (detailsTable) {
-      cell.appendParagraph('').setSpacingAfter(3);
+      cell.appendParagraph(' ').setSpacingAfter(3); // Use space instead of empty string
     }
     
     // No spacer - price/barcode should be at the bottom
@@ -664,7 +665,7 @@ function create3UpLayout(body, items, options) {
     for (let i = 0; i < 3; i++) {
       if (i > 0) {
         // Add minimal spacing between rows
-        body.appendParagraph('').setSpacingAfter(5); // Reduced from 10 to 5
+        body.appendParagraph(' ').setSpacingAfter(5); // Reduced from 10 to 5
       }
       
       if (i < items.length) {
@@ -1044,7 +1045,7 @@ function createProductCardStandard(cell, item, layout) {
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
-      const imagePara = cell.appendParagraph('');
+      const imagePara = cell.appendParagraph(' '); // Use space instead of empty string
       const image = imagePara.appendInlineImage(imageBlob);
       const size = getImageSize('product', layout);
       image.setWidth(size.width);
