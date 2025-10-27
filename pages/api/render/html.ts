@@ -648,6 +648,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   .page.layout-1 .author-bio-content {
     color: #333;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   
   .page.layout-1 .internals-section {

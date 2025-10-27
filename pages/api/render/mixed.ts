@@ -400,6 +400,61 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     padding-bottom: 60px;
   }
   
+  .page.layout-1 .author-bio {
+    background: #E3F2FD;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    margin-top: 16px;
+    max-height: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .page.layout-1 .author-bio-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #495057;
+  }
+  
+  .page.layout-1 .author-bio-content {
+    color: #333;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .page.layout-1 .internals-section {
+    background: #F5F5F5;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+  
+  .page.layout-1 .internals-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #495057;
+  }
+  
+  .page.layout-1 .internals-thumbnails {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .page.layout-1 .internal-thumbnail {
+    width: 39px;
+    height: 55px;
+    object-fit: contain;
+    border-radius: 3px;
+    border: 1px solid #DEE2E6;
+  }
+  
   .page.layout-1 .product-image {
     width: 200px;
   }
