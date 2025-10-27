@@ -183,7 +183,7 @@ export const generateBarcodeHtml = (
     
     const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
     if (barcodeDataUrl) {
-      return `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
+      return `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div><div class="barcode-text">${esc(barcodeCode)}</div>`;
     } else {
       // Fallback: show the code as text if barcode generation fails
       return `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
@@ -253,7 +253,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
 
 export const renderProductCard3Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
   const plainDescription = item.description ? htmlToPlainText(item.description) : '';
-  const truncatedDesc = plainDescription.length > 1000 ? plainDescription.substring(0, 997) + '...' : plainDescription;
+  const truncatedDesc = plainDescription.length > 1200 ? plainDescription.substring(0, 1197) + '...' : plainDescription;
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `

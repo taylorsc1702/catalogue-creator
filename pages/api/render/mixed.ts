@@ -521,7 +521,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     border: 1px solid #e0e0e0;
     background: #f9f9f9;
     padding: 4px;
-    max-height: 60px;
+    max-height: 80px;
     overflow: hidden;
   }
   
@@ -539,6 +539,29 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   .ean13-barcode {
     width: 75px;
     height: 30px;
+  }
+  
+  @media screen {
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    body {
+      padding: 20px;
+    }
+  }
+  
+  .barcode-text {
+    font-size: 8px;
+    text-align: center;
+    margin-top: 2px;
+    color: #666;
+  }
+  
+  .page.layout-3 .barcode-text {
+    font-size: 6px;
   }
   
   @media print {
