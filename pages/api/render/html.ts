@@ -426,8 +426,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
                 <th class="table-header">Author</th>
                 <th class="table-header">Title</th>
                 <th class="table-header">AURRP</th>
-                <th class="table-header">Discount</th>
-                <th class="table-header">Quantity</th>
+                <th class="table-header">Disc</th>
+                <th class="table-header">QTY</th>
               </tr>
             </thead>
             <tbody>
@@ -953,19 +953,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .table-header {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
-    padding: 1px 3px;
+    padding: 0;
     text-align: left;
     font-weight: 600;
     font-size: 10px;
     color: #495057;
+    line-height: 1;
   }
   
   .table-cell {
     border: 1px solid #dee2e6;
-    padding: 0.2px 2px;
-    vertical-align: top;
+    padding: 0;
+    vertical-align: middle;
     font-size: 9px;
-    line-height: 0.8;
+    line-height: 1;
     height: auto;
   }
   
@@ -977,11 +978,17 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   /* Column widths optimized for A4 - reduced AURRP, IMDIS, Quantity; expanded Title */
   .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; } /* ISBN */
-  .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; } /* Author */
+  .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* Author */
   .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 45%; } /* Title - expanded */
   .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 8%; } /* AURRP - reduced */
-  .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 8%; } /* Discount - reduced */
-  .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 9%; } /* Quantity - reduced */
+  .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 4%; } /* Discount - reduced */
+  .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 5%; } /* Quantity - reduced */
+  
+  /* Remove spacing between table rows */
+  .product-table tbody tr {
+    margin: 0;
+    padding: 0;
+  }
 
   /* Print styles - hide borders and boxes for clean printing */
   @media print {

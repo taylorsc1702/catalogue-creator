@@ -42,8 +42,8 @@ export function TableLayout({
             <th>Author</th>
             <th>Title</th>
             <th>AURRP</th>
-            <th>Discount</th>
-            <th>Quantity</th>
+            <th>Disc</th>
+            <th>QTY</th>
           </tr>
         </thead>
         <tbody>
@@ -135,19 +135,20 @@ export function createTableLayoutHandler(): LayoutHandler {
       .table-header {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
-        padding: 1px 3px;
+        padding: 0;
         text-align: left;
         font-weight: 600;
         font-size: 10px;
         color: #495057;
+        line-height: 1;
       }
       
       .table-cell {
         border: 1px solid #dee2e6;
-        padding: 0.2px 2px;
-        vertical-align: top;
+        padding: 0;
+        vertical-align: middle;
         font-size: 9px;
-        line-height: 0.8;
+        line-height: 1;
         height: auto;
       }
       
@@ -158,11 +159,17 @@ export function createTableLayoutHandler(): LayoutHandler {
       }
       
       .product-table th:nth-child(1), .product-table td:nth-child(1) { width: 12%; }
-      .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; }
+      .product-table th:nth-child(2), .product-table td:nth-child(2) { width: 18%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .product-table th:nth-child(3), .product-table td:nth-child(3) { width: 45%; }
       .product-table th:nth-child(4), .product-table td:nth-child(4) { width: 8%; }
-      .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 8%; }
-      .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 9%; }
+      .product-table th:nth-child(5), .product-table td:nth-child(5) { width: 4%; }
+      .product-table th:nth-child(6), .product-table td:nth-child(6) { width: 5%; }
+      
+      /* Remove spacing between table rows */
+      .product-table tbody tr {
+        margin: 0;
+        padding: 0;
+      }
     `,
     getPerPage: () => 50
   };
