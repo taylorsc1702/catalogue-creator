@@ -1070,6 +1070,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     .internals-thumbnails {
       border: none !important;
     }
+    
+    /* Fix table layout height in print */
+    .page.layout-table {
+      height: auto !important;
+      min-height: auto !important;
+      grid-template-rows: auto auto !important;
+      grid-template-areas: "header" "content" !important;
+      gap: 0 !important;
+    }
   }
   
   /* Other layouts: Standard vertical card */
