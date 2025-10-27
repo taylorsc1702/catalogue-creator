@@ -53,6 +53,25 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
 }) {
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  
+  const formatAuthor = (author?: string) => {
+    if (!author) return '';
+    // Remove "By " prefix if it already exists to avoid duplication
+    return author.replace(/^By\s+/i, '').trim();
+  };
+  
+  const formatDate = (date?: string) => {
+    if (!date) return '';
+    // Convert to mm/yyyy format
+    try {
+      const d = new Date(date);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${month}/${year}`;
+    } catch {
+      return date;
+    }
+  };
 
   // Function to generate product URLs with UTM parameters
   const generateProductUrl = (handle: string): string => {
@@ -200,9 +219,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
             `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
           '</div>',
           '<div class="product-details">',
-            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(it.title)}</a></h2>`,
+            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(it.title)}</a></h2>`,
             it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
-            it.author ? `<div class="product-author">By ${esc(it.author)}</div>` : "",
+            it.author ? `<div class="product-author">${esc(formatAuthor(it.author))}</div>` : "",
             it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
             '<div class="product-specs">',
               it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : "",
@@ -211,8 +230,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
             '</div>',
             '<div class="product-meta">',
               it.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(it.imprint)}</div>` : "",
-              it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(it.releaseDate)}</div>` : "",
-              it.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(it.weight)}</div>` : "",
+              it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(it.releaseDate))}</div>` : "",
               it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : "",
             '</div>',
             it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
@@ -234,7 +252,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">
       <!-- Header Banner -->
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       
@@ -244,7 +262,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
       </div>
       
       <!-- Footer Banner -->
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -283,6 +301,14 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
     page-break-after: always; 
     padding: 0;
     height: 100vh;
+  }
+  
+  .page-header, .page-footer {
+    width: 100% !important;
+    margin: 0 !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   
   .page-header {
@@ -358,7 +384,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
   .book-cover {
     width: 60px;
     height: 90px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -511,8 +537,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
   }
   
   .barcode {
-    margin-top: 8px;
+    margin-top: auto;
     text-align: center;
+    flex-shrink: 0;
   }
   
   .qr-code {
