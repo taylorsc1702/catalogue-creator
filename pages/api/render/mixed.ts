@@ -386,7 +386,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   
   .page.layout-1 .left-column {
     flex-shrink: 0;
-    width: 250px;
+    width: 375px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -407,7 +407,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     font-size: 10px;
     line-height: 1.3;
     margin-top: 16px;
-    max-height: 120px;
+    max-height: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -431,7 +431,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     background: #F5F5F5;
     padding: 10px;
     border-radius: 6px;
-    margin-top: 10px;
+    margin-top: auto;
   }
   
   .page.layout-1 .internals-title {
@@ -448,8 +448,8 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   
   .page.layout-1 .internal-thumbnail {
-    width: 39px;
-    height: 55px;
+    width: 47px;
+    height: 66px;
     object-fit: contain;
     border-radius: 3px;
     border: 1px solid #DEE2E6;
