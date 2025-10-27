@@ -1,18 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { 
-  Item, 
-  HyperlinkToggle, 
-  BarcodeType, 
-  UtmParams, 
+import {
+  Item,
+  HyperlinkToggle,
+  BarcodeType,
+  UtmParams,
   RenderOptions,
   esc,
-  formatAuthor,
-  formatDate,
-  generateProductUrl,
-  generateQRCode,
-  generateEAN13Barcode,
   renderProductCard
-} from "../../utils/product-card-renderer";
+} from "../../../utils/product-card-renderer";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

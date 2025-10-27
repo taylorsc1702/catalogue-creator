@@ -7,6 +7,7 @@ export type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
 };
