@@ -461,6 +461,10 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   
   /* 3-up layout specific styles */
+  .page.layout-3 .product-card.layout-3-row {
+    display: grid !important;
+  }
+  
   .layout-3-row {
     display: grid;
     grid-template-columns: 100px 1fr 100px;
@@ -492,6 +496,13 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     gap: 2px;
     font-size: 8px;
     color: #666;
+  }
+  
+  .product-details-3up .barcode {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
   }
   
   .detail-value {
