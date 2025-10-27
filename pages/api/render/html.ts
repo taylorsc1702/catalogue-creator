@@ -333,7 +333,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
           <div class="product-details">
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-            ${item.author ? `<div class="product-author">By ${esc(formatAuthor(item.author))}</div>` : ""}
+            ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
             ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
             <div class="product-specs">
               ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
