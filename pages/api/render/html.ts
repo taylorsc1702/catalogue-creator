@@ -52,6 +52,25 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  
+  const formatAuthor = (author?: string) => {
+    if (!author) return '';
+    // Remove "By " prefix if it already exists to avoid duplication
+    return author.replace(/^By\s+/i, '').trim();
+  };
+  
+  const formatDate = (date?: string) => {
+    if (!date) return '';
+    // Convert to mm/yyyy format
+    try {
+      const d = new Date(date);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${month}/${year}`;
+    } catch {
+      return date;
+    }
+  };
 
   const generateProductUrl = (handle: string): string => {
     const baseUrls = {
@@ -254,21 +273,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
             <div class="right-column">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
+              ${item.author ? `<div class="product-author">By ${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
               <div class="product-meta">
                 ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
+                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                 ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
                 ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
                 ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
-                ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
-                ${item.discount ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.discount)}</div>` : ""}
-                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
-              ${barcodeHtml}
+              <div class="barcode-bottom-right">${barcodeHtml}</div>
             </div>
           </div>
         `;
@@ -287,18 +304,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
             <div class="product-content-3up">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+              ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
               ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
             </div>
             <div class="product-details-3up">
               ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
+              ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
               ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
               ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
               ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
-              ${item.releaseDate ? `<div class="detail-value">${esc(formatReleaseDate(item.releaseDate))}</div>` : ""}
-              ${item.weight ? `<div class="detail-value">${esc(item.weight)}</div>` : ""}
-              ${item.discount ? `<div class="detail-value">Discount: ${esc(item.discount)}</div>` : ""}
-              ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
+              ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
               ${barcodeHtml}
