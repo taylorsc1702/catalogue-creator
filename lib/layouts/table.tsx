@@ -139,13 +139,13 @@ export function createTableLayoutHandler(): LayoutHandler {
         border-right: none;
         border-top: 1px solid #dee2e6;
         border-bottom: 1px solid #dee2e6;
-        padding: 0;
+        padding: 2px 0;
         margin: 0;
         text-align: left;
         font-weight: 600;
         font-size: 8px;
         color: #495057;
-        line-height: 0.85;
+        line-height: 1.1;
       }
       
       .table-cell {
@@ -153,11 +153,11 @@ export function createTableLayoutHandler(): LayoutHandler {
         border-right: none;
         border-top: none;
         border-bottom: 1px solid #dee2e6;
-        padding: 0;
+        padding: 2px 0;
         margin: 0;
         vertical-align: top;
         font-size: 7px;
-        line-height: 0.8;
+        line-height: 1.1;
         height: auto;
       }
       

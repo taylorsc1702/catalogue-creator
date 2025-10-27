@@ -944,8 +944,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .page.layout-table {
     grid-template-rows: auto auto !important;
     grid-template-areas: "header" "content" !important;
-    height: auto !important;
     gap: 0;
+  }
+  
+  /* Fix table layout height in screen view */
+  @media screen {
+    .page.layout-table {
+      height: auto !important;
+      min-height: auto !important;
+    }
   }
   
   .product-table {
@@ -962,13 +969,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     border-right: none;
     border-top: 1px solid #dee2e6;
     border-bottom: 1px solid #dee2e6;
-    padding: 0;
+    padding: 2px 0;
     margin: 0;
     text-align: left;
     font-weight: 600;
     font-size: 8px;
     color: #495057;
-    line-height: 0.85;
+    line-height: 1.1;
   }
   
   .table-cell {
@@ -976,11 +983,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     border-right: none;
     border-top: none;
     border-bottom: 1px solid #dee2e6;
-    padding: 0;
+    padding: 2px 0;
     margin: 0;
     vertical-align: top;
     font-size: 7px;
-    line-height: 0.8;
+    line-height: 1.1;
     height: auto;
   }
   
