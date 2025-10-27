@@ -414,7 +414,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
       }).join("");
       
       return `<div class="page layout-table">
-        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 3px 0; font-weight: 600; font-size: 10px;">
           ${esc(websiteName || 'www.woodslane.com.au')}
         </div>
         
@@ -434,10 +434,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
               ${tableRows}
             </tbody>
           </table>
-        </div>
-        
-        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px;">
-          ${esc(websiteName || 'www.woodslane.com.au')}
         </div>
       </div>`;
     }
@@ -946,7 +942,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   }
   
   .page.layout-table {
-    grid-template-rows: auto auto auto !important;
+    grid-template-rows: auto auto !important;
+    grid-template-areas: "header" "content" !important;
     height: auto !important;
     gap: 0;
   }
