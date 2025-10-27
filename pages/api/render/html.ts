@@ -273,7 +273,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
             <div class="right-column">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">By ${esc(formatAuthor(item.author))}</div>` : ""}
+              ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
               ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
               <div class="product-meta">
                 ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
@@ -323,6 +323,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
       }
 
       // For other layouts, use standard card layout
+      const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+      
       return `
         <div class="product-card">
           <div class="product-image">
@@ -332,7 +334,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
             ${item.author ? `<div class="product-author">By ${esc(formatAuthor(item.author))}</div>` : ""}
-            ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+            ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
             <div class="product-specs">
               ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
               ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
@@ -676,15 +678,23 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   }
   
   .barcode-bottom-right {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+    position: fixed;
+    bottom: 15mm;
+    right: 15mm;
     text-align: right;
   }
   
   .barcode-bottom-right .barcode img {
     max-width: 150px;
     height: auto;
+  }
+  
+  @media print {
+    .barcode-bottom-right {
+      position: absolute;
+      bottom: 15mm;
+      right: 15mm;
+    }
   }
   
   .page.layout-1 .product-title {
