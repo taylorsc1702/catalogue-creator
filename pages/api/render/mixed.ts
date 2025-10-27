@@ -1,15 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import QRCode from "qrcode-generator";
-import JsBarcode from "jsbarcode";
-import { createCanvas } from "canvas";
-
-type Item = {
-  title: string; subtitle?: string; description?: string; price?: string;
-  author?: string; authorBio?: string; binding?: string; pages?: string;
-  imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
-  sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
-  imageUrl?: string; handle: string; vendor?: string; tags?: string[];
-};
+import { 
+  Item, 
+  HyperlinkToggle, 
+  BarcodeType, 
+  UtmParams, 
+  RenderOptions,
+  esc,
+  formatAuthor,
+  formatDate,
+  generateProductUrl,
+  generateQRCode,
+  generateEAN13Barcode,
+  renderProductCard
+} from "../../utils/product-card-renderer";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -17,18 +20,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       items: Item[]; 
       layoutAssignments: (1|2|3|4|8)[]; 
       showFields: Record<string, boolean>;
-      hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
-      itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
-      barcodeType?: "EAN-13" | "QR Code" | "None";
+      hyperlinkToggle?: HyperlinkToggle;
+      itemBarcodeTypes?: {[key: number]: BarcodeType};
+      barcodeType?: BarcodeType;
       bannerColor?: string;
       websiteName?: string;
-      utmParams?: {
-        utmSource?: string;
-        utmMedium?: string;
-        utmCampaign?: string;
-        utmContent?: string;
-        utmTerm?: string;
-      };
+      utmParams?: UtmParams;
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -44,117 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", bannerColor?: string, websiteName?: string, utmParams?: {
-  utmSource?: string;
-  utmMedium?: string;
-  utmCampaign?: string;
-  utmContent?: string;
-  utmTerm?: string;
-}) {
-  const esc = (s?: string) =>
-    (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-  
-  const formatAuthor = (author?: string) => {
-    if (!author) return '';
-    // Remove "By " prefix if it already exists to avoid duplication
-    return author.replace(/^By\s+/i, '').trim();
-  };
-  
-  const formatDate = (date?: string) => {
-    if (!date) return '';
-    // Convert to mm/yyyy format
-    try {
-      const d = new Date(date);
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${month}/${year}`;
-    } catch {
-      return date;
-    }
-  };
-
-  // Function to generate product URLs with UTM parameters
-  const generateProductUrl = (handle: string): string => {
-    const baseUrls = {
-      woodslane: 'https://woodslane.com.au',
-      woodslanehealth: 'https://www.woodslanehealth.com.au',
-      woodslaneeducation: 'https://www.woodslaneeducation.com.au',
-      woodslanepress: 'https://www.woodslanepress.com.au'
-    };
-    
-    const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
-    
-    // Add UTM parameters if any are provided
-    if (utmParams) {
-      const utmUrlParams = new URLSearchParams();
-      if (utmParams.utmSource) utmUrlParams.set('utm_source', utmParams.utmSource);
-      if (utmParams.utmMedium) utmUrlParams.set('utm_medium', utmParams.utmMedium);
-      if (utmParams.utmCampaign) utmUrlParams.set('utm_campaign', utmParams.utmCampaign);
-      if (utmParams.utmContent) utmUrlParams.set('utm_content', utmParams.utmContent);
-      if (utmParams.utmTerm) utmUrlParams.set('utm_term', utmParams.utmTerm);
-      
-      return utmUrlParams.toString() ? `${baseUrl}?${utmUrlParams.toString()}` : baseUrl;
-    }
-    
-    return baseUrl;
-  };
-
-  // Barcode generation functions
-  const generateQRCode = (text: string) => {
-    try {
-      const qr = QRCode(0, 'M');
-      qr.addData(text);
-      qr.make();
-      return qr.createDataURL(4, 0);
-    } catch (error) {
-      console.error('QR Code generation error:', error);
-      return '';
-    }
-  };
-
-  const generateEAN13Barcode = (code: string) => {
-    try {
-      // Clean the code - remove non-digits
-      let cleanCode = code.replace(/[^0-9]/g, '');
-      
-      console.log('Mixed - Raw code:', code, 'Cleaned:', cleanCode);
-      
-      // If no numeric data, generate a placeholder barcode
-      if (cleanCode.length === 0) {
-        console.log('Mixed - No numeric data found, generating placeholder barcode');
-        cleanCode = '1234567890123'; // Placeholder EAN-13
-      }
-      
-      // EAN-13 needs exactly 13 digits
-      if (cleanCode.length < 13) {
-        cleanCode = cleanCode.padStart(13, '0');
-      } else if (cleanCode.length > 13) {
-        cleanCode = cleanCode.substring(0, 13);
-      }
-      
-      console.log('Mixed - Final EAN-13 code:', cleanCode);
-      
-      // Create a canvas element
-      const canvas = createCanvas(150, 60);
-      
-      // Generate the barcode
-      JsBarcode(canvas, cleanCode, {
-        format: "EAN13",
-        width: 1.5,
-        height: 40,
-        displayValue: true,
-        fontSize: 10,
-        textAlign: "center",
-        textPosition: "bottom",
-        textMargin: 2
-      });
-      
-      // Convert canvas to data URL
-      return canvas.toDataURL('image/png');
-    } catch (error) {
-      console.error('EAN-13 barcode generation error:', error);
-      return '';
-    }
+function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFields: Record<string, boolean>, hyperlinkToggle: HyperlinkToggle, itemBarcodeTypes?: {[key: number]: BarcodeType}, barcodeType?: BarcodeType, bannerColor?: string, websiteName?: string, utmParams?: UtmParams) {
+  const options: RenderOptions = {
+    showFields,
+    hyperlinkToggle,
+    itemBarcodeTypes,
+    barcodeType: barcodeType || "None",
+    utmParams
   };
 
   // Group items by their layout requirements
@@ -190,56 +83,8 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
       // Find the global index of this item
       const globalIndex = items.findIndex(item => item.handle === it.handle);
       
-      // Determine barcode type for this item
-      const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
-      
-      // Generate barcode if needed
-      let barcodeHtml = '';
-      if (itemBarcodeType && itemBarcodeType !== "None") {
-        if (itemBarcodeType === "EAN-13") {
-          // Use EAN-13 format for 13-digit barcodes
-          const barcodeCode = it.sku || it.handle;
-          console.log(`Mixed - Generating EAN-13 for item ${globalIndex}: sku="${it.sku}", handle="${it.handle}", using="${barcodeCode}"`);
-          const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
-          if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="EAN-13 Barcode" class="ean13-barcode"></div>`;
-          }
-        } else if (itemBarcodeType === "QR Code") {
-          const productUrl = generateProductUrl(it.handle);
-          const qrDataUrl = generateQRCode(productUrl);
-          if (qrDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
-          }
-        }
-      }
-
-      return [
-        '<div class="product-card">',
-          '<div class="product-image">',
-            `<img src="${esc(it.imageUrl)}" alt="${esc(it.title)}" class="book-cover">`,
-          '</div>',
-          '<div class="product-details">',
-            `<h2 class="product-title"><a href="${generateProductUrl(it.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(it.title)}</a></h2>`,
-            it.subtitle ? `<div class="product-subtitle">${esc(it.subtitle)}</div>` : "",
-            it.author ? `<div class="product-author">${esc(formatAuthor(it.author))}</div>` : "",
-            it.description ? `<div class="product-description">${esc(it.description)}</div>` : "",
-            '<div class="product-specs">',
-              it.binding ? `<span class="spec-item">${esc(it.binding)}</span>` : "",
-              it.pages ? `<span class="spec-item">${esc(it.pages)} pages</span>` : "",
-              it.dimensions ? `<span class="spec-item">${esc(it.dimensions)}</span>` : "",
-            '</div>',
-            '<div class="product-meta">',
-              it.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(it.imprint)}</div>` : "",
-              it.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(it.releaseDate))}</div>` : "",
-              it.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(it.illustrations)}</div>` : "",
-            '</div>',
-            it.price ? `<div class="product-price">AUD$ ${esc(it.price)}</div>` : "",
-            `<div class="product-isbn">ISBN: ${esc(it.handle)}</div>`,
-            show.authorBio && it.authorBio ? `<div class="author-bio">${esc(it.authorBio)}</div>` : "",
-            barcodeHtml,
-          '</div>',
-        '</div>',
-      ].join("");
+      // Use the shared renderer with the page's layout
+      return renderProductCard(it, page.layout, globalIndex, options);
     };
 
     const layout = page.layout;
@@ -534,6 +379,143 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], show: 
   }
   .page.layout-8 .product-isbn {
     font-size: 7px;
+  }
+  
+  /* 1-up layout specific styles */
+  .page.layout-1 .product-card {
+    flex-direction: row;
+    gap: 20px;
+    padding: 15px;
+  }
+  
+  .page.layout-1 .left-column {
+    flex-shrink: 0;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .page.layout-1 .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 60px;
+  }
+  
+  .page.layout-1 .product-image {
+    width: 200px;
+  }
+  
+  .page.layout-1 .book-cover {
+    width: 200px;
+    height: 300px;
+  }
+  
+  .page.layout-1 .product-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  
+  .page.layout-1 .product-subtitle {
+    font-size: 14px;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+  
+  .page.layout-1 .product-author {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .page.layout-1 .product-description {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  
+  .page.layout-1 .product-meta {
+    font-size: 10px;
+  }
+  
+  .page.layout-1 .product-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #d63384;
+    margin-bottom: 8px;
+  }
+  
+  .barcode-bottom-right {
+    position: absolute;
+    bottom: 15mm;
+    right: 15mm;
+    text-align: right;
+  }
+  
+  .barcode-bottom-right .barcode img {
+    max-width: 150px;
+    height: auto;
+  }
+  
+  /* 3-up layout specific styles */
+  .layout-3-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 180px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .product-image-3up {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  
+  .product-content-3up {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 8px;
+  }
+  
+  .product-details-3up {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 8px;
+    color: #666;
+  }
+  
+  .detail-value {
+    font-size: 8px;
+    color: #666;
+    margin-bottom: 2px;
+  }
+  
+  .product-description-3up {
+    font-size: 8px;
+    color: #333;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-align: justify;
+    border: 1px solid #e0e0e0;
+    background: #f9f9f9;
+    padding: 4px;
+    max-height: 60px;
+    overflow: hidden;
   }
   
   .barcode {
