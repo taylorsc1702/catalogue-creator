@@ -127,30 +127,37 @@ export function createTableLayoutHandler(): LayoutHandler {
       
       .product-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         font-size: 10px;
         margin: 0;
       }
       
       .table-header {
         background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
         padding: 0;
         margin: 0;
         text-align: left;
         font-weight: 600;
-        font-size: 9px;
+        font-size: 8px;
         color: #495057;
-        line-height: 0.9;
+        line-height: 0.85;
       }
       
       .table-cell {
-        border: 1px solid #dee2e6;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid #dee2e6;
         padding: 0;
         margin: 0;
         vertical-align: top;
-        font-size: 8px;
-        line-height: 0.9;
+        font-size: 7px;
+        line-height: 0.8;
         height: auto;
       }
       
@@ -169,16 +176,17 @@ export function createTableLayoutHandler(): LayoutHandler {
       
       /* Remove spacing between table rows */
       .product-table tbody tr {
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
         height: auto;
-        line-height: 0.9;
+        line-height: 0.8;
       }
       
       /* Remove any default spacing */
       .product-table td, .product-table th {
         padding: 0 !important;
         margin: 0 !important;
+        border-spacing: 0 !important;
       }
     `,
     getPerPage: () => 50
