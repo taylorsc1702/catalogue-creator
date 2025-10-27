@@ -183,7 +183,7 @@ export const generateBarcodeHtml = (
     
     const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
     if (barcodeDataUrl) {
-      return `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div><div class="barcode-text">${esc(barcodeCode)}</div>`;
+      return `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
     } else {
       // Fallback: show the code as text if barcode generation fails
       return `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
@@ -303,9 +303,8 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
         </div>
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${item.discount ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.discount)}</div>` : ""}
           ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
         ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}

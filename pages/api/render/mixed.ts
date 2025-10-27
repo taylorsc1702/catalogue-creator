@@ -177,9 +177,9 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   
   .page.layout-3 .page-content {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 15mm;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 8mm;
   }
   
   .page.layout-4 .page-content {
@@ -378,6 +378,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   
   /* 1-up layout specific styles */
   .page.layout-1 .product-card {
+    position: relative;
     flex-direction: row;
     gap: 20px;
     padding: 15px;
