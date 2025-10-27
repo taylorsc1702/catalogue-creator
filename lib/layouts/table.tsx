@@ -136,19 +136,21 @@ export function createTableLayoutHandler(): LayoutHandler {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
         padding: 0;
+        margin: 0;
         text-align: left;
         font-weight: 600;
-        font-size: 10px;
+        font-size: 9px;
         color: #495057;
-        line-height: 1;
+        line-height: 0.9;
       }
       
       .table-cell {
         border: 1px solid #dee2e6;
         padding: 0;
-        vertical-align: middle;
-        font-size: 9px;
-        line-height: 1;
+        margin: 0;
+        vertical-align: top;
+        font-size: 8px;
+        line-height: 0.9;
         height: auto;
       }
       
@@ -169,6 +171,14 @@ export function createTableLayoutHandler(): LayoutHandler {
       .product-table tbody tr {
         margin: 0;
         padding: 0;
+        height: auto;
+        line-height: 0.9;
+      }
+      
+      /* Remove any default spacing */
+      .product-table td, .product-table th {
+        padding: 0 !important;
+        margin: 0 !important;
       }
     `,
     getPerPage: () => 50
