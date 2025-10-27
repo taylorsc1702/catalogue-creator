@@ -678,7 +678,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   }
   
   .barcode-bottom-right {
-    position: fixed;
+    position: absolute;
     bottom: 15mm;
     right: 15mm;
     text-align: right;
@@ -687,14 +687,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   .barcode-bottom-right .barcode img {
     max-width: 150px;
     height: auto;
-  }
-  
-  @media print {
-    .barcode-bottom-right {
-      position: absolute;
-      bottom: 15mm;
-      right: 15mm;
-    }
   }
   
   .page.layout-1 .product-title {
@@ -1176,6 +1168,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
     display: flex;
     flex-direction: column;
     gap: 4px;
+    justify-content: space-between;
   }
   
   .product-title {
@@ -1301,8 +1294,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 8 | 'list' | 'compact
   }
   
   .barcode {
-    margin-top: 8px;
+    margin-top: auto;
     text-align: center;
+    flex-shrink: 0;
   }
   
   .qr-code {
