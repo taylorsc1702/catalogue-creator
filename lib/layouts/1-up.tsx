@@ -224,7 +224,14 @@ export function create1UpLayoutHandler(): LayoutHandler {
             ${item.authorBio ? `
               <div class="author-bio-box">
                 <div class="author-bio-title">Author Bio:</div>
-                <div class="author-bio-content">${esc(htmlToText(item.authorBio))}</div>
+                <div class="author-bio-content" id="author-bio-${index}">
+                  ${item.authorBio.length >= 1000 ? 
+                    `<span class="author-bio-truncated">${esc(htmlToText(item.authorBio.substring(0, 1000)))}...</span>
+                     <span class="author-bio-full" style="display: none;">${esc(htmlToText(item.authorBio))}</span>
+                     <button class="read-more-btn" onclick="toggleAuthorBio(${index})">Read more</button>` :
+                    esc(htmlToText(item.authorBio))
+                  }
+                </div>
               </div>
             ` : ''}
             
@@ -728,6 +735,51 @@ export function create1UpLayoutHandler(): LayoutHandler {
           margin: 0 auto !important;
         }
       }
+      
+      .read-more-btn {
+        background: #17A2B8;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        margin-top: 8px;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+      }
+      
+      .read-more-btn:hover {
+        background: #138496;
+      }
+      
+      .author-bio-truncated {
+        display: inline;
+      }
+      
+      .author-bio-full {
+        display: none;
+      }
+    </style>
+    
+    <script>
+      function toggleAuthorBio(index) {
+        const bioContent = document.getElementById('author-bio-' + index);
+        const truncatedSpan = bioContent.querySelector('.author-bio-truncated');
+        const fullSpan = bioContent.querySelector('.author-bio-full');
+        const button = bioContent.querySelector('.read-more-btn');
+        
+        if (truncatedSpan.style.display !== 'none') {
+          truncatedSpan.style.display = 'none';
+          fullSpan.style.display = 'inline';
+          button.textContent = 'Read less';
+        } else {
+          truncatedSpan.style.display = 'inline';
+          fullSpan.style.display = 'none';
+          button.textContent = 'Read more';
+        }
+      }
+    </script>
     `
   };
 }
