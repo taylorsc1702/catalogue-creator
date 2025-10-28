@@ -847,7 +847,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   /* Layout 3: Horizontal row (Image | Content | Details) */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 160px 1fr 100px;
+    grid-template-columns: 176px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -864,8 +864,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-image-3up .book-cover {
-    width: 156px;
-    height: 207px;
+    width: 172px;
+    height: 228px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -1245,11 +1245,14 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-2 .product-image {
-    width: 100px;
+    width: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .page.layout-3 .product-image {
-    width: 96px;
+    width: 106px;
   }
   
   .page.layout-8 .product-image {
@@ -1266,13 +1269,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-2 .book-cover {
-    width: 100px;
-    height: 150px;
+    width: 175px;
+    height: 263px;
   }
   
   .page.layout-3 .book-cover {
-    width: 96px;
-    height: 144px;
+    width: 106px;
+    height: 158px;
   }
   
   .page.layout-8 .book-cover {
@@ -1298,6 +1301,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-2 .product-title {
     font-size: 16px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-3 .product-title {
@@ -1318,6 +1322,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-2 .product-subtitle {
     font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-3 .product-subtitle {
@@ -1338,6 +1343,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-2 .product-author {
     font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-3 .product-author {
@@ -1359,6 +1365,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-2 .product-description {
     font-size: 11px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-3 .product-description {
@@ -1395,6 +1402,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     margin-bottom: 2px;
   }
   
+  .page.layout-2 .meta-item {
+    font-size: 12px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
   .product-price {
     font-size: 11px;
     font-weight: bold;
@@ -1404,6 +1416,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-2 .product-price {
     font-size: 14px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-3 .product-price {
