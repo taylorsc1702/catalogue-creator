@@ -718,19 +718,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   .layout-4-special {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 4px;
+    gap: 6px;
+    padding: 6px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    min-height: 160px;
-    max-height: 180px;
+    min-height: 140px;
+    max-height: 160px;
     max-width: 100%;
     overflow: hidden;
   }
   
   .layout-4-special .top-section {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: flex-start;
   }
   
@@ -742,8 +742,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .book-cover-4up {
-    width: 100px;
-    height: 150px;
+    width: 80px;
+    height: 120px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -754,11 +754,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
   
   .product-title-4up {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
     color: #000;
     margin: 0;
@@ -767,7 +767,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-subtitle-4up {
-    font-size: 12px;
+    font-size: 10px;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -776,7 +776,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-author-4up {
-    font-size: 12px;
+    font-size: 10px;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -784,16 +784,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .description-section {
-    margin-top: 2px;
+    margin-top: 3px;
   }
   
   .product-description-4up {
-    font-size: 12px;
+    font-size: 10px;
     color: #333;
     line-height: 1.2;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
-    max-height: 40px;
+    max-height: 30px;
     overflow: hidden;
   }
   
@@ -801,27 +801,27 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 2px;
+    margin-top: 3px;
   }
   
   .product-details-left {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
   
   .product-specs-4up {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px;
+    gap: 3px;
   }
   
   .spec-item-4up {
-    font-size: 12px;
+    font-size: 9px;
     color: #666;
     background: #f5f5f5;
-    padding: 1px 3px;
+    padding: 2px 4px;
     border-radius: 3px;
     font-family: 'Calibri', sans-serif;
   }
@@ -833,7 +833,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .meta-item-4up {
-    font-size: 12px;
+    font-size: 9px;
     color: #666;
     margin-bottom: 0px;
     font-family: 'Calibri', sans-serif;
@@ -842,11 +842,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   .barcode-section-right {
     flex-shrink: 0;
     text-align: center;
-    margin-left: 4px;
+    margin-left: 6px;
   }
   
   .barcode-section-right .barcode img {
-    max-width: 40px;
+    max-width: 50px;
     height: auto;
   }
   
