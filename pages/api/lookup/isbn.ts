@@ -8,6 +8,13 @@ type ISBNLookupResponse = {
   error?: string;
 };
 
+type ShopifyProduct = {
+  title: string;
+  vendor: string;
+  tags: string[];
+  images: Array<{ src: string }>;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ISBNLookupResponse>) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -40,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // Search for products that might contain this ISBN
     // ISBNs can be in tags, title, or other fields
-    const matchingProduct = products.find((product: any) => {
+    const matchingProduct = products.find((product: ShopifyProduct) => {
       const searchText = `${product.title} ${product.vendor} ${(product.tags || []).join(' ')}`.toLowerCase();
       return searchText.includes(cleanISBN.toLowerCase()) || 
              searchText.includes(isbn.toLowerCase());

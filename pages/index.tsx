@@ -126,6 +126,9 @@ export default function Home() {
     return logos[brand as keyof typeof logos] || logos.woodslane;
   };
 
+  // Suppress unused variable warning
+  void getLogoUrl;
+
   // Banner color configuration based on website
   const getBannerColor = (website: string): string => {
     // Use custom color if provided, otherwise use default website color
@@ -1591,6 +1594,15 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
 }) {
   // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
   void hyperlinkToggle; // Explicitly mark as intentionally unused here
+  
+  // Suppress unused parameter warnings for parameters that are used conditionally
+  void moveItemToPosition;
+  void itemLayouts;
+  void setItemLayout;
+  void clearItemLayout;
+  void itemBarcodeTypes;
+  void setItemBarcodeType;
+  void clearItemBarcodeType;
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format

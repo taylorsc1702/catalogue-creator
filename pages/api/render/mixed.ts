@@ -138,7 +138,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], 
     const { generateFrontCoverHTML, generateBackCoverHTML, lookupISBN } = await import('../../../utils/cover-generator');
     
     // Lookup ISBNs for front cover
-    let frontCoverResults: any[] = [];
+    let frontCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
     if (coverData.showFrontCover && coverData.frontCoverIsbns.some(isbn => isbn.trim())) {
       const frontPromises = coverData.frontCoverIsbns.map(isbn => 
         isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
@@ -147,7 +147,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], 
     }
     
     // Lookup ISBNs for back cover
-    let backCoverResults: any[] = [];
+    let backCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
     if (coverData.showBackCover && coverData.backCoverIsbns.some(isbn => isbn.trim())) {
       const backPromises = coverData.backCoverIsbns.map(isbn => 
         isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })

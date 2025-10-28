@@ -177,6 +177,9 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     return dateString;
   };
 
+  // Suppress unused variable warning
+  void formatReleaseDate;
+
   // Convert HTML to plain text
   const htmlToPlainText = (html: string): string => {
     if (!html) return '';
@@ -269,6 +272,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
         
         // Calculate if we need to truncate author bio
         const hasInternals = item.additionalImages && item.additionalImages.length > 0;
+        void hasInternals; // Suppress unused variable warning
         // Truncate bio if it's longer than 752 characters (with spaces)
         const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
         const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
@@ -459,6 +463,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     // Handle list layouts differently
     if (layout === 'list' || layout === 'compact-list') {
       const createListCard = (item: Item, localIndex: number) => {
+        // Suppress unused parameter warning
+        void localIndex;
         
         if (layout === 'list') {
           // List view: Image, Title, Discount, Author, AURRP, Barcode, Quantity
@@ -586,8 +592,11 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     // Import cover generation functions
     const { generateFrontCoverHTML, generateBackCoverHTML, generateCoverCSS, lookupISBN } = await import('../../../utils/cover-generator');
     
+    // Suppress unused variable warning
+    void generateCoverCSS;
+    
     // Lookup ISBNs for front cover
-    let frontCoverResults: any[] = [];
+    let frontCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
     if (coverData.showFrontCover && coverData.frontCoverIsbns.some(isbn => isbn.trim())) {
       const frontPromises = coverData.frontCoverIsbns.map(isbn => 
         isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
@@ -596,7 +605,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     }
     
     // Lookup ISBNs for back cover
-    let backCoverResults: any[] = [];
+    let backCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
     if (coverData.showBackCover && coverData.backCoverIsbns.some(isbn => isbn.trim())) {
       const backPromises = coverData.backCoverIsbns.map(isbn => 
         isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })

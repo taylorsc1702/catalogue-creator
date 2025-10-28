@@ -33,6 +33,19 @@ export function TableLayout({
   hyperlinkToggle, 
   generateProductUrl 
 }: TableLayoutProps) {
+  // Suppress unused parameter warnings
+  void showOrderEditor;
+  void moveItemUp;
+  void moveItemDown;
+  void moveItemToPosition;
+  void itemLayouts;
+  void setItemLayout;
+  void clearItemLayout;
+  void itemBarcodeTypes;
+  void setItemBarcodeType;
+  void clearItemBarcodeType;
+  void hyperlinkToggle;
+  
   return (
     <div className="table-layout">
       <table className="product-table">
@@ -93,6 +106,11 @@ export function createTableLayoutHandler(): LayoutHandler {
       );
     },
     createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
+      // Suppress unused parameter warnings
+      void barcodeHtml;
+      void bannerColor;
+      void websiteName;
+      
       return `
         <tr>
           <td class="table-cell">${esc(item.sku || '')}</td>
@@ -109,6 +127,11 @@ export function createTableLayoutHandler(): LayoutHandler {
       `;
     },
     createDocxExport: (item: Item, index: number, _imageData?: { base64: string; width: number; height: number; mimeType: string } | null, _generateProductUrl?: (handle: string) => string, _barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => {
+      // Suppress unused parameter warnings
+      void index;
+      void _imageData;
+      void _generateProductUrl;
+      void _barcodeData;
       // For table layout, we'll create a simple paragraph with the item data
       return [
         new Paragraph({
