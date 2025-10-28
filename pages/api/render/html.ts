@@ -490,7 +490,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
 <style>
   @page { 
     size: A4 portrait; 
-    margin: 15mm; 
+    margin: 20mm 15mm 20mm 15mm; 
   }
   * { 
     box-sizing: border-box; 
@@ -531,7 +531,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     gap: 10mm;
     page-break-after: always; 
     padding: 0;
-    height: 100vh;
+    min-height: 100vh;
   }
   
   .page-header, .page-footer {
@@ -550,7 +550,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     grid-area: content;
     display: grid;
     gap: 15mm;
-    overflow: hidden;
   }
   
   .page-footer {
@@ -784,7 +783,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   /* Layout 3: Horizontal row (Image | Content | Details) */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 140px 1fr 100px;
+    grid-template-columns: 160px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -801,8 +800,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-image-3up .book-cover {
-    width: 136px;
-    height: 180px;
+    width: 156px;
+    height: 207px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -813,6 +812,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     display: flex;
     flex-direction: column;
     gap: 0;
+    max-width: 90%;
   }
   
   .product-content-3up .product-title {
@@ -1358,8 +1358,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .qr-code {
-    width: 30px;
-    height: 30px;
+    width: 33px;
+    height: 33px;
   }
   
   .ean13-barcode {
