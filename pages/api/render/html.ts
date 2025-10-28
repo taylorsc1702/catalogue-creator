@@ -246,10 +246,11 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
       if (layout === 1) {
         const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
         
-        // Calculate if we need to truncate author bio based on internals presence
+        // Calculate if we need to truncate author bio
         const hasInternals = item.additionalImages && item.additionalImages.length > 0;
         // Truncate bio if it's longer than 752 characters (with spaces)
         const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
+        const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
         
         return `
           <div class="product-card layout-1-full">
@@ -258,10 +259,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                 <div class="product-image">
                   <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
                 </div>
-                ${show.authorBio && plainTextBio ? `
+                ${show.authorBio && displayBio ? `
                   <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
                     <div class="author-bio-title">Author Bio:</div>
-                    <div class="author-bio-content">${esc(plainTextBio)}</div>
+                    <div class="author-bio-content">${esc(displayBio)}</div>
                   </div>
                 ` : ""}
               </div>
@@ -909,32 +910,38 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     border: 1px solid #ddd;
   }
   
-  .page.layout-1 .author-bio {
+  .layout-1-full .author-bio {
     background: #E3F2FD;
     padding: 10px;
     border-radius: 6px;
     font-size: 10px;
     line-height: 1.3;
+    margin-top: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   
-  .page.layout-1 .author-bio.truncated {
-    max-height: 150px;
+  .layout-1-full .author-bio.truncated {
+    max-height: 200px;
     overflow: hidden;
   }
   
-  .page.layout-1 .author-bio.full {
+  .layout-1-full .author-bio.full {
     max-height: none;
     overflow: visible;
   }
   
-  .page.layout-1 .author-bio-title {
+  .layout-1-full .author-bio-title {
     font-weight: 600;
     margin-bottom: 6px;
+    font-size: 10px;
     color: #1565C0;
   }
   
-  .page.layout-1 .author-bio-content {
+  .layout-1-full .author-bio-content {
     color: #333;
+    flex: 1;
   }
   
   .page.layout-1 .author-bio.truncated .author-bio-content {

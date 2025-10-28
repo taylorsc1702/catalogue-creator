@@ -210,6 +210,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
   const hasInternals = item.additionalImages && item.additionalImages.length > 0;
   // Truncate bio if it's longer than 752 characters (with spaces)
   const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
+  const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
   
   return `
     <div class="product-card layout-1-full">
@@ -218,10 +219,10 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
           <div class="product-image">
             <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
-          ${options.showFields.authorBio && plainTextBio ? `
+          ${options.showFields.authorBio && displayBio ? `
             <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
               <div class="author-bio-title">Author Bio:</div>
-              <div class="author-bio-content">${esc(plainTextBio)}</div>
+              <div class="author-bio-content">${esc(displayBio)}</div>
             </div>
           ` : ""}
         </div>
