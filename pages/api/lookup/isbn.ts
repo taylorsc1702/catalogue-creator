@@ -38,34 +38,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       },
     });
 
-    if (!shopifyResponse.ok) {
+    if (shopifyResponse.ok) {
+      const shopifyData = await shopifyResponse.json();
+      const products = shopifyData.products || [];
+      console.log(`Found ${products.length} products in Shopify`);
+
+      // Search for products that might contain this ISBN
+      // ISBNs can be in tags, title, or other fields
+      const matchingProduct = products.find((product: ShopifyProduct) => {
+        const searchText = `${product.title} ${product.vendor} ${(product.tags || []).join(' ')}`.toLowerCase();
+        const found = searchText.includes(cleanISBN.toLowerCase()) || 
+               searchText.includes(isbn.toLowerCase());
+        if (found) {
+          console.log('Found matching product:', product.title, 'for ISBN:', isbn);
+        }
+        return found;
+      });
+
+      if (matchingProduct && matchingProduct.images && matchingProduct.images.length > 0) {
+        return res.status(200).json({
+          success: true,
+          imageUrl: matchingProduct.images[0].src,
+          title: matchingProduct.title,
+          author: matchingProduct.vendor
+        });
+      }
+    } else {
       console.log('Shopify API error:', shopifyResponse.status, shopifyResponse.statusText);
       console.log('Falling back to Open Library API...');
-    } else {
-
-    const shopifyData = await shopifyResponse.json();
-    const products = shopifyData.products || [];
-    console.log(`Found ${products.length} products in Shopify`);
-
-    // Search for products that might contain this ISBN
-    // ISBNs can be in tags, title, or other fields
-    const matchingProduct = products.find((product: ShopifyProduct) => {
-      const searchText = `${product.title} ${product.vendor} ${(product.tags || []).join(' ')}`.toLowerCase();
-      const found = searchText.includes(cleanISBN.toLowerCase()) || 
-             searchText.includes(isbn.toLowerCase());
-      if (found) {
-        console.log('Found matching product:', product.title, 'for ISBN:', isbn);
-      }
-      return found;
-    });
-
-    if (matchingProduct && matchingProduct.images && matchingProduct.images.length > 0) {
-      return res.status(200).json({
-        success: true,
-        imageUrl: matchingProduct.images[0].src,
-        title: matchingProduct.title,
-        author: matchingProduct.vendor
-      });
     }
 
     // If not found in Shopify, try Open Library API as fallback

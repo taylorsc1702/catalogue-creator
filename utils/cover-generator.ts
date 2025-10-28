@@ -34,24 +34,86 @@ export const getLogoUrl = (brand: string): string => {
   return logos[brand as keyof typeof logos] || logos.woodslane;
 };
 
-// Lookup book image by ISBN
+// Server-side ISBN lookup (direct implementation)
 export async function lookupISBN(isbn: string): Promise<ISBNLookupResult> {
   try {
     console.log('Looking up ISBN:', isbn);
-    const response = await fetch('/api/lookup/isbn', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isbn })
-    });
     
-    const result = await response.json();
-    console.log('ISBN lookup result:', result);
-    return result;
+    if (!isbn || !isbn.trim()) {
+      return { success: false, error: 'ISBN is required' };
+    }
+
+    // Clean the ISBN (remove spaces, hyphens, etc.)
+    const cleanISBN = isbn.replace(/[-\s]/g, '');
+    
+    // Try to find the book in Shopify by ISBN
+    const shopifyResponse = await fetch(`https://woodslane.myshopify.com/admin/api/2023-10/products.json?limit=250&fields=id,title,vendor,images,handle,tags`, {
+      headers: {
+        'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (shopifyResponse.ok) {
+      const shopifyData = await shopifyResponse.json();
+      const products = shopifyData.products || [];
+      console.log(`Found ${products.length} products in Shopify`);
+
+      // Search for products that might contain this ISBN
+      const matchingProduct = products.find((product: any) => {
+        const searchText = `${product.title} ${product.vendor} ${(product.tags || []).join(' ')}`.toLowerCase();
+        const found = searchText.includes(cleanISBN.toLowerCase()) || 
+               searchText.includes(isbn.toLowerCase());
+        if (found) {
+          console.log('Found matching product:', product.title, 'for ISBN:', isbn);
+        }
+        return found;
+      });
+
+      if (matchingProduct && matchingProduct.images && matchingProduct.images.length > 0) {
+        return {
+          success: true,
+          imageUrl: matchingProduct.images[0].src,
+          title: matchingProduct.title,
+          author: matchingProduct.vendor
+        };
+      }
+    } else {
+      console.log('Shopify API error:', shopifyResponse.status, shopifyResponse.statusText);
+      console.log('Falling back to Open Library API...');
+    }
+
+    // If not found in Shopify, try Open Library API as fallback
+    try {
+      const openLibraryResponse = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${cleanISBN}&format=json&jscmd=data`);
+      
+      if (openLibraryResponse.ok) {
+        const openLibraryData = await openLibraryResponse.json();
+        const bookData = openLibraryData[`ISBN:${cleanISBN}`];
+        
+        if (bookData && bookData.cover && bookData.cover.medium) {
+          return {
+            success: true,
+            imageUrl: bookData.cover.medium,
+            title: bookData.title,
+            author: bookData.authors?.[0]?.name || 'Unknown Author'
+          };
+        }
+      }
+    } catch (openLibraryError) {
+      console.log('Open Library lookup failed:', openLibraryError);
+    }
+
+    // If no image found anywhere
+    return {
+      success: false,
+      error: 'No book found with this ISBN'
+    };
   } catch (error) {
     console.error('ISBN lookup error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to lookup ISBN'
+      error: error instanceof Error ? error.message : 'Internal server error'
     };
   }
 }
