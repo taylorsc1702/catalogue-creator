@@ -734,7 +734,7 @@ export default function Home() {
   }
 
   function setItemAuthorBioEnabled(index: number, enabled: boolean) {
-    setItemAuthorBioToggle({...itemAuthorBioToggle, [index]: enabled});
+    setItemAuthorBioToggle(prev => ({...prev, [index]: enabled}));
   }
 
   function clearItemAuthorBioToggle(index: number) {
@@ -1266,7 +1266,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioToggle} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
     </div>
   );
@@ -1550,9 +1550,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                         const currentState = itemAuthorBioToggle[i] !== false; // Default to true
                         if (currentState) {
                           clearItemAuthorBioToggle(i);
-                          setItemAuthorBioToggle({...itemAuthorBioToggle, [i]: false});
+                          setItemAuthorBioToggle(i, false);
                         } else {
-                          setItemAuthorBioToggle({...itemAuthorBioToggle, [i]: true});
+                          setItemAuthorBioToggle(i, true);
                         }
                       }}
                       style={{
