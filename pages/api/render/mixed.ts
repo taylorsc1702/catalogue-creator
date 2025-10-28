@@ -1047,6 +1047,16 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], 
       font-family: 'Calibri', sans-serif;
     }
     
+    .cover-text-1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+    
+    .cover-text-2 {
+      font-size: 20px;
+      font-weight: 400;
+    }
+    
     .cover-title {
       text-align: center;
       margin: 40px 0;

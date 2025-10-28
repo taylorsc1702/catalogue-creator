@@ -37,14 +37,18 @@ export const getLogoUrl = (brand: string): string => {
 // Lookup book image by ISBN
 export async function lookupISBN(isbn: string): Promise<ISBNLookupResult> {
   try {
+    console.log('Looking up ISBN:', isbn);
     const response = await fetch('/api/lookup/isbn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isbn })
     });
     
-    return await response.json();
+    const result = await response.json();
+    console.log('ISBN lookup result:', result);
+    return result;
   } catch (error) {
+    console.error('ISBN lookup error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to lookup ISBN'
@@ -56,6 +60,7 @@ export async function lookupISBN(isbn: string): Promise<ISBNLookupResult> {
 export function generateFrontCoverHTML(coverData: CoverData, isbnResults: ISBNLookupResult[]): string {
   if (!coverData.showFrontCover) return '';
 
+  console.log('Generating front cover with ISBN results:', isbnResults);
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
@@ -63,6 +68,7 @@ export function generateFrontCoverHTML(coverData: CoverData, isbnResults: ISBNLo
   
   // Generate featured book images
   const featuredBooks = isbnResults.slice(0, 4).map((result, index) => {
+    console.log(`Processing ISBN ${index + 1}:`, result);
     if (result.success && result.imageUrl) {
       return `<img src="${esc(result.imageUrl)}" alt="${esc(result.title || 'Book')}" class="featured-book-image" />`;
     } else {
@@ -203,6 +209,16 @@ export function generateCoverCSS(): string {
       line-height: 1.6;
       color: #333;
       font-family: 'Calibri', sans-serif;
+    }
+    
+    .cover-text-1 {
+      font-size: 26px;
+      font-weight: 600;
+    }
+    
+    .cover-text-2 {
+      font-size: 20px;
+      font-weight: 400;
     }
     
     .cover-title {

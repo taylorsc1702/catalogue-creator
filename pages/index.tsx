@@ -114,6 +114,7 @@ export default function Home() {
   const [backCoverText2, setBackCoverText2] = useState("");
   const [frontCoverIsbns, setFrontCoverIsbns] = useState<string[]>(["", "", "", ""]);
   const [backCoverIsbns, setBackCoverIsbns] = useState<string[]>(["", "", "", ""]);
+  const [coverCatalogueName, setCoverCatalogueName] = useState("");
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -224,7 +225,7 @@ export default function Home() {
             backCoverText2,
             frontCoverIsbns,
             backCoverIsbns,
-            catalogueName
+            catalogueName: coverCatalogueName || catalogueName
           }
         })
       });
@@ -287,7 +288,7 @@ export default function Home() {
             backCoverText2,
             frontCoverIsbns,
             backCoverIsbns,
-            catalogueName
+            catalogueName: coverCatalogueName || catalogueName
           }
         })
       });
@@ -334,7 +335,7 @@ export default function Home() {
             backCoverText2,
             frontCoverIsbns,
             backCoverIsbns,
-            catalogueName
+            catalogueName: coverCatalogueName || catalogueName
           }
         })
       });
@@ -857,7 +858,7 @@ export default function Home() {
             backCoverText2,
             frontCoverIsbns,
             backCoverIsbns,
-            catalogueName
+            catalogueName: coverCatalogueName || catalogueName
           }
         })
       });
@@ -1236,6 +1237,25 @@ export default function Home() {
       {/* Cover System Section */}
       <div style={{ marginTop: 24 }}>
         <span style={{ fontSize: 16, fontWeight: 600, color: "#495057", marginBottom: 16, display: "block" }}>Cover System</span>
+        
+        {/* Catalogue Name */}
+        <div style={{ marginBottom: 20, padding: 16, border: "2px solid #E9ECEF", borderRadius: 8 }}>
+          <Field label="Catalogue Name">
+            <input
+              type="text"
+              value={coverCatalogueName}
+              onChange={(e) => setCoverCatalogueName(e.target.value)}
+              placeholder="Enter catalogue name (e.g., Spring 2024 Catalogue)"
+              style={{ 
+                width: "100%", 
+                border: "2px solid #E9ECEF", 
+                borderRadius: 8, 
+                padding: "8px 12px", 
+                fontSize: 14
+              }}
+            />
+          </Field>
+        </div>
         
         {/* Front Cover Controls */}
         <div style={{ marginBottom: 20, padding: 16, border: "2px solid #E9ECEF", borderRadius: 8 }}>

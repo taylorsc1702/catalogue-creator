@@ -39,18 +39,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
 
     if (!shopifyResponse.ok) {
+      console.log('Shopify API error:', shopifyResponse.status, shopifyResponse.statusText);
       throw new Error('Failed to fetch from Shopify');
     }
 
     const shopifyData = await shopifyResponse.json();
     const products = shopifyData.products || [];
+    console.log(`Found ${products.length} products in Shopify`);
 
     // Search for products that might contain this ISBN
     // ISBNs can be in tags, title, or other fields
     const matchingProduct = products.find((product: ShopifyProduct) => {
       const searchText = `${product.title} ${product.vendor} ${(product.tags || []).join(' ')}`.toLowerCase();
-      return searchText.includes(cleanISBN.toLowerCase()) || 
+      const found = searchText.includes(cleanISBN.toLowerCase()) || 
              searchText.includes(isbn.toLowerCase());
+      if (found) {
+        console.log('Found matching product:', product.title, 'for ISBN:', isbn);
+      }
+      return found;
     });
 
     if (matchingProduct && matchingProduct.images && matchingProduct.images.length > 0) {
