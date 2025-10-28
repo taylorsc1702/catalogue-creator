@@ -301,7 +301,37 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
         `;
       }
 
-      // For 3-up layout, use horizontal row layout (image, content, details)
+      // For 2-up layout, use vertical layout with image at top
+      if (layout === 2) {
+        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        
+        return `
+          <div class="product-card layout-2-vertical">
+            <div class="product-image-2up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
+            </div>
+            <div class="product-content-2up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+              ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+              ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+              <div class="product-specs">
+                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+              </div>
+              <div class="product-meta">
+                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+              </div>
+              ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
       if (layout === 3) {
         const plainDescription = item.description ? htmlToPlainText(item.description) : '';
         const truncatedDesc = plainDescription.length > 1000 ? plainDescription.substring(0, 997) + '...' : plainDescription;
@@ -1594,6 +1624,126 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   .page.layout-2 .product-price {
     font-size: 14px;
     font-family: 'Calibri', sans-serif;
+  }
+  
+  /* 2-up vertical layout specific styles */
+  .layout-2-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
+  .product-image-2up {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .book-cover-2up {
+    width: 175px;
+    height: 263px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .product-content-2up {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .layout-2-vertical .product-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-subtitle {
+    font-size: 12px;
+    font-style: italic;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-author {
+    font-size: 12px;
+    color: #444;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-description {
+    font-size: 11px;
+    color: #333;
+    line-height: 1.3;
+    margin: 4px 0;
+    text-align: justify;
+    font-family: 'Calibri', sans-serif;
+    max-height: 60px;
+    overflow: hidden;
+  }
+  
+  .layout-2-vertical .product-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  
+  .layout-2-vertical .spec-item {
+    font-size: 12px;
+    color: #666;
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-meta {
+    margin-bottom: 4px;
+  }
+  
+  .layout-2-vertical .meta-item {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 1px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-price {
+    font-size: 14px;
+    font-weight: bold;
+    color: #d63384;
+    margin-bottom: 4px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .barcode {
+    margin-top: auto;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  
+  .layout-2-vertical .barcode img {
+    max-width: 80px;
+    height: auto;
   }
   
   .page.layout-3 .product-price {

@@ -368,6 +368,126 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   .page.layout-2 .product-price {
     font-size: 14px;
   }
+  
+  /* 2-up vertical layout specific styles */
+  .layout-2-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
+  .product-image-2up {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .book-cover-2up {
+    width: 175px;
+    height: 263px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .product-content-2up {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .layout-2-vertical .product-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-subtitle {
+    font-size: 12px;
+    font-style: italic;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-author {
+    font-size: 12px;
+    color: #444;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-description {
+    font-size: 11px;
+    color: #333;
+    line-height: 1.3;
+    margin: 4px 0;
+    text-align: justify;
+    font-family: 'Calibri', sans-serif;
+    max-height: 60px;
+    overflow: hidden;
+  }
+  
+  .layout-2-vertical .product-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  
+  .layout-2-vertical .spec-item {
+    font-size: 12px;
+    color: #666;
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-meta {
+    margin-bottom: 4px;
+  }
+  
+  .layout-2-vertical .meta-item {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 1px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .product-price {
+    font-size: 14px;
+    font-weight: bold;
+    color: #d63384;
+    margin-bottom: 4px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .layout-2-vertical .barcode {
+    margin-top: auto;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  
+  .layout-2-vertical .barcode img {
+    max-width: 80px;
+    height: auto;
+  }
   .page.layout-3 .product-price {
     font-size: 13px;
   }

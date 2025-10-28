@@ -329,11 +329,11 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
-    <div class="product-card">
-      <div class="product-image">
-        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+    <div class="product-card layout-2-vertical">
+      <div class="product-image-2up">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
       </div>
-      <div class="product-details">
+      <div class="product-content-2up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
         ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
         ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
@@ -346,8 +346,10 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${item.price ? `<div class="meta-item"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+          ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
+        ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
     </div>
