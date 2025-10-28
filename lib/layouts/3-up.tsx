@@ -371,6 +371,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 0;
         page-break-inside: avoid;
         height: fit-content;
+        font-family: 'Calibri', sans-serif;
       }
       .product-image {
         flex-shrink: 0;
@@ -384,28 +385,32 @@ export function create3UpLayoutHandler(): LayoutHandler {
         border-radius: 4px;
       }
       .product-title {
-        font-size: 16px;
+        font-size: 18px;
         font-weight: bold;
         margin: 0 0 8px 0;
         color: #2C3E50;
+        font-family: 'Calibri', sans-serif;
       }
       .product-subtitle {
-        font-size: 14px;
+        font-size: 16px;
         color: #7F8C8D;
         font-style: italic;
         margin-bottom: 6px;
+        font-family: 'Calibri', sans-serif;
       }
       .product-author {
-        font-size: 13px;
+        font-size: 15px;
         color: #667eea;
         font-weight: 600;
         margin-bottom: 8px;
+        font-family: 'Calibri', sans-serif;
       }
       .product-description {
-        font-size: 12px;
+        font-size: 14px;
         line-height: 1.4;
         color: #495057;
         margin-bottom: 8px;
+        font-family: 'Calibri', sans-serif;
       }
       .product-specs {
         display: flex;
@@ -414,25 +419,28 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 8px;
       }
       .spec-item {
-        font-size: 10px;
+        font-size: 12px;
         color: #6C757D;
         background: #F8F9FA;
         padding: 2px 6px;
         border-radius: 4px;
+        font-family: 'Calibri', sans-serif;
       }
       .product-meta {
-        font-size: 10px;
+        font-size: 12px;
         color: #6C757D;
         line-height: 1.3;
+        font-family: 'Calibri', sans-serif;
       }
       .meta-item {
         margin-bottom: 2px;
       }
       .product-price {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: bold;
         color: #2C3E50;
         margin-top: 8px;
+        font-family: 'Calibri', sans-serif;
       }
     `
   };
