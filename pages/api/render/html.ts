@@ -617,12 +617,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     flex-direction: column;
     gap: 20px;
     padding: 15px;
+    min-height: 100vh;
+    position: relative;
   }
   
   .layout-1-full .main-content {
     display: flex;
     flex-direction: row;
     gap: 20px;
+    flex: 1;
+    padding-bottom: 200px; /* Space for fixed internals section */
   }
   
   .layout-1-full .left-column {
@@ -643,10 +647,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .internals-section-full {
-    width: 100%;
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    width: calc(100% - 30px);
     margin-top: 20px;
     padding-top: 20px;
     border-top: 2px solid #e0e0e0;
+    background: white;
   }
   
   .internals-title {
