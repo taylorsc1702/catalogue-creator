@@ -43,19 +43,19 @@ function htmlToPlainText(html) {
   return text;
 }
 
-// Common font sizes for different layouts
+// Common font sizes for different layouts (updated to match HTML export)
 const FONT_SIZES = {
-  title: { 1: 14, 2: 12, 3: 10, 4: 9, 8: 7 },
-  subtitle: { 1: 10, 2: 9, 3: 8, 4: 7, 8: 6 },
-  author: { 1: 9, 2: 8, 3: 7, 4: 7, 8: 6 },
-  description: { 1: 9, 2: 8, 3: 7, 4: 6, 8: 5 },
-  price: { 1: 10, 2: 10, 3: 9, 4: 8, 8: 6 },
-  details: { 1: 9, 2: 7, 3: 7, 4: 7, 8: 6 }
+  title: { 1: 14, 2: 16, 3: 14, 4: 11, 8: 7 }, // Updated 2-up to 16pt, 3-up to 14pt
+  subtitle: { 1: 10, 2: 12, 3: 11, 4: 10, 8: 6 }, // Updated 2-up to 12pt, 3-up to 11pt
+  author: { 1: 9, 2: 12, 3: 11, 4: 10, 8: 6 }, // Updated 2-up to 12pt, 3-up to 11pt
+  description: { 1: 9, 2: 11, 3: 10, 4: 10, 8: 5 }, // Updated 2-up to 11pt, 3-up to 10pt, 4-up to 10pt
+  price: { 1: 10, 2: 14, 3: 13, 4: 10, 8: 6 }, // Updated 2-up to 14pt, 3-up to 13pt
+  details: { 1: 9, 2: 12, 3: 7, 4: 7, 8: 6 } // Updated 2-up to 12pt
 };
 
-// Common image sizes for different layouts
+// Common image sizes for different layouts (updated to match HTML export)
 const IMAGE_SIZES = {
-  product: { 1: { width: 120, height: 160 }, 2: { width: 100, height: 140 }, 3: { width: 80, height: 120 }, 4: { width: 60, height: 90 }, 8: { width: 30, height: 45 } },
+  product: { 1: { width: 120, height: 160 }, 2: { width: 175, height: 263 }, 3: { width: 106, height: 158 }, 4: { width: 88, height: 132 }, 8: { width: 30, height: 45 } }, // Updated 2-up to 175x263, 3-up to 106x158, 4-up to 88x132
   barcode: { 1: { width: 100, height: 30 }, 2: { width: 80, height: 25 }, 3: { width: 70, height: 20 }, 4: { width: 60, height: 18 }, 8: { width: 40, height: 12 } },
   internals: { 1: { width: 70, height: 95 }, 2: { width: 50, height: 70 }, 3: { width: 40, height: 60 }, 4: { width: 30, height: 45 }, 8: { width: 20, height: 30 } }
 };

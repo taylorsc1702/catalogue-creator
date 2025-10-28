@@ -326,11 +326,11 @@ function createProductCard(cell, item, layout) {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = cell.appendImage(imageBlob);
       
-      // Set image size based on layout
+      // Set image size based on layout (updated to match HTML export)
       const sizes = {
-        2: { width: 120, height: 180 },
-        3: { width: 100, height: 150 },
-        4: { width: 80, height: 120 },
+        2: { width: 175, height: 263 }, // 75% bigger for 2-up
+        3: { width: 106, height: 158 }, // 10% bigger for 3-up
+        4: { width: 88, height: 132 },  // 10% bigger for 4-up
         8: { width: 40, height: 60 }
       };
       
@@ -347,52 +347,52 @@ function createProductCard(cell, item, layout) {
   
   // Title
   const title = cell.appendParagraph(item.title);
-  const titleSizes = { 2: 14, 3: 12, 4: 11, 8: 9 };
-  title.editAsText().setFontSize(titleSizes[layout] || 11).setBold(true);
+  const titleSizes = { 2: 16, 3: 14, 4: 11, 8: 9 }; // Updated to match HTML export
+  title.editAsText().setFontSize(titleSizes[layout] || 11).setBold(true).setFontFamily('Calibri');
   title.setSpacingAfter(5);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = cell.appendParagraph(item.subtitle);
-    const subtitleSizes = { 2: 11, 3: 10, 4: 9, 8: 7 };
-    subtitle.editAsText().setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666');
+    const subtitleSizes = { 2: 12, 3: 11, 4: 10, 8: 7 }; // Updated to match HTML export
+    subtitle.editAsText().setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
     subtitle.setSpacingAfter(5);
   }
   
   // Author
   if (item.author) {
     const author = cell.appendParagraph(`By ${item.author}`);
-    const authorSizes = { 2: 11, 3: 10, 4: 10, 8: 8 };
-    author.editAsText().setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000');
+    const authorSizes = { 2: 12, 3: 11, 4: 10, 8: 8 }; // Updated to match HTML export
+    author.editAsText().setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000').setFontFamily('Calibri');
     author.setSpacingAfter(5);
   }
   
   // Description (truncated for smaller layouts)
   if (item.description) {
-    const maxLength = layout === 8 ? 50 : layout === 4 ? 100 : 150;
+    const maxLength = layout === 8 ? 50 : layout === 4 ? 950 : 150; // Updated 4-up to 950 chars
     const description = item.description.length > maxLength ? 
       item.description.substring(0, maxLength) + '...' : 
       item.description;
     
     const desc = cell.appendParagraph(description);
-    const descSizes = { 2: 10, 3: 9, 4: 8, 8: 6 };
-    desc.editAsText().setFontSize(descSizes[layout] || 8).setForegroundColor('#333333');
+    const descSizes = { 2: 11, 3: 10, 4: 10, 8: 6 }; // Updated to match HTML export
+    desc.editAsText().setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
     desc.setSpacingAfter(8);
   }
   
   // Price
   if (item.price) {
     const price = cell.appendParagraph(`AUD$ ${item.price}`);
-    const priceSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };
-    price.editAsText().setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384');
+    const priceSizes = { 2: 14, 3: 13, 4: 10, 8: 8 }; // Updated to match HTML export
+    price.editAsText().setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
     price.setSpacingAfter(5);
   }
   
   // SKU/Barcode
   if (item.sku) {
     const sku = cell.appendParagraph(`SKU: ${item.sku}`);
-    const skuSizes = { 2: 8, 3: 8, 4: 7, 8: 6 };
-    sku.editAsText().setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999');
+    const skuSizes = { 2: 12, 3: 8, 4: 7, 8: 6 }; // Updated 2-up to 12pt
+    sku.editAsText().setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
   }
 }
 
