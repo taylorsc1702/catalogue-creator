@@ -320,12 +320,86 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
   `;
 };
 
+export const renderProductCard2Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  
+  return `
+    <div class="product-card">
+      <div class="product-image">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+      </div>
+      <div class="product-details">
+        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+        <div class="product-specs">
+          ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+          ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+          ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+        </div>
+        <div class="product-meta">
+          ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+          ${item.price ? `<div class="meta-item"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+        </div>
+        ${barcodeHtml}
+      </div>
+    </div>
+  `;
+};
+
+export const renderProductCard4Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  const truncatedDesc = item.description ? (item.description.length > 950 ? item.description.substring(0, 947) + '...' : item.description) : '';
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  
+  return `
+    <div class="product-card layout-4-special">
+      <div class="top-section">
+        <div class="product-image-4up">
+          <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-4up">
+        </div>
+        <div class="title-section">
+          <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+          ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
+          ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
+        </div>
+      </div>
+      <div class="description-section">
+        ${truncatedDesc ? `<div class="product-description-4up">${esc(truncatedDesc)}</div>` : ""}
+      </div>
+      <div class="bottom-section">
+        <div class="product-details-left">
+          <div class="product-specs-4up">
+            ${item.binding ? `<span class="spec-item-4up">${esc(item.binding)}</span>` : ""}
+            ${item.pages ? `<span class="spec-item-4up">${esc(item.pages)} pages</span>` : ""}
+            ${item.dimensions ? `<span class="spec-item-4up">${esc(item.dimensions)}</span>` : ""}
+          </div>
+          <div class="product-meta-4up">
+            ${item.imprint ? `<div class="meta-item-4up"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+            ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+            ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+          </div>
+        </div>
+        <div class="barcode-section-right">
+          ${barcodeHtml}
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 export const renderProductCard = (item: Item, layout: 1 | 2 | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
   switch (layout) {
     case 1:
       return renderProductCard1Up(item, globalIndex, options);
+    case 2:
+      return renderProductCard2Up(item, globalIndex, options);
     case 3:
       return renderProductCard3Up(item, globalIndex, options);
+    case 4:
+      return renderProductCard4Up(item, globalIndex, options);
     default:
       return renderProductCardStandard(item, globalIndex, options);
   }

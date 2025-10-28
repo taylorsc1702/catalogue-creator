@@ -213,7 +213,10 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     width: 200px;
   }
   .page.layout-2 .product-image {
-    width: 100px;
+    width: 175px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .page.layout-3 .product-image {
     width: 80px;
@@ -234,8 +237,8 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     height: 300px;
   }
   .page.layout-2 .book-cover {
-    width: 100px;
-    height: 150px;
+    width: 175px;
+    height: 263px;
   }
   .page.layout-3 .book-cover {
     width: 80px;
@@ -263,6 +266,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   .page.layout-2 .product-title {
     font-size: 16px;
+    font-family: 'Calibri', sans-serif;
   }
   .page.layout-3 .product-title {
     font-size: 14px;
@@ -281,6 +285,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   .page.layout-2 .product-subtitle {
     font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   .page.layout-3 .product-subtitle {
     font-size: 11px;
@@ -299,6 +304,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   .page.layout-2 .product-author {
     font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   .page.layout-3 .product-author {
     font-size: 11px;
@@ -318,6 +324,7 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   }
   .page.layout-2 .product-description {
     font-size: 11px;
+    font-family: 'Calibri', sans-serif;
   }
   .page.layout-3 .product-description {
     font-size: 10px;
@@ -341,10 +348,13 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
   .product-meta {
     margin-bottom: 6px;
   }
-  .meta-item {
-    font-size: 8px;
-    color: #666;
-    margin-bottom: 2px;
+  .page.layout-2 .meta-item {
+    font-size: 12px;
+    font-family: 'Calibri', sans-serif;
+  }
+  .page.layout-2 .spec-item {
+    font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   .product-price {
     font-size: 11px;
@@ -634,8 +644,137 @@ function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], showFi
     color: #666;
   }
   
-  .page.layout-3 .barcode-text {
-    font-size: 6px;
+  /* Layout 4: Special 4-up layout with larger image and reorganized content */
+  .layout-4-special {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 140px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .layout-4-special .top-section {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  
+  .product-image-4up {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .book-cover-4up {
+    width: 88px;
+    height: 132px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .title-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .product-title-4up {
+    font-size: 11px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-subtitle-4up {
+    font-size: 10px;
+    font-style: italic;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-author-4up {
+    font-size: 10px;
+    color: #444;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .description-section {
+    margin-top: 3px;
+  }
+  
+  .product-description-4up {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.2;
+    text-align: justify;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 3px;
+  }
+  
+  .product-details-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  
+  .product-specs-4up {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  
+  .spec-item-4up {
+    font-size: 9px;
+    color: #666;
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-meta-4up {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  
+  .meta-item-4up {
+    font-size: 9px;
+    color: #666;
+    margin-bottom: 0px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .barcode-section-right {
+    flex-shrink: 0;
+    text-align: center;
+    margin-left: 6px;
+  }
+  
+  .barcode-section-right .barcode img {
+    max-width: 50px;
+    height: auto;
   }
   
   @media print {
