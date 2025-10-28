@@ -1408,6 +1408,110 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Cover Preview Section */}
+      {(showFrontCover || showBackCover) && (
+        <div style={{ marginTop: 24 }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#495057", marginBottom: 16, display: "block" }}>Cover Preview</span>
+          <div style={{ padding: 16, border: "2px solid #E9ECEF", borderRadius: 8, background: "#F8F9FA" }}>
+            <div style={{ fontSize: 14, color: "#6C757D", marginBottom: 12 }}>
+              Covers will be included in HTML export. Preview shows layout structure.
+            </div>
+            
+            {showFrontCover && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#495057", marginBottom: 8 }}>Front Cover:</div>
+                <div style={{ 
+                  border: "1px solid #ddd", 
+                  borderRadius: 8, 
+                  padding: 16, 
+                  background: "white",
+                  minHeight: 200,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ fontSize: 12, color: "#666" }}>Logo</div>
+                    <div style={{ flex: 1, marginLeft: 16 }}>
+                      {frontCoverText1 && <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{frontCoverText1}</div>}
+                      {frontCoverText2 && <div style={{ fontSize: 14 }}>{frontCoverText2}</div>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center", fontSize: 20, fontWeight: "bold" }}>
+                    {coverCatalogueName || catalogueName || "Product Catalogue"}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, maxWidth: 200, margin: "0 auto" }}>
+                    {frontCoverIsbns.map((isbn, index) => (
+                      <div key={index} style={{ 
+                        height: 60, 
+                        border: "1px dashed #ccc", 
+                        borderRadius: 4, 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: "#666"
+                      }}>
+                        {isbn ? `ISBN ${index + 1}` : "Empty"}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#666", textAlign: "center" }}>
+                    Footer with contact info
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {showBackCover && (
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#495057", marginBottom: 8 }}>Back Cover:</div>
+                <div style={{ 
+                  border: "1px solid #ddd", 
+                  borderRadius: 8, 
+                  padding: 16, 
+                  background: "white",
+                  minHeight: 200,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ fontSize: 12, color: "#666" }}>Logo</div>
+                    <div style={{ flex: 1, marginLeft: 16 }}>
+                      {backCoverText1 && <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{backCoverText1}</div>}
+                      {backCoverText2 && <div style={{ fontSize: 14 }}>{backCoverText2}</div>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center", fontSize: 20, fontWeight: "bold" }}>
+                    {coverCatalogueName || catalogueName || "Product Catalogue"}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, maxWidth: 200, margin: "0 auto" }}>
+                    {backCoverIsbns.map((isbn, index) => (
+                      <div key={index} style={{ 
+                        height: 60, 
+                        border: "1px dashed #ccc", 
+                        borderRadius: 4, 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: "#666"
+                      }}>
+                        {isbn ? `ISBN ${index + 1}` : "Empty"}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#666", textAlign: "center" }}>
+                    Footer with contact info
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* UTM Parameters Section */}
       <div style={{ 
         marginTop: 20, 
