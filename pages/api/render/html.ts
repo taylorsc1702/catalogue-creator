@@ -718,18 +718,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   .layout-4-special {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    gap: 4px;
+    padding: 4px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    min-height: 200px;
+    min-height: 160px;
+    max-height: 180px;
     max-width: 100%;
     overflow: hidden;
   }
   
   .layout-4-special .top-section {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     align-items: flex-start;
   }
   
@@ -741,8 +742,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .book-cover-4up {
-    width: 120px;
-    height: 180px;
+    width: 100px;
+    height: 150px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -753,7 +754,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
   
   .product-title-4up {
@@ -783,42 +784,44 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .description-section {
-    margin-top: 4px;
+    margin-top: 2px;
   }
   
   .product-description-4up {
     font-size: 12px;
     color: #333;
-    line-height: 1.3;
+    line-height: 1.2;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
+    max-height: 40px;
+    overflow: hidden;
   }
   
   .bottom-section {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 4px;
+    margin-top: 2px;
   }
   
   .product-details-left {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
   
   .product-specs-4up {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 2px;
   }
   
   .spec-item-4up {
     font-size: 12px;
     color: #666;
     background: #f5f5f5;
-    padding: 2px 4px;
+    padding: 1px 3px;
     border-radius: 3px;
     font-family: 'Calibri', sans-serif;
   }
@@ -826,24 +829,24 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   .product-meta-4up {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
   
   .meta-item-4up {
     font-size: 12px;
     color: #666;
-    margin-bottom: 1px;
+    margin-bottom: 0px;
     font-family: 'Calibri', sans-serif;
   }
   
   .barcode-section-right {
     flex-shrink: 0;
     text-align: center;
-    margin-left: 8px;
+    margin-left: 4px;
   }
   
   .barcode-section-right .barcode img {
-    max-width: 60px;
+    max-width: 40px;
     height: auto;
   }
   
