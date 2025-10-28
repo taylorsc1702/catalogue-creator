@@ -92,6 +92,8 @@ export default function Home() {
   const [showOrderEditor, setShowOrderEditor] = useState(false);
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
+  const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
+  const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
   
@@ -732,6 +734,16 @@ export default function Home() {
     setItemBarcodeTypes(newBarcodeTypes);
   }
 
+  function setItemAuthorBioEnabled(index: number, enabled: boolean) {
+    setItemAuthorBioToggle({...itemAuthorBioToggle, [index]: enabled});
+  }
+
+  function clearItemAuthorBioToggle(index: number) {
+    const newToggles = {...itemAuthorBioToggle};
+    delete newToggles[index];
+    setItemAuthorBioToggle(newToggles);
+  }
+
   function generateProductUrl(handle: string): string {
     const baseUrls = {
       woodslane: 'https://woodslane.com.au',
@@ -1255,7 +1267,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioToggle} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
     </div>
   );
@@ -1339,7 +1351,7 @@ function btn(active = false): React.CSSProperties {
   };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, hyperlinkToggle, generateProductUrl }: { 
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
   layout: 1|2|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -1352,6 +1364,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   itemBarcodeTypes: {[key: number]: "EAN-13" | "QR Code" | "None"};
   setItemBarcodeType: (index: number, barcodeType: "EAN-13" | "QR Code" | "None") => void;
   clearItemBarcodeType: (index: number) => void;
+  itemAuthorBioToggle: {[key: number]: boolean};
+  setItemAuthorBioToggle: (index: number, enabled: boolean) => void;
+  clearItemAuthorBioToggle: (index: number) => void;
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
 }) {
@@ -1519,6 +1534,45 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     </button>
                   ))}
                 </div>
+
+                {it.additionalImages && it.additionalImages.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                    <span style={{ fontSize: 11, color: "#6C757D", fontWeight: 600 }}>
+                      Internals: {it.additionalImages.length}
+                    </span>
+                  </div>
+                )}
+
+                {itemLayouts[i] === 1 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                    <span style={{ fontSize: 11, color: "#6C757D" }}>Author Bio:</span>
+                    <button
+                      onClick={() => {
+                        const currentState = itemAuthorBioToggle[i] !== false; // Default to true
+                        if (currentState) {
+                          clearItemAuthorBioToggle(i);
+                          setItemAuthorBioToggle({...itemAuthorBioToggle, [i]: false});
+                        } else {
+                          setItemAuthorBioToggle({...itemAuthorBioToggle, [i]: true});
+                        }
+                      }}
+                      style={{
+                        background: itemAuthorBioToggle[i] !== false ? "#17A2B8" : "white",
+                        color: itemAuthorBioToggle[i] !== false ? "white" : "#17A2B8",
+                        border: "1px solid #17A2B8",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "all 0.2s ease"
+                      }}
+                      title="Toggle author bio display"
+                    >
+                      {itemAuthorBioToggle[i] === false ? "Hidden" : "Shown"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
