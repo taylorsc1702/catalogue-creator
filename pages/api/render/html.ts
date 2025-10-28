@@ -15,7 +15,7 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
       items: Item[]; 
       layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
@@ -31,9 +31,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         utmContent?: string;
         utmTerm?: string;
       };
+      coverData?: {
+        showFrontCover: boolean;
+        showBackCover: boolean;
+        frontCoverText1: string;
+        frontCoverText2: string;
+        backCoverText1: string;
+        backCoverText2: string;
+        frontCoverIsbns: string[];
+        backCoverIsbns: string[];
+        catalogueName: string;
+      };
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName);
+    const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -42,13 +53,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
-}, itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", bannerColor?: string, websiteName?: string) {
+}, itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"}, barcodeType?: "EAN-13" | "QR Code" | "None", bannerColor?: string, websiteName?: string, coverData?: {
+  showFrontCover: boolean;
+  showBackCover: boolean;
+  frontCoverText1: string;
+  frontCoverText2: string;
+  backCoverText1: string;
+  backCoverText2: string;
+  frontCoverIsbns: string[];
+  backCoverIsbns: string[];
+  catalogueName: string;
+}) {
   
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -556,6 +577,52 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
       </div>
     </div>`;
   }).join("");
+
+  // Generate covers if requested
+  let frontCoverHtml = '';
+  let backCoverHtml = '';
+  
+  if (coverData) {
+    // Import cover generation functions
+    const { generateFrontCoverHTML, generateBackCoverHTML, generateCoverCSS, lookupISBN } = await import('../../../utils/cover-generator');
+    
+    // Lookup ISBNs for front cover
+    let frontCoverResults: any[] = [];
+    if (coverData.showFrontCover && coverData.frontCoverIsbns.some(isbn => isbn.trim())) {
+      const frontPromises = coverData.frontCoverIsbns.map(isbn => 
+        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
+      );
+      frontCoverResults = await Promise.all(frontPromises);
+    }
+    
+    // Lookup ISBNs for back cover
+    let backCoverResults: any[] = [];
+    if (coverData.showBackCover && coverData.backCoverIsbns.some(isbn => isbn.trim())) {
+      const backPromises = coverData.backCoverIsbns.map(isbn => 
+        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
+      );
+      backCoverResults = await Promise.all(backPromises);
+    }
+    
+    // Generate cover HTML
+    if (coverData.showFrontCover) {
+      frontCoverHtml = generateFrontCoverHTML({
+        ...coverData,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      }, frontCoverResults);
+    }
+    
+    if (coverData.showBackCover) {
+      backCoverHtml = generateBackCoverHTML({
+        ...coverData,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      }, backCoverResults);
+    }
+  }
 
   return `<!doctype html>
 <html>
@@ -1783,10 +1850,143 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
       page-break-after: always;
     }
   }
+  
+  /* Cover Styles */
+  ${coverData ? `
+    .cover-page {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px;
+      box-sizing: border-box;
+      page-break-after: always;
+      background: white;
+    }
+    
+    .cover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 40px;
+    }
+    
+    .cover-logo {
+      flex-shrink: 0;
+    }
+    
+    .logo-image {
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: contain;
+    }
+    
+    .cover-text-content {
+      flex: 1;
+      margin-left: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .cover-text-1, .cover-text-2 {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #333;
+      font-family: 'Calibri', sans-serif;
+    }
+    
+    .cover-title {
+      text-align: center;
+      margin: 40px 0;
+    }
+    
+    .cover-title h1 {
+      font-size: 48px;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+      font-family: 'Calibri', sans-serif;
+    }
+    
+    .cover-featured-books {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .featured-books-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 30px;
+      max-width: 400px;
+    }
+    
+    .featured-book-image {
+      width: 100%;
+      height: 200px;
+      object-fit: contain;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .featured-book-placeholder {
+      width: 100%;
+      height: 200px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      color: #666;
+      font-size: 14px;
+      font-family: 'Calibri', sans-serif;
+    }
+    
+    .cover-footer {
+      padding: 20px;
+      border-radius: 8px;
+      color: white;
+    }
+    
+    .footer-content {
+      text-align: center;
+    }
+    
+    .website-url {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-family: 'Calibri', sans-serif;
+    }
+    
+    .contact-info {
+      font-size: 16px;
+      font-family: 'Calibri', sans-serif;
+    }
+    
+    .phone, .email {
+      margin-bottom: 5px;
+    }
+    
+    @media print {
+      .cover-page {
+        page-break-after: always;
+        height: 100vh;
+      }
+    }
+  ` : ''}
 </style>
 </head>
 <body>
+  ${frontCoverHtml}
   ${pagesHtml}
+  ${backCoverHtml}
 </body>
 </html>`;
 }

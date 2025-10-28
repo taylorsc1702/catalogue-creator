@@ -105,6 +105,27 @@ export default function Home() {
   const [utmContent, setUtmContent] = useState("");
   const [utmTerm, setUtmTerm] = useState("");
 
+  // Cover system state
+  const [showFrontCover, setShowFrontCover] = useState(false);
+  const [showBackCover, setShowBackCover] = useState(false);
+  const [frontCoverText1, setFrontCoverText1] = useState("");
+  const [frontCoverText2, setFrontCoverText2] = useState("");
+  const [backCoverText1, setBackCoverText1] = useState("");
+  const [backCoverText2, setBackCoverText2] = useState("");
+  const [frontCoverIsbns, setFrontCoverIsbns] = useState<string[]>(["", "", "", ""]);
+  const [backCoverIsbns, setBackCoverIsbns] = useState<string[]>(["", "", "", ""]);
+
+  // Logo URLs for different brands
+  const getLogoUrl = (brand: string): string => {
+    const logos = {
+      woodslane: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/woodslane-square-logo-transparent_a9785ae1-b798-4ab4-963d-89a4fc3f3fdb.png?v=1755213158',
+      woodslanehealth: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneHealth-logo-square_50093948-c033-48aa-8274-694237479a8a.jpg?v=1761655710',
+      woodslaneeducation: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneEducation-logos-square_60e40eef-f666-4f6a-a8e0-f07efca5a9dd.jpg?v=1761655806',
+      woodslanepress: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/woodslane_PRESS_logo_duo_1.jpg?v=1718778690'
+    };
+    return logos[brand as keyof typeof logos] || logos.woodslane;
+  };
+
   // Banner color configuration based on website
   const getBannerColor = (website: string): string => {
     // Use custom color if provided, otherwise use default website color
@@ -190,7 +211,18 @@ export default function Home() {
           barcodeType,
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          coverData: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            frontCoverIsbns,
+            backCoverIsbns,
+            catalogueName
+          }
         })
       });
       
@@ -242,7 +274,18 @@ export default function Home() {
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
           discountCode,
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          coverData: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            frontCoverIsbns,
+            backCoverIsbns,
+            catalogueName
+          }
         })
       });
       
@@ -278,7 +321,18 @@ export default function Home() {
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
           discountCode,
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          coverData: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            frontCoverIsbns,
+            backCoverIsbns,
+            catalogueName
+          }
         })
       });
       
@@ -790,7 +844,18 @@ export default function Home() {
           barcodeType,
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          coverData: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            frontCoverIsbns,
+            backCoverIsbns,
+            catalogueName
+          }
         })
       });
       
@@ -1162,6 +1227,161 @@ export default function Home() {
               Leave empty to use the default website color. Enter HEX code with or without #
             </div>
           </Field>
+        </div>
+      </div>
+
+      {/* Cover System Section */}
+      <div style={{ marginTop: 24 }}>
+        <span style={{ fontSize: 16, fontWeight: 600, color: "#495057", marginBottom: 16, display: "block" }}>Cover System</span>
+        
+        {/* Front Cover Controls */}
+        <div style={{ marginBottom: 20, padding: 16, border: "2px solid #E9ECEF", borderRadius: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+            <input
+              type="checkbox"
+              checked={showFrontCover}
+              onChange={(e) => setShowFrontCover(e.target.checked)}
+              style={{ marginRight: 8 }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Include Front Cover</span>
+          </div>
+          
+          {showFrontCover && (
+            <div style={{ marginLeft: 24 }}>
+              <Field label="Front Cover Text 1">
+                <textarea
+                  value={frontCoverText1}
+                  onChange={(e) => setFrontCoverText1(e.target.value)}
+                  placeholder="Enter first text block for front cover..."
+                  style={{ 
+                    width: "100%", 
+                    border: "2px solid #E9ECEF", 
+                    borderRadius: 8, 
+                    padding: "8px 12px", 
+                    fontSize: 14,
+                    minHeight: 60,
+                    resize: "vertical"
+                  }}
+                />
+              </Field>
+              
+              <Field label="Front Cover Text 2">
+                <textarea
+                  value={frontCoverText2}
+                  onChange={(e) => setFrontCoverText2(e.target.value)}
+                  placeholder="Enter second text block for front cover..."
+                  style={{ 
+                    width: "100%", 
+                    border: "2px solid #E9ECEF", 
+                    borderRadius: 8, 
+                    padding: "8px 12px", 
+                    fontSize: 14,
+                    minHeight: 60,
+                    resize: "vertical"
+                  }}
+                />
+              </Field>
+              
+              <Field label="Front Cover Featured Books (ISBNs)">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  {frontCoverIsbns.map((isbn, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={isbn}
+                      onChange={(e) => {
+                        const newIsbns = [...frontCoverIsbns];
+                        newIsbns[index] = e.target.value;
+                        setFrontCoverIsbns(newIsbns);
+                      }}
+                      placeholder={`ISBN ${index + 1}`}
+                      style={{ 
+                        border: "2px solid #E9ECEF", 
+                        borderRadius: 8, 
+                        padding: "8px 12px", 
+                        fontSize: 14
+                      }}
+                    />
+                  ))}
+                </div>
+              </Field>
+            </div>
+          )}
+        </div>
+
+        {/* Back Cover Controls */}
+        <div style={{ marginBottom: 20, padding: 16, border: "2px solid #E9ECEF", borderRadius: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+            <input
+              type="checkbox"
+              checked={showBackCover}
+              onChange={(e) => setShowBackCover(e.target.checked)}
+              style={{ marginRight: 8 }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Include Back Cover</span>
+          </div>
+          
+          {showBackCover && (
+            <div style={{ marginLeft: 24 }}>
+              <Field label="Back Cover Text 1">
+                <textarea
+                  value={backCoverText1}
+                  onChange={(e) => setBackCoverText1(e.target.value)}
+                  placeholder="Enter first text block for back cover..."
+                  style={{ 
+                    width: "100%", 
+                    border: "2px solid #E9ECEF", 
+                    borderRadius: 8, 
+                    padding: "8px 12px", 
+                    fontSize: 14,
+                    minHeight: 60,
+                    resize: "vertical"
+                  }}
+                />
+              </Field>
+              
+              <Field label="Back Cover Text 2">
+                <textarea
+                  value={backCoverText2}
+                  onChange={(e) => setBackCoverText2(e.target.value)}
+                  placeholder="Enter second text block for back cover..."
+                  style={{ 
+                    width: "100%", 
+                    border: "2px solid #E9ECEF", 
+                    borderRadius: 8, 
+                    padding: "8px 12px", 
+                    fontSize: 14,
+                    minHeight: 60,
+                    resize: "vertical"
+                  }}
+                />
+              </Field>
+              
+              <Field label="Back Cover Featured Books (ISBNs)">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  {backCoverIsbns.map((isbn, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={isbn}
+                      onChange={(e) => {
+                        const newIsbns = [...backCoverIsbns];
+                        newIsbns[index] = e.target.value;
+                        setBackCoverIsbns(newIsbns);
+                      }}
+                      placeholder={`ISBN ${index + 1}`}
+                      style={{ 
+                        border: "2px solid #E9ECEF", 
+                        borderRadius: 8, 
+                        padding: "8px 12px", 
+                        fontSize: 14
+                      }}
+                    />
+                  ))}
+                </div>
+              </Field>
+            </div>
+          )}
         </div>
       </div>
 
