@@ -589,6 +589,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
   let backCoverHtml = '';
   
   console.log('Cover data received:', coverData);
+  console.log('Cover data showFrontCover:', coverData?.showFrontCover);
+  console.log('Cover data showBackCover:', coverData?.showBackCover);
   
   if (coverData) {
     // Import cover generation functions
@@ -623,6 +625,13 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     // Generate cover HTML
     if (coverData.showFrontCover) {
       console.log('Generating front cover HTML...');
+      console.log('Cover data for front:', {
+        showFrontCover: coverData.showFrontCover,
+        frontCoverText1: coverData.frontCoverText1,
+        frontCoverText2: coverData.frontCoverText2,
+        catalogueName: coverData.catalogueName,
+        frontCoverIsbns: coverData.frontCoverIsbns
+      });
       frontCoverHtml = generateFrontCoverHTML({
         ...coverData,
         hyperlinkToggle,
@@ -630,6 +639,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
         websiteName: websiteName || 'www.woodslane.com.au'
       }, frontCoverResults);
       console.log('Front cover HTML length:', frontCoverHtml.length);
+      console.log('Front cover HTML preview:', frontCoverHtml.substring(0, 200));
     }
     
     if (coverData.showBackCover) {
@@ -1979,7 +1989,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     }
     
     .cover-footer {
-      padding: 20px;
+      padding: 12px 16px;
       border-radius: 8px;
       color: white;
     }
@@ -1989,15 +1999,17 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
     }
     
     .website-url {
-      font-size: 24px;
+      font-size: 16px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       font-family: 'Calibri', sans-serif;
+      line-height: 1.2;
     }
     
     .contact-info {
-      font-size: 16px;
+      font-size: 12px;
       font-family: 'Calibri', sans-serif;
+      line-height: 1.2;
     }
     
     .phone, .email {

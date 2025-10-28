@@ -1109,7 +1109,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], 
     }
     
     .cover-footer {
-      padding: 20px;
+      padding: 12px 16px;
       border-radius: 8px;
       color: white;
     }
@@ -1119,15 +1119,17 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|3|4|8)[], 
     }
     
     .website-url {
-      font-size: 24px;
+      font-size: 16px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       font-family: 'Calibri', sans-serif;
+      line-height: 1.2;
     }
     
     .contact-info {
-      font-size: 16px;
+      font-size: 12px;
       font-family: 'Calibri', sans-serif;
+      line-height: 1.2;
     }
     
     .phone, .email {
