@@ -347,6 +347,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                 <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
                 ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
+                <div class="barcode-section-right">
+                  ${barcodeHtml}
+                </div>
               </div>
             </div>
             <div class="description-section">
@@ -364,9 +367,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                   ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                   ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
                 </div>
-              </div>
-              <div class="barcode-section-right">
-                ${barcodeHtml}
               </div>
             </div>
           </div>
@@ -723,7 +723,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     border: 1px solid #e0e0e0;
     background: #ffffff;
     min-height: 140px;
-    max-height: 160px;
     max-width: 100%;
     overflow: hidden;
   }
@@ -793,19 +792,15 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     line-height: 1.2;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
-    max-height: 30px;
-    overflow: hidden;
   }
   
   .bottom-section {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
     margin-top: 3px;
   }
   
   .product-details-left {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -840,9 +835,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .barcode-section-right {
-    flex-shrink: 0;
-    text-align: center;
-    margin-left: 6px;
+    margin-top: 4px;
+    text-align: left;
   }
   
   .barcode-section-right .barcode img {
