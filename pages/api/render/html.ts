@@ -253,46 +253,51 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
         const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 1000;
         
         return `
-          <div class="product-card">
-            <div class="left-column">
-              <div class="product-image">
-                <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
-              </div>
-              ${show.authorBio && plainTextBio ? `
-                <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
-                  <div class="author-bio-title">Author Bio:</div>
-                  <div class="author-bio-content">${esc(plainTextBio)}</div>
+          <div class="product-card layout-1-full">
+            <div class="main-content">
+              <div class="left-column">
+                <div class="product-image">
+                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
                 </div>
-              ` : ""}
-              ${item.additionalImages && item.additionalImages.length > 0 ? `
-                <div class="internals-section">
-                  <div class="internals-title">Internals:</div>
-                  <div class="internals-thumbnails">
-                    ${item.additionalImages.slice(0, 4).map((img, idx) => 
-                      `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
-                    ).join('')}
+                ${show.authorBio && plainTextBio ? `
+                  <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
+                    <div class="author-bio-title">Author Bio:</div>
+                    <div class="author-bio-content">${esc(plainTextBio)}</div>
                   </div>
+                ` : ""}
+              </div>
+              
+              <div class="right-column">
+                <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+                ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+                ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+                ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+                <div class="product-details-row">
+                  <div class="product-meta">
+                    ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                    ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                    ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+                    ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+                    ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+                    ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+                    ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+                  </div>
+                  <div class="barcode-right">${barcodeHtml}</div>
                 </div>
-              ` : ''}
+                ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              </div>
             </div>
             
-            <div class="right-column">
-              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-              ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
-              ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
-              <div class="product-meta">
-                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
-                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-                ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
-                ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
-                ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
-                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+            ${item.additionalImages && item.additionalImages.length > 0 ? `
+              <div class="internals-section-full">
+                <div class="internals-title">Internals:</div>
+                <div class="internals-thumbnails-full">
+                  ${item.additionalImages.slice(0, 4).map((img, idx) => 
+                    `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
+                  ).join('')}
+                </div>
               </div>
-              ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
-              <div class="barcode-bottom-right">${barcodeHtml}</div>
-            </div>
+            ` : ''}
           </div>
         `;
       }
@@ -606,14 +611,21 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     visibility: hidden;
   }
   
-  /* 1-up layout: Two-column layout */
-  .page.layout-1 .product-card {
-    flex-direction: row;
+  /* 1-up layout: Full layout with internals at bottom */
+  .layout-1-full {
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     padding: 15px;
   }
   
-  .page.layout-1 .left-column {
+  .layout-1-full .main-content {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+  }
+  
+  .layout-1-full .left-column {
     flex-shrink: 0;
     width: 250px;
     display: flex;
@@ -621,13 +633,64 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     gap: 16px;
   }
   
-  .page.layout-1 .right-column {
+  .layout-1-full .right-column {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 12px;
     min-width: 0;
     overflow: hidden;
+  }
+  
+  .internals-section-full {
+    width: 100%;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+  }
+  
+  .internals-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1565C0;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  
+  .internals-thumbnails-full {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail-full {
+    width: 120px;
+    height: 160px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .product-details-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .product-details-row .product-meta {
+    flex: 1;
+  }
+  
+  .barcode-right {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  
+  .barcode-right .barcode img {
+    max-width: 120px;
+    height: auto;
   }
   
   .page.layout-1 .product-image {
@@ -767,7 +830,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-1 .product-meta {
-    font-size: 10px;
+    font-size: 12px;
   }
   
   .page.layout-1 .meta-item {
