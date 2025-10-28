@@ -335,7 +335,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
 
       // For 4-up layout, use special layout with larger image and reorganized content
       if (layout === 4) {
-        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 950 ? item.description.substring(0, 947) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-4-special">
@@ -347,9 +347,6 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                 <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
                 ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
-                <div class="barcode-section-right">
-                  ${barcodeHtml}
-                </div>
               </div>
             </div>
             <div class="description-section">
@@ -367,6 +364,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                   ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                   ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
                 </div>
+              </div>
+              <div class="barcode-section-right">
+                ${barcodeHtml}
               </div>
             </div>
           </div>
@@ -741,8 +741,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .book-cover-4up {
-    width: 80px;
-    height: 120px;
+    width: 88px;
+    height: 132px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -796,11 +796,13 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .bottom-section {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-top: 3px;
   }
   
   .product-details-left {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -835,8 +837,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .barcode-section-right {
-    margin-top: 4px;
-    text-align: left;
+    flex-shrink: 0;
+    text-align: center;
+    margin-left: 6px;
   }
   
   .barcode-section-right .barcode img {
