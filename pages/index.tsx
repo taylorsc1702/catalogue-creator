@@ -1568,7 +1568,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       }}
                       title="Toggle author bio display"
                     >
-                      {itemAuthorBioToggle[i] === false ? "Hidden" : "Shown"}
+                      {itemAuthorBioToggle[i] === false ? "Hidden" : `Shown (${items[i]?.authorBio?.length || 0} chars)`}
                     </button>
                   </div>
                 )}
