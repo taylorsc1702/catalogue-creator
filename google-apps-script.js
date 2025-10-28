@@ -47,12 +47,18 @@ function createCatalogueDocument(data) {
     const titleParagraph = body.appendParagraph(title);
     titleParagraph.setHeading(DocumentApp.ParagraphHeading.TITLE);
     titleParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    titleParagraph.editAsText().setFontSize(18).setBold(true);
+    const titleText = titleParagraph.editAsText();
+    if (titleText) {
+      titleText.setFontSize(18).setBold(true);
+    }
     
     // Add subtitle
     const subtitleParagraph = body.appendParagraph(`Generated on ${new Date().toLocaleDateString()}`);
     subtitleParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    subtitleParagraph.editAsText().setFontSize(12).setForegroundColor('#666666');
+    const subtitleText = subtitleParagraph.editAsText();
+    if (subtitleText) {
+      subtitleText.setFontSize(12).setForegroundColor('#666666');
+    }
     
     // Add spacing
     body.appendParagraph('').setSpacingAfter(40);
@@ -119,10 +125,12 @@ function addBanner(body, websiteName, bannerColor, isHeader) {
   
   // Style the banner text
   const bannerText = bannerParagraph.editAsText();
-  bannerText.setFontSize(12);
-  bannerText.setBold(true);
-  bannerText.setForegroundColor('#FFFFFF');
-  bannerText.setBackgroundColor(bannerColor);
+  if (bannerText) {
+    bannerText.setFontSize(12);
+    bannerText.setBold(true);
+    bannerText.setForegroundColor('#FFFFFF');
+    bannerText.setBackgroundColor(bannerColor);
+  }
   
   // Add spacing
   if (isHeader) {
@@ -176,18 +184,27 @@ function createLeftColumn(cell, item, showFields) {
   // Author Bio
   if (showFields.authorBio && item.authorBio) {
     const bioTitle = cell.appendParagraph('Author Bio:');
-    bioTitle.editAsText().setBold(true).setFontSize(12).setForegroundColor('#1565C0');
+    const bioTitleText = bioTitle.editAsText();
+    if (bioTitleText) {
+      bioTitleText.setBold(true).setFontSize(12).setForegroundColor('#1565C0');
+    }
     bioTitle.setSpacingAfter(10);
     
     const bioContent = cell.appendParagraph(htmlToPlainText(item.authorBio));
-    bioContent.editAsText().setFontSize(11);
+    const bioContentText = bioContent.editAsText();
+    if (bioContentText) {
+      bioContentText.setFontSize(11);
+    }
     bioContent.setSpacingAfter(20);
   }
   
   // Internals (if available)
   if (item.additionalImages && item.additionalImages.length > 0) {
     const internalsTitle = cell.appendParagraph('Internals:');
-    internalsTitle.editAsText().setBold(true).setFontSize(12).setForegroundColor('#495057');
+    const internalsTitleText = internalsTitle.editAsText();
+    if (internalsTitleText) {
+      internalsTitleText.setBold(true).setFontSize(12).setForegroundColor('#495057');
+    }
     internalsTitle.setSpacingAfter(10);
     
     // Add up to 4 internal images in a 2x2 grid
@@ -212,27 +229,39 @@ function createLeftColumn(cell, item, showFields) {
 function createRightColumn(cell, item, utmParams) {
   // Product title (clickable)
   const title = cell.appendParagraph(item.title);
-  title.editAsText().setFontSize(20).setBold(true);
+  const titleText = title.editAsText();
+  if (titleText) {
+    titleText.setFontSize(20).setBold(true);
+  }
   title.setSpacingAfter(10);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = cell.appendParagraph(item.subtitle);
-    subtitle.editAsText().setFontSize(14).setItalic(true).setForegroundColor('#666666');
+    const subtitleText = subtitle.editAsText();
+    if (subtitleText) {
+      subtitleText.setFontSize(14).setItalic(true).setForegroundColor('#666666');
+    }
     subtitle.setSpacingAfter(10);
   }
   
   // Author
   if (item.author) {
     const author = cell.appendParagraph(`By ${item.author}`);
-    author.editAsText().setFontSize(13).setForegroundColor('#444444');
+    const authorText = author.editAsText();
+    if (authorText) {
+      authorText.setFontSize(13).setForegroundColor('#444444');
+    }
     author.setSpacingAfter(10);
   }
   
   // Description
   if (item.description) {
     const description = cell.appendParagraph(item.description);
-    description.editAsText().setFontSize(11).setForegroundColor('#333333');
+    const descriptionText = description.editAsText();
+    if (descriptionText) {
+      descriptionText.setFontSize(11).setForegroundColor('#333333');
+    }
     description.setSpacingAfter(15);
   }
   
@@ -248,21 +277,30 @@ function createRightColumn(cell, item, utmParams) {
   
   metaItems.forEach(metaItem => {
     const meta = cell.appendParagraph(metaItem);
-    meta.editAsText().setFontSize(10).setForegroundColor('#666666');
+    const metaText = meta.editAsText();
+    if (metaText) {
+      metaText.setFontSize(10).setForegroundColor('#666666');
+    }
     meta.setSpacingAfter(5);
   });
   
   // Price
   if (item.price) {
     const price = cell.appendParagraph(`AUD$ ${item.price}`);
-    price.editAsText().setFontSize(16).setBold(true).setForegroundColor('#d63384');
+    const priceText = price.editAsText();
+    if (priceText) {
+      priceText.setFontSize(16).setBold(true).setForegroundColor('#d63384');
+    }
     price.setSpacingAfter(15);
   }
   
   // Barcode (if SKU available)
   if (item.sku) {
     const barcodeText = cell.appendParagraph(`Barcode: ${item.sku}`);
-    barcodeText.editAsText().setFontSize(10).setForegroundColor('#999999');
+    const barcodeTextObj = barcodeText.editAsText();
+    if (barcodeTextObj) {
+      barcodeTextObj.setFontSize(10).setForegroundColor('#999999');
+    }
     barcodeText.setSpacingAfter(10);
   }
 }
@@ -348,14 +386,20 @@ function createProductCard(cell, item, layout) {
   // Title
   const title = cell.appendParagraph(item.title);
   const titleSizes = { 2: 16, 3: 14, 4: 11, 8: 9 }; // Updated to match HTML export
-  title.editAsText().setFontSize(titleSizes[layout] || 11).setBold(true).setFontFamily('Calibri');
+  const titleText = title.editAsText();
+  if (titleText) {
+    titleText.setFontSize(titleSizes[layout] || 11).setBold(true).setFontFamily('Calibri');
+  }
   title.setSpacingAfter(5);
   
   // Subtitle
   if (item.subtitle) {
     const subtitle = cell.appendParagraph(item.subtitle);
     const subtitleSizes = { 2: 12, 3: 11, 4: 10, 8: 7 }; // Updated to match HTML export
-    subtitle.editAsText().setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+    const subtitleText = subtitle.editAsText();
+    if (subtitleText) {
+      subtitleText.setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
     subtitle.setSpacingAfter(5);
   }
   
@@ -363,7 +407,10 @@ function createProductCard(cell, item, layout) {
   if (item.author) {
     const author = cell.appendParagraph(`By ${item.author}`);
     const authorSizes = { 2: 12, 3: 11, 4: 10, 8: 8 }; // Updated to match HTML export
-    author.editAsText().setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000').setFontFamily('Calibri');
+    const authorText = author.editAsText();
+    if (authorText) {
+      authorText.setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000').setFontFamily('Calibri');
+    }
     author.setSpacingAfter(5);
   }
   
@@ -376,7 +423,10 @@ function createProductCard(cell, item, layout) {
     
     const desc = cell.appendParagraph(description);
     const descSizes = { 2: 11, 3: 10, 4: 10, 8: 6 }; // Updated to match HTML export
-    desc.editAsText().setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
+    const descText = desc.editAsText();
+    if (descText) {
+      descText.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
     desc.setSpacingAfter(8);
   }
   
@@ -384,7 +434,10 @@ function createProductCard(cell, item, layout) {
   if (item.price) {
     const price = cell.appendParagraph(`AUD$ ${item.price}`);
     const priceSizes = { 2: 14, 3: 13, 4: 10, 8: 8 }; // Updated to match HTML export
-    price.editAsText().setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
+    const priceText = price.editAsText();
+    if (priceText) {
+      priceText.setFontSize(priceSizes[layout] || 10).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
+    }
     price.setSpacingAfter(5);
   }
   
@@ -392,7 +445,10 @@ function createProductCard(cell, item, layout) {
   if (item.sku) {
     const sku = cell.appendParagraph(`SKU: ${item.sku}`);
     const skuSizes = { 2: 12, 3: 8, 4: 7, 8: 6 }; // Updated 2-up to 12pt
-    sku.editAsText().setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
+    const skuText = sku.editAsText();
+    if (skuText) {
+      skuText.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
+    }
   }
 }
 
