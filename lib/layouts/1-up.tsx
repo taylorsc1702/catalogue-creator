@@ -585,6 +585,10 @@ export function create1UpLayoutHandler(): LayoutHandler {
       .author-bio-content {
         color: #1565C0;
         white-space: pre-line;
+        max-height: none !important;
+        overflow: visible !important;
+        height: auto !important;
+        display: block !important;
       }
       
       .internals-section {
