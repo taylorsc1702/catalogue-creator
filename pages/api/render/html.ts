@@ -333,6 +333,46 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
         `;
       }
 
+      // For 4-up layout, use special layout with larger image and reorganized content
+      if (layout === 4) {
+        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        
+        return `
+          <div class="product-card layout-4-special">
+            <div class="top-section">
+              <div class="product-image-4up">
+                <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-4up">
+              </div>
+              <div class="title-section">
+                <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+                ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
+                ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
+              </div>
+            </div>
+            <div class="description-section">
+              ${truncatedDesc ? `<div class="product-description-4up">${esc(truncatedDesc)}</div>` : ""}
+            </div>
+            <div class="bottom-section">
+              <div class="product-details-left">
+                <div class="product-specs-4up">
+                  ${item.binding ? `<span class="spec-item-4up">${esc(item.binding)}</span>` : ""}
+                  ${item.pages ? `<span class="spec-item-4up">${esc(item.pages)} pages</span>` : ""}
+                  ${item.dimensions ? `<span class="spec-item-4up">${esc(item.dimensions)}</span>` : ""}
+                </div>
+                <div class="product-meta-4up">
+                  ${item.imprint ? `<div class="meta-item-4up"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                  ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+                  ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+                </div>
+              </div>
+              <div class="barcode-section-right">
+                ${barcodeHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       // For other layouts, use standard card layout
       const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
       
@@ -672,6 +712,139 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Layout 4: Special 4-up layout with larger image and reorganized content */
+  .layout-4-special {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 200px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .layout-4-special .top-section {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .product-image-4up {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .book-cover-4up {
+    width: 120px;
+    height: 180px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .title-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .product-title-4up {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-subtitle-4up {
+    font-size: 12px;
+    font-style: italic;
+    color: #666;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-author-4up {
+    font-size: 12px;
+    color: #444;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .description-section {
+    margin-top: 4px;
+  }
+  
+  .product-description-4up {
+    font-size: 12px;
+    color: #333;
+    line-height: 1.3;
+    text-align: justify;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 4px;
+  }
+  
+  .product-details-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .product-specs-4up {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .spec-item-4up {
+    font-size: 12px;
+    color: #666;
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .product-meta-4up {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .meta-item-4up {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 1px;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .barcode-section-right {
+    flex-shrink: 0;
+    text-align: center;
+    margin-left: 8px;
+  }
+  
+  .barcode-section-right .barcode img {
+    max-width: 60px;
+    height: auto;
   }
   
   .product-details-row {
