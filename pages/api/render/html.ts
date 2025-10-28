@@ -248,7 +248,9 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
         
         // Calculate if we need to truncate author bio based on internals presence
         const hasInternals = item.additionalImages && item.additionalImages.length > 0;
-        const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 200; // Only truncate if bio is long AND internals exist
+        // More sophisticated logic: only truncate if bio is very long (500+ chars) AND internals exist
+        // This allows shorter bios to display fully even with internals present
+        const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 500;
         
         return `
           <div class="product-card">
