@@ -40,8 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     if (!shopifyResponse.ok) {
       console.log('Shopify API error:', shopifyResponse.status, shopifyResponse.statusText);
-      throw new Error('Failed to fetch from Shopify');
-    }
+      console.log('Falling back to Open Library API...');
+    } else {
 
     const shopifyData = await shopifyResponse.json();
     const products = shopifyData.products || [];
