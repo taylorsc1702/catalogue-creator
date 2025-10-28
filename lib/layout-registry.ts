@@ -1,5 +1,5 @@
 import { LayoutHandler } from './layout-handlers';
-// import { create1UpLayoutHandler } from './layouts/1-up'; // Disabled - using inline code
+import { create1UpLayoutHandler } from './layouts/1-up';
 import { create2UpLayoutHandler } from './layouts/2-up';
 import { create3UpLayoutHandler } from './layouts/3-up';
 import { create4UpLayoutHandler } from './layouts/4-up';
@@ -19,8 +19,7 @@ class LayoutRegistry {
 
   private registerDefaultHandlers() {
     // Register all layout handlers
-    // NOTE: 1-up handler is disabled - using inline code in html.ts instead
-    // this.handlers.set('1-up', create1UpLayoutHandler());
+    this.handlers.set('1-up', create1UpLayoutHandler());
     this.handlers.set('2-up', create2UpLayoutHandler());
     this.handlers.set('3-up', create3UpLayoutHandler());
     this.handlers.set('4-up', create4UpLayoutHandler());
