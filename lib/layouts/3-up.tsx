@@ -26,13 +26,13 @@ export function create3UpLayoutHandler(): LayoutHandler {
         }}>
           <div style={{ 
             flexShrink: 0,
-            width: "80px"
+            width: "96px"
           }}>
             <Image 
-              src={item.imageUrl || "https://via.placeholder.com/80x120?text=No+Image"} 
+              src={item.imageUrl || "https://via.placeholder.com/96x144?text=No+Image"} 
               alt={item.title}
-              width={80}
-              height={120}
+              width={96}
+              height={144}
               style={{ 
                 objectFit: "cover", 
                 borderRadius: 6, 
@@ -175,7 +175,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
       return `
         <div class="product-card">
           <div class="product-image">
-            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/80x120?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/96x144?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
           <div class="product-details">
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
@@ -344,8 +344,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
           const barcodeRun = new ImageRun({
             data: barcodeData.base64,
             transformation: {
-              width: barcodeData.width * 0.5,
-              height: barcodeData.height * 0.5,
+              width: barcodeData.width * 0.65,
+              height: barcodeData.height * 0.65,
             },
             type: "png",
           });
@@ -367,49 +367,50 @@ export function create3UpLayoutHandler(): LayoutHandler {
       .product-card {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
         margin-bottom: 0;
         page-break-inside: avoid;
         height: fit-content;
         font-family: 'Calibri', sans-serif;
+        margin: 0 5px;
       }
       .product-image {
         flex-shrink: 0;
-        width: 60px;
+        width: 72px;
       }
       .book-cover {
-        width: 60px;
-        height: 90px;
+        width: 72px;
+        height: 108px;
         object-fit: cover;
         border: 1px solid #ddd;
         border-radius: 4px;
       }
       .product-title {
-        font-size: 18px;
+        font-size: 22px;
         font-weight: bold;
-        margin: 0 0 8px 0;
+        margin: 0 0 4px 0;
         color: #2C3E50;
         font-family: 'Calibri', sans-serif;
       }
       .product-subtitle {
-        font-size: 16px;
+        font-size: 19px;
         color: #7F8C8D;
         font-style: italic;
-        margin-bottom: 6px;
+        margin-bottom: 3px;
         font-family: 'Calibri', sans-serif;
       }
       .product-author {
-        font-size: 15px;
+        font-size: 18px;
         color: #667eea;
         font-weight: 600;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         font-family: 'Calibri', sans-serif;
       }
       .product-description {
-        font-size: 14px;
+        font-size: 17px;
         line-height: 1.4;
         color: #495057;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         font-family: 'Calibri', sans-serif;
       }
       .product-specs {
@@ -419,7 +420,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 8px;
       }
       .spec-item {
-        font-size: 12px;
+        font-size: 14px;
         color: #6C757D;
         background: #F8F9FA;
         padding: 2px 6px;
@@ -427,7 +428,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         font-family: 'Calibri', sans-serif;
       }
       .product-meta {
-        font-size: 12px;
+        font-size: 14px;
         color: #6C757D;
         line-height: 1.3;
         font-family: 'Calibri', sans-serif;
@@ -436,10 +437,10 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 2px;
       }
       .product-price {
-        font-size: 16px;
+        font-size: 19px;
         font-weight: bold;
         color: #2C3E50;
-        margin-top: 8px;
+        margin-top: 4px;
         font-family: 'Calibri', sans-serif;
       }
     `
