@@ -246,6 +246,10 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
       if (layout === 1) {
         const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
         
+        // Calculate if we need to truncate author bio based on internals presence
+        const hasInternals = item.additionalImages && item.additionalImages.length > 0;
+        const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 200; // Only truncate if bio is long AND internals exist
+        
         return `
           <div class="product-card">
             <div class="left-column">
@@ -253,7 +257,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
                 <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
               </div>
               ${show.authorBio && plainTextBio ? `
-                <div class="author-bio">
+                <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
                   <div class="author-bio-title">Author Bio:</div>
                   <div class="author-bio-content">${esc(plainTextBio)}</div>
                 </div>
@@ -644,8 +648,16 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     border-radius: 6px;
     font-size: 10px;
     line-height: 1.3;
+  }
+  
+  .page.layout-1 .author-bio.truncated {
     max-height: 150px;
     overflow: hidden;
+  }
+  
+  .page.layout-1 .author-bio.full {
+    max-height: none;
+    overflow: visible;
   }
   
   .page.layout-1 .author-bio-title {
@@ -656,10 +668,20 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   
   .page.layout-1 .author-bio-content {
     color: #333;
+  }
+  
+  .page.layout-1 .author-bio.truncated .author-bio-content {
     display: -webkit-box;
     -webkit-line-clamp: 8;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  
+  .page.layout-1 .author-bio.full .author-bio-content {
+    display: block;
+    -webkit-line-clamp: none;
+    -webkit-box-orient: initial;
+    overflow: visible;
   }
   
   .page.layout-1 .internals-section {

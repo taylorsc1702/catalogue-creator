@@ -206,6 +206,10 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
   const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
+  // Calculate if we need to truncate author bio based on internals presence
+  const hasInternals = item.additionalImages && item.additionalImages.length > 0;
+  const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 200; // Only truncate if bio is long AND internals exist
+  
   return `
     <div class="product-card">
       <div class="left-column">
@@ -213,7 +217,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
           <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
         </div>
         ${options.showFields.authorBio && plainTextBio ? `
-          <div class="author-bio">
+          <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
             <div class="author-bio-title">Author Bio:</div>
             <div class="author-bio-content">${esc(plainTextBio)}</div>
           </div>
