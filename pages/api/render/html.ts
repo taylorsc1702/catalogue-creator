@@ -498,7 +498,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     padding: 0;
   }
   body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     color: #333;
     line-height: 1.4;
     background: white;
@@ -784,7 +784,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   /* Layout 3: Horizontal row (Image | Content | Details) */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 100px 1fr 100px;
+    grid-template-columns: 140px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -801,8 +801,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-image-3up .book-cover {
-    width: 113px;
-    height: 150px;
+    width: 136px;
+    height: 180px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -816,30 +816,33 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .product-content-3up .product-title {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
     color: #000;
     margin: 0;
     line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-content-3up .product-subtitle {
-    font-size: 10px;
+    font-size: 12px;
     font-style: italic;
     color: #666;
     margin: 0;
     line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-content-3up .product-author {
-    font-size: 10px;
+    font-size: 12px;
     color: #444;
     margin: 0;
     line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-description-3up {
-    font-size: 9px;
+    font-size: 11px;
     color: #333;
     line-height: 1.3;
     margin-top: 6px;
@@ -849,17 +852,19 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
     max-height: 120px;
     overflow: hidden;
     text-align: justify;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-details-3up {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-size: 8px;
+    font-size: 10px;
     color: #333;
     border: 1px solid #e0e0e0;
     padding: 6px;
     background: #ffffff;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-details-3up .detail-value {
@@ -1180,7 +1185,7 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-image {
-    width: 80px;
+    width: 96px;
   }
   
   .page.layout-8 .product-image {
@@ -1202,8 +1207,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .book-cover {
-    width: 80px;
-    height: 120px;
+    width: 96px;
+    height: 144px;
   }
   
   .page.layout-8 .book-cover {
@@ -1232,7 +1237,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-title {
-    font-size: 14px;
+    font-size: 16px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-8 .product-title {
@@ -1251,7 +1257,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-subtitle {
-    font-size: 11px;
+    font-size: 13px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-8 .product-subtitle {
@@ -1270,7 +1277,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-author {
-    font-size: 11px;
+    font-size: 13px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-8 .product-author {
@@ -1290,7 +1298,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-description {
-    font-size: 10px;
+    font-size: 12px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-8 .product-description {
@@ -1334,7 +1343,8 @@ function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'com
   }
   
   .page.layout-3 .product-price {
-    font-size: 13px;
+    font-size: 15px;
+    font-family: 'Calibri', sans-serif;
   }
   
   .page.layout-8 .product-price {
