@@ -206,11 +206,10 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
   const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
-  // Calculate if we need to truncate author bio based on internals presence
+  // Calculate if we need to truncate author bio
   const hasInternals = item.additionalImages && item.additionalImages.length > 0;
-  // Very lenient logic: only truncate if bio is extremely long (1000+ chars) AND internals exist
-  // This allows most bios to display fully even with internals present
-  const shouldTruncateBio = hasInternals && plainTextBio && plainTextBio.length > 1000;
+  // Truncate bio if it's longer than 752 characters (with spaces)
+  const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
   
   return `
     <div class="product-card layout-1-full">
