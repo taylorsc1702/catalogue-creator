@@ -692,11 +692,7 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
     const logoCell = headerRow.appendTableCell();
     const textCell = headerRow.appendTableCell();
     
-    // Initialize cells with empty paragraphs first to ensure they have content
-    const logoInitPara = logoCell.appendParagraph('');
-    const textInitPara = textCell.appendParagraph('');
-    
-    // Set cell properties safely (after cells have initial content)
+    // Set cell properties first
     try {
       logoCell.setWidth(120);
       logoCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
@@ -710,38 +706,17 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
       const logoImage = logoCell.appendImage(logoBlob);
       logoImage.setWidth(100);
       logoImage.setHeight(100);
-      // Remove init paragraph since we have an image
-      try {
-        logoInitPara.removeFromParent();
-      } catch (e) {
-        // Ignore if already removed
-      }
     } catch (error) {
       console.log('Could not load logo:', error);
-      // Remove init paragraph and add placeholder text
-      try {
-        logoInitPara.removeFromParent();
-      } catch (e) {
-        // Ignore if already removed
-      }
       logoCell.appendParagraph('[Logo]');
     }
     
-    // Add text content (right-aligned)
+    // Set text cell properties
     try {
       textCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
       textCell.setPaddingLeft(20);
     } catch (error) {
       console.log('Error setting text cell properties:', error);
-    }
-    
-    // Remove text init paragraph if we're adding text content
-    if (text1 || text2) {
-      try {
-        textInitPara.removeFromParent();
-      } catch (e) {
-        // Ignore if already removed
-      }
     }
     
     if (text1) {
@@ -807,11 +782,7 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
         imageIndex = r * cols + c;
       }
       
-      // Initialize cell with an empty paragraph first to ensure it has content
-      // This prevents "Child index (0)" errors when setting properties
-      const initPara = cell.appendParagraph('');
-      
-      // Set cell properties safely (after cell has initial content)
+      // Set cell properties first (before adding content)
       try {
         cell.setVerticalAlignment(DocumentApp.VerticalAlignment.MIDDLE);
         cell.setPaddingTop(5);
@@ -824,44 +795,30 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
         
       // Only process cells that should have images
       if (imageIndex >= 0 && imageIndex < validUrls.length) {
-          try {
-            const imageBlob = UrlFetchApp.fetch(validUrls[imageIndex]).getBlob();
-            const image = cell.appendImage(imageBlob);
-            
-            // Remove the initial empty paragraph now that we have an image
-            try {
-              initPara.removeFromParent();
-            } catch (e) {
-              console.log('Could not remove init paragraph:', e);
-            }
-            
-            // Set size based on count (larger for fewer images)
-            if (imageCount === 1) {
-              image.setWidth(400);
-              image.setHeight(600);
-            } else if (imageCount === 2) {
-              image.setWidth(225);
-              image.setHeight(300);
-            } else {
-              image.setWidth(200);
-              image.setHeight(250);
-            }
-          } catch (error) {
-            console.log('Could not load cover image:', validUrls[imageIndex]);
-            // Remove init paragraph and add placeholder
-            try {
-              initPara.removeFromParent();
-            } catch (e) {
-              // Ignore if already removed
-            }
-            const placeholder = cell.appendParagraph('[Cover Image]');
-            placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        try {
+          const imageBlob = UrlFetchApp.fetch(validUrls[imageIndex]).getBlob();
+          const image = cell.appendImage(imageBlob);
+          
+          // Set size based on count (larger for fewer images)
+          if (imageCount === 1) {
+            image.setWidth(400);
+            image.setHeight(600);
+          } else if (imageCount === 2) {
+            image.setWidth(225);
+            image.setHeight(300);
+          } else {
+            image.setWidth(200);
+            image.setHeight(250);
           }
-        } else {
-          // Empty cell (like in 3-image layout at position 1,1)
-          // Keep the initial empty paragraph
-          initPara.setText(''); // Ensure it's truly empty
+        } catch (error) {
+          console.log('Could not load cover image:', validUrls[imageIndex]);
+          const placeholder = cell.appendParagraph('[Cover Image]');
+          placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         }
+      } else {
+        // Empty cell (like in 3-image layout at position 1,1)
+        // Add empty paragraph to ensure cell has content
+        cell.appendParagraph('');
       }
     }
     
