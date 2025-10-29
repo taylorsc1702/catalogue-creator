@@ -767,58 +767,59 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
     for (let r = 0; r < rows; r++) {
       const row = imagesTable.appendTableRow();
       for (let c = 0; c < cols; c++) {
-      const cell = row.appendTableCell();
-      
-      // Determine which image to show first
-      let imageIndex = -1;
-      if (imageCount === 1) {
-        imageIndex = 0;
-      } else if (imageCount === 2) {
-        imageIndex = c;
-      } else if (imageCount === 3) {
-        if (r === 0) imageIndex = c;
-        else if (r === 1 && c === 0) imageIndex = 2;
-      } else {
-        imageIndex = r * cols + c;
-      }
-      
-      // Set cell properties first (before adding content)
-      try {
-        cell.setVerticalAlignment(DocumentApp.VerticalAlignment.MIDDLE);
-        cell.setPaddingTop(5);
-        cell.setPaddingBottom(5);
-        cell.setPaddingLeft(5);
-        cell.setPaddingRight(5);
-      } catch (error) {
-        console.log('Error setting image cell properties:', error);
-      }
+        const cell = row.appendTableCell();
         
-      // Only process cells that should have images
-      if (imageIndex >= 0 && imageIndex < validUrls.length) {
-        try {
-          const imageBlob = UrlFetchApp.fetch(validUrls[imageIndex]).getBlob();
-          const image = cell.appendImage(imageBlob);
-          
-          // Set size based on count (larger for fewer images)
-          if (imageCount === 1) {
-            image.setWidth(400);
-            image.setHeight(600);
-          } else if (imageCount === 2) {
-            image.setWidth(225);
-            image.setHeight(300);
-          } else {
-            image.setWidth(200);
-            image.setHeight(250);
-          }
-        } catch (error) {
-          console.log('Could not load cover image:', validUrls[imageIndex]);
-          const placeholder = cell.appendParagraph('[Cover Image]');
-          placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        // Determine which image to show first
+        let imageIndex = -1;
+        if (imageCount === 1) {
+          imageIndex = 0;
+        } else if (imageCount === 2) {
+          imageIndex = c;
+        } else if (imageCount === 3) {
+          if (r === 0) imageIndex = c;
+          else if (r === 1 && c === 0) imageIndex = 2;
+        } else {
+          imageIndex = r * cols + c;
         }
-      } else {
-        // Empty cell (like in 3-image layout at position 1,1)
-        // Add empty paragraph to ensure cell has content
-        cell.appendParagraph('');
+        
+        // Set cell properties first (before adding content)
+        try {
+          cell.setVerticalAlignment(DocumentApp.VerticalAlignment.MIDDLE);
+          cell.setPaddingTop(5);
+          cell.setPaddingBottom(5);
+          cell.setPaddingLeft(5);
+          cell.setPaddingRight(5);
+        } catch (error) {
+          console.log('Error setting image cell properties:', error);
+        }
+          
+        // Only process cells that should have images
+        if (imageIndex >= 0 && imageIndex < validUrls.length) {
+          try {
+            const imageBlob = UrlFetchApp.fetch(validUrls[imageIndex]).getBlob();
+            const image = cell.appendImage(imageBlob);
+            
+            // Set size based on count (larger for fewer images)
+            if (imageCount === 1) {
+              image.setWidth(400);
+              image.setHeight(600);
+            } else if (imageCount === 2) {
+              image.setWidth(225);
+              image.setHeight(300);
+            } else {
+              image.setWidth(200);
+              image.setHeight(250);
+            }
+          } catch (error) {
+            console.log('Could not load cover image:', validUrls[imageIndex]);
+            const placeholder = cell.appendParagraph('[Cover Image]');
+            placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+          }
+        } else {
+          // Empty cell (like in 3-image layout at position 1,1)
+          // Add empty paragraph to ensure cell has content
+          cell.appendParagraph('');
+        }
       }
     }
     
