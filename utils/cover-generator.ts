@@ -523,6 +523,11 @@ export function generateCoverCSS(): string {
 }
 
 // Generate cover HTML based on number of images (1, 2, 3, or 4)
+// This function is used for BOTH front and back covers - they share the same logic:
+// - URL-based images with dynamic layouts (single-image, two-images, three-images, four-images)
+// - Increased sizes: 100% larger for 1 image, 50% larger for 2 images
+// - Right-aligned text positioning
+// - Same CSS styling and grid layouts
 export function generateCoverHTML(data: CoverData): string {
   const { coverImageUrls, frontCoverText1, frontCoverText2, catalogueName, bannerColor, websiteName } = data;
   

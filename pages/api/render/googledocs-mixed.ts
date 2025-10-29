@@ -10,7 +10,7 @@ type ItemWithImages = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
+    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
       title?: string;
@@ -21,6 +21,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       bannerColor?: string;
       websiteName?: string;
       utmParams?: UtmParams;
+      coverData?: {
+        showFrontCover: boolean;
+        showBackCover: boolean;
+        frontCoverText1: string;
+        frontCoverText2: string;
+        backCoverText1: string;
+        backCoverText2: string;
+        coverImageUrls: string[];
+        catalogueName: string;
+      };
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -28,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
 
     // Generate the HTML with banner parameters
-    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams);
+    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -47,7 +57,17 @@ async function generateMixedGoogleDocsHtml(
   barcodeType: BarcodeType,
   bannerColor: string, 
   websiteName: string,
-  utmParams?: UtmParams
+  utmParams?: UtmParams,
+  coverData?: {
+    showFrontCover: boolean;
+    showBackCover: boolean;
+    frontCoverText1: string;
+    frontCoverText2: string;
+    backCoverText1: string;
+    backCoverText2: string;
+    coverImageUrls: string[];
+    catalogueName: string;
+  }
 ) {
   // Download images for all items
   console.log("Downloading images for mixed Google Docs export...");
@@ -71,10 +91,10 @@ async function generateMixedGoogleDocsHtml(
   const itemsWithImages = await Promise.all(imagePromises);
   console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
 
-  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams);
+  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData);
 }
 
-function renderMixedGoogleDocsHtml(
+async function renderMixedGoogleDocsHtml(
   itemsWithImages: ItemWithImages[], 
   layoutAssignments: (1|2|'2-int'|3|4|8)[], 
   title: string,
@@ -84,7 +104,17 @@ function renderMixedGoogleDocsHtml(
   barcodeType: BarcodeType,
   bannerColor: string, 
   websiteName: string,
-  utmParams?: UtmParams
+  utmParams?: UtmParams,
+  coverData?: {
+    showFrontCover: boolean;
+    showBackCover: boolean;
+    frontCoverText1: string;
+    frontCoverText2: string;
+    backCoverText1: string;
+    backCoverText2: string;
+    coverImageUrls: string[];
+    catalogueName: string;
+  }
 ) {
   const options: RenderOptions = {
     showFields,
@@ -163,6 +193,41 @@ function renderMixedGoogleDocsHtml(
       </div>
     </div>`;
   }).join("");
+
+  // Generate covers if requested
+  let frontCoverHtml = '';
+  let backCoverHtml = '';
+  let coverCSS = '';
+  
+  if (coverData) {
+    // Import cover generation functions
+    const { generateCoverHTML, generateCoverCSS } = await import('../../../utils/cover-generator');
+    
+    // Generate cover CSS
+    coverCSS = generateCoverCSS();
+    
+    // Generate cover HTML using direct image URLs
+    if (coverData.showFrontCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      frontCoverHtml = generateCoverHTML({
+        ...coverData,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      });
+    }
+    
+    // Generate back cover HTML using the same URLs
+    if (coverData.showBackCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      backCoverHtml = generateCoverHTML({
+        ...coverData,
+        frontCoverText1: coverData.backCoverText1,
+        frontCoverText2: coverData.backCoverText2,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      });
+    }
+  }
 
   return `<!doctype html>
 <html>
@@ -878,6 +943,9 @@ function renderMixedGoogleDocsHtml(
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   
+  /* Cover Styles */
+  ${coverCSS}
+  
   @media print {
     .page {
       page-break-after: always;
@@ -886,7 +954,9 @@ function renderMixedGoogleDocsHtml(
 </style>
 </head>
 <body>
+  ${frontCoverHtml}
   ${pagesHtml}
+  ${backCoverHtml}
 </body>
 </html>`;
 }
