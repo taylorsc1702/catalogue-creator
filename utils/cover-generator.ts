@@ -228,6 +228,40 @@ export function generateBackCoverHTML(coverData: CoverData, isbnResults: ISBNLoo
 // Generate cover CSS
 export function generateCoverCSS(): string {
   return `
+    @page { 
+      size: A4 portrait; 
+      margin: 20mm 15mm 20mm 15mm; 
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      color: #333;
+      line-height: 1.4;
+      background: white;
+      font-size: 12px;
+    }
+    
+    /* Force portrait orientation in browser display */
+    @media screen {
+      .cover-page { 
+        width: 210mm;  /* A4 portrait width */
+        min-height: 297mm;  /* A4 portrait height */
+        margin: 0 auto;  /* Center the page */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);  /* Add subtle shadow for visual separation */
+      }
+      
+      body {
+        padding: 20px 0;  /* Add vertical padding for centered pages */
+        background: #f5f5f5;  /* Light gray background to show page boundaries */
+      }
+    }
+    
     .cover-page {
       width: 100%;
       max-width: 8.5in;
