@@ -629,9 +629,13 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   console.log('Cover data showFrontCover:', coverData?.showFrontCover);
   console.log('Cover data showBackCover:', coverData?.showBackCover);
   
+  let coverCSS = '';
   if (coverData) {
     // Import cover generation functions
-    const { generateCoverHTML } = await import('../../../utils/cover-generator');
+    const { generateCoverHTML, generateCoverCSS } = await import('../../../utils/cover-generator');
+    
+    // Generate cover CSS
+    coverCSS = generateCoverCSS();
     
     // Generate cover HTML using direct image URLs
     if (coverData.showFrontCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
@@ -1523,6 +1527,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
     border-spacing: 0 !important;
   }
   
+  /* Cover page styles */
+  ${coverCSS}
 
   /* Print styles - hide borders and boxes for clean printing */
   @media print {

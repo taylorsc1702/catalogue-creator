@@ -131,10 +131,14 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   // Generate covers if requested
   let frontCoverHtml = '';
   let backCoverHtml = '';
+  let coverCSS = '';
   
   if (coverData) {
     // Import cover generation functions
-    const { generateCoverHTML } = await import('../../../utils/cover-generator');
+    const { generateCoverHTML, generateCoverCSS } = await import('../../../utils/cover-generator');
+    
+    // Generate cover CSS
+    coverCSS = generateCoverCSS();
     
     // Generate cover HTML using direct image URLs
     if (coverData.showFrontCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
@@ -1003,12 +1007,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   }
   
   /* Cover Styles */
-  ${coverData ? `
-    .cover-page {
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+  ${coverCSS}
       justify-content: space-between;
       padding: 40px;
       box-sizing: border-box;
@@ -1143,7 +1142,6 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
         height: 100vh;
       }
     }
-  ` : ''}
 </style>
 </head>
 <body>
