@@ -453,12 +453,13 @@ function create2IntLayout(body, items) {
   }
   
   // Configure cells and add content
+  // Match HTML: padding 8px (approximately 6pt in Google Apps Script)
   [cell0, cell1].forEach((cell, i) => {
     cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-    cell.setPaddingTop(10);
-    cell.setPaddingBottom(10);
-    cell.setPaddingLeft(10);
-    cell.setPaddingRight(10);
+    cell.setPaddingTop(6);  // 8px ≈ 6pt
+    cell.setPaddingBottom(6);
+    cell.setPaddingLeft(6);
+    cell.setPaddingRight(6);
     
     if (i < items.length) {
       createProductCardWithInternal(cell, items[i], '2-int');
@@ -467,55 +468,57 @@ function create2IntLayout(body, items) {
 }
 
 // Create product card with internal images (for 2-int layout)
+// Matches HTML version: vertical layout with image at top, internal images above barcode
 function createProductCardWithInternal(cell, item, layout) {
   console.log(`Creating 2-int product card for:`, item.title);
   
-  // Image (same size as 2-up)
+  // Image at top (175x263, same as 2-up)
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = cell.appendImage(imageBlob);
       image.setWidth(175);
       image.setHeight(263);
+      cell.appendParagraph('').setSpacingAfter(4); // Gap after image
     } catch (error) {
       console.log('Could not load image:', error);
       cell.appendParagraph('Image not available');
     }
   }
   
-  // Title
+  // Title (16px, bold)
   const titleParagraph = cell.appendParagraph(item.title || '');
   const titleText = titleParagraph.editAsText();
   if (titleText) {
     titleText.setFontSize(16).setBold(true).setFontFamily('Calibri');
   }
-  titleParagraph.setSpacingAfter(5);
+  titleParagraph.setSpacingAfter(4);
   
-  // Subtitle
+  // Subtitle (12px, italic)
   if (item.subtitle) {
     const subtitleParagraph = cell.appendParagraph(item.subtitle);
     const subtitleText = subtitleParagraph.editAsText();
     if (subtitleText) {
       subtitleText.setFontSize(12).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
     }
-    subtitleParagraph.setSpacingAfter(5);
+    subtitleParagraph.setSpacingAfter(4);
   }
   
-  // Author
+  // Author (12px)
   if (item.author) {
     const authorParagraph = cell.appendParagraph(item.author);
     const authorText = authorParagraph.editAsText();
     if (authorText) {
-      authorText.setFontSize(12).setForegroundColor('#000000').setFontFamily('Calibri');
+      authorText.setFontSize(12).setForegroundColor('#444444').setFontFamily('Calibri');
     }
-    authorParagraph.setSpacingAfter(5);
+    authorParagraph.setSpacingAfter(4);
   }
   
-  // Description
+  // Description (11px, truncated to ~1000 chars like HTML)
   if (item.description) {
-    const maxLength = 150;
+    const maxLength = 1000;
     const description = item.description.length > maxLength ? 
-      item.description.substring(0, maxLength) + '...' : 
+      item.description.substring(0, 997) + '...' : 
       item.description;
     
     const descParagraph = cell.appendParagraph(description);
@@ -523,24 +526,68 @@ function createProductCardWithInternal(cell, item, layout) {
     if (descText) {
       descText.setFontSize(11).setForegroundColor('#333333').setFontFamily('Calibri');
     }
-    descParagraph.setSpacingAfter(8);
+    descParagraph.setSpacingAfter(4);
   }
   
-  // Internal Images (up to 2 images side by side)
+  // Product Specs (binding, pages, dimensions) - flexbox-like display
+  const specs = [];
+  if (item.binding) specs.push(item.binding);
+  if (item.pages) specs.push(item.pages + ' pages');
+  if (item.dimensions) specs.push(item.dimensions);
+  
+  if (specs.length > 0) {
+    const specsParagraph = cell.appendParagraph(specs.join(' • '));
+    const specsText = specsParagraph.editAsText();
+    if (specsText) {
+      specsText.setFontSize(12).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+    specsParagraph.setSpacingAfter(4);
+  }
+  
+  // Product Meta (imprint, release date, discount, illustrations)
+  const metaItems = [];
+  if (item.imprint) metaItems.push('Publisher: ' + item.imprint);
+  if (item.releaseDate) metaItems.push('Release Date: ' + item.releaseDate);
+  if (item.imidis) metaItems.push('Discount: ' + item.imidis);
+  if (item.illustrations) metaItems.push('Illustrations: ' + item.illustrations);
+  
+  if (metaItems.length > 0) {
+    metaItems.forEach((meta, index) => {
+      const metaParagraph = cell.appendParagraph(meta);
+      const metaText = metaParagraph.editAsText();
+      if (metaText) {
+        metaText.setFontSize(12).setForegroundColor('#666666').setFontFamily('Calibri');
+      }
+      metaParagraph.setSpacingAfter(1);
+    });
+    cell.appendParagraph('').setSpacingAfter(4); // Gap after meta
+  }
+  
+  // Price (14px, bold, pink)
+  if (item.price) {
+    const priceParagraph = cell.appendParagraph('AUD$ ' + item.price);
+    const priceText = priceParagraph.editAsText();
+    if (priceText) {
+      priceText.setFontSize(14).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
+    }
+    priceParagraph.setSpacingAfter(4);
+  }
+  
+  // Internal Images (up to 2 images side by side) - positioned above barcode
   if (item.additionalImages && item.additionalImages.length > 0) {
     const internalImagesTable = cell.appendTable();
     internalImagesTable.setBorderWidth(0);
     const internalRow = internalImagesTable.appendTableRow();
     
-    // Add up to 2 internal images side by side
+    // Add up to 2 internal images side by side (60x80, gap 8px)
     const imagesToShow = item.additionalImages.slice(0, 2);
     imagesToShow.forEach((imageUrl) => {
       const internalCell = internalRow.appendTableCell();
-      internalCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+      internalCell.setVerticalAlignment(DocumentApp.VerticalAlignment.MIDDLE);
       internalCell.setPaddingTop(2);
       internalCell.setPaddingBottom(2);
-      internalCell.setPaddingLeft(2);
-      internalCell.setPaddingRight(2);
+      internalCell.setPaddingLeft(4); // Left/right padding creates gap
+      internalCell.setPaddingRight(4);
       
       try {
         const internalImageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
@@ -553,26 +600,17 @@ function createProductCardWithInternal(cell, item, layout) {
       }
     });
     
-    cell.appendParagraph('').setSpacingAfter(8);
+    cell.appendParagraph('').setSpacingAfter(4); // Gap after internal images
   }
   
-  // Price
-  if (item.price) {
-    const priceParagraph = cell.appendParagraph('$' + item.price);
-    const priceText = priceParagraph.editAsText();
-    if (priceText) {
-      priceText.setFontSize(14).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
-    }
-    priceParagraph.setSpacingAfter(5);
-  }
-  
-  // SKU/Barcode
+  // Barcode at bottom
   if (item.barcode) {
-    const skuParagraph = cell.appendParagraph(item.barcode);
-    const skuText = skuParagraph.editAsText();
-    if (skuText) {
-      skuText.setFontSize(12).setForegroundColor('#999999').setFontFamily('Calibri');
+    const barcodeParagraph = cell.appendParagraph(item.barcode);
+    const barcodeText = barcodeParagraph.editAsText();
+    if (barcodeText) {
+      barcodeText.setFontSize(10).setForegroundColor('#666666').setFontFamily('Calibri');
     }
+    barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   }
 }
 
