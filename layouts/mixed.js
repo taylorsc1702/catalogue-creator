@@ -38,6 +38,9 @@ function createMixedLayout(body, items, layoutAssignments, options) {
         case 2:
           create2UpLayout(body, itemsForThisPage, options);
           break;
+        case '2-int':
+          create2IntLayout(body, itemsForThisPage, options);
+          break;
         case 3:
           create3UpLayout(body, itemsForThisPage, options);
           break;

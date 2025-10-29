@@ -136,6 +136,8 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
   // Add content based on layout
   if (layout === 1) {
     createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams);
+  } else if (layout === '2-int') {
+    create2IntLayout(body, pageItems.map(p => p.item));
   } else {
     createMultiItemLayout(body, pageItems, layout);
   }

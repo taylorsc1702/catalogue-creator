@@ -19,6 +19,7 @@
 ### Layout Options
 - **1-up Layout**: Single product per page (detailed view)
 - **2-up Layout**: Two products per page
+- **2-int Layout**: Two products per page with internal image above barcode
 - **4-up Layout**: Four products per page (default)
 - **8-up Layout**: Eight products per page (compact view)
 

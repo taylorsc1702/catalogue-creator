@@ -315,6 +315,7 @@ function createMultiItemLayout(body, pageItems, layout) {
   let rows, cols;
   switch (layout) {
     case 2:
+    case '2-int':
       rows = 1; cols = 2;
       table.setColumnWidth(0, 300);
       table.setColumnWidth(1, 300);
@@ -347,7 +348,11 @@ function createMultiItemLayout(body, pageItems, layout) {
       const cell = tableRow.appendTableCell();
       
       if (index < pageItems.length && pageItems[index]) {
-        createProductCard(cell, pageItems[index], layout);
+        if (layout === '2-int') {
+          createProductCardWithInternal(cell, pageItems[index], layout);
+        } else {
+          createProductCard(cell, pageItems[index], layout);
+        }
       } else {
         // Empty cell
         cell.appendParagraph('');
@@ -448,6 +453,124 @@ function createProductCard(cell, item, layout) {
     const skuText = sku.editAsText();
     if (skuText) {
       skuText.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
+    }
+  }
+}
+
+// Create individual product card with internal image (for 2-int layout)
+function createProductCardWithInternal(cell, item, layout) {
+  // Image
+  if (item.imageUrl) {
+    try {
+      const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
+      const image = cell.appendImage(imageBlob);
+      
+      // Set image size based on layout (same as 2-up)
+      const sizes = {
+        2: { width: 175, height: 263 }, // Same as 2-up
+        '2-int': { width: 175, height: 263 }
+      };
+      
+      const size = sizes[layout] || sizes[2];
+      image.setWidth(size.width);
+      image.setHeight(size.height);
+      
+      // Add spacing after image
+      cell.appendParagraph('').setSpacingAfter(10);
+    } catch (error) {
+      console.warn('Could not load image:', item.imageUrl);
+    }
+  }
+  
+  // Title
+  const title = cell.appendParagraph(item.title);
+  const titleSizes = { 2: 16, '2-int': 16 }; // Same as 2-up
+  const titleText = title.editAsText();
+  if (titleText) {
+    titleText.setFontSize(titleSizes[layout] || 16).setBold(true).setFontFamily('Calibri');
+  }
+  title.setSpacingAfter(5);
+  
+  // Subtitle
+  if (item.subtitle) {
+    const subtitle = cell.appendParagraph(item.subtitle);
+    const subtitleSizes = { 2: 12, '2-int': 12 }; // Same as 2-up
+    const subtitleText = subtitle.editAsText();
+    if (subtitleText) {
+      subtitleText.setFontSize(subtitleSizes[layout] || 12).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+    subtitle.setSpacingAfter(5);
+  }
+  
+  // Author
+  if (item.author) {
+    const author = cell.appendParagraph(`By ${item.author}`);
+    const authorSizes = { 2: 12, '2-int': 12 }; // Same as 2-up
+    const authorText = author.editAsText();
+    if (authorText) {
+      authorText.setFontSize(authorSizes[layout] || 12).setForegroundColor('#000000').setFontFamily('Calibri');
+    }
+    author.setSpacingAfter(5);
+  }
+  
+  // Description (same as 2-up)
+  if (item.description) {
+    const maxLength = 150; // Same as 2-up
+    const description = item.description.length > maxLength ? 
+      item.description.substring(0, maxLength) + '...' : 
+      item.description;
+    
+    const desc = cell.appendParagraph(description);
+    const descSizes = { 2: 11, '2-int': 11 }; // Same as 2-up
+    const descText = desc.editAsText();
+    if (descText) {
+      descText.setFontSize(descSizes[layout] || 11).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    desc.setSpacingAfter(8);
+  }
+  
+  // Internal Image (unique to 2-int layout)
+  if (item.additionalImages && item.additionalImages.length > 0) {
+    try {
+      const internalImageBlob = UrlFetchApp.fetch(item.additionalImages[0]).getBlob();
+      const internalImage = cell.appendImage(internalImageBlob);
+      
+      // Set internal image size (smaller than main image)
+      internalImage.setWidth(60);
+      internalImage.setHeight(80);
+      
+      // Add spacing after internal image
+      cell.appendParagraph('').setSpacingAfter(5);
+    } catch (error) {
+      console.warn('Could not load internal image:', item.additionalImages[0]);
+      // Add placeholder text
+      const placeholder = cell.appendParagraph('[Internal Image]');
+      const placeholderText = placeholder.editAsText();
+      if (placeholderText) {
+        placeholderText.setFontSize(8).setItalic(true).setForegroundColor('#999999').setFontFamily('Calibri');
+      }
+      placeholder.setSpacingAfter(5);
+    }
+  }
+  
+  // Price
+  if (item.price) {
+    const price = cell.appendParagraph(`AUD$ ${item.price}`);
+    const priceSizes = { 2: 14, '2-int': 14 }; // Same as 2-up
+    const priceText = price.editAsText();
+    if (priceText) {
+      priceText.setFontSize(priceSizes[layout] || 14).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
+    }
+    price.setSpacingAfter(5);
+  }
+  
+  // SKU/Barcode
+  if (item.sku) {
+    const sku = cell.appendParagraph(`SKU: ${item.sku}`);
+    const skuSizes = { 2: 12, '2-int': 12 }; // Same as 2-up
+    const skuText = sku.editAsText();
+    if (skuText) {
+      skuText.setFontSize(skuSizes[layout] || 12).setForegroundColor('#999999').setFontFamily('Calibri');
     }
   }
 }

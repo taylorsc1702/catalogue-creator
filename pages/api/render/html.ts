@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
+      layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -211,7 +211,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
 
   // Chunk items into pages
   // Handle pagination based on layout type
-  const perPage = typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
+  const perPage = layout === '2-int' ? 2 : typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
   const pages: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) {
     pages.push(items.slice(i, i + perPage));
@@ -353,6 +353,43 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      // For 2-int layout, use vertical layout with image at top and internal image above barcode
+      if (layout === '2-int') {
+        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        
+        return `
+          <div class="product-card layout-2-vertical">
+            <div class="product-image-2up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
+            </div>
+            <div class="product-content-2up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+              ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+              ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+              <div class="product-specs">
+                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+              </div>
+              <div class="product-meta">
+                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+                ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+              </div>
+              ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              ${item.additionalImages && item.additionalImages.length > 0 ? `
+                <div class="internal-image-section">
+                  <img src="${esc(item.additionalImages[0])}" alt="Internal preview" class="internal-preview-image">
+                </div>
+              ` : ""}
               ${barcodeHtml}
             </div>
           </div>
@@ -562,7 +599,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
       </div>`;
     }
     
-    const layoutClass = layout === 1 ? "layout-1" : layout === 2 ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : "layout-4";
+    const layoutClass = layout === 1 ? "layout-1" : layout === 2 ? "layout-2" : layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : "layout-4";
     const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
     // Fill empty slots for proper grid layout
@@ -2023,6 +2060,22 @@ async function renderHtml(items: Item[], layout: 1 | 2 | 3 | 4 | 6 | 8 | 'list' 
       }
     }
   ` : ''}
+  
+  /* Internal image styles for 2-int layout */
+  .internal-image-section {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  
+  .internal-preview-image {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
 </style>
 </head>
 <body>

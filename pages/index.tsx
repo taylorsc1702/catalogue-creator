@@ -83,14 +83,14 @@ export default function Home() {
   const [collectionId, setCollectionId] = useState("");
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|2|3|4|8|'list'|'compact-list'|'table'>(4);
+  const [layout, setLayout] = useState<1|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
-  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|3|4|8}>({});
+  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|'2-int'|3|4|8}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
@@ -1118,6 +1118,7 @@ export default function Home() {
         {[1,2,3,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
+        <button onClick={()=>setLayout('2-int')} style={btn(layout==='2-int')}>2-int</button>
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
         <button onClick={()=>setLayout('table')} style={btn(layout==='table')}>📊 Table</button>
@@ -1699,13 +1700,13 @@ function btn(active = false): React.CSSProperties {
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl }: { 
   items: Item[]; 
-  layout: 1|2|3|4|8|'list'|'compact-list'|'table'; 
+  layout: 1|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
   moveItemToPosition: (index: number, newPosition: number) => void;
-  itemLayouts: {[key: number]: 1|2|3|4|8};
-  setItemLayout: (index: number, layout: 1|2|3|4|8) => void;
+  itemLayouts: {[key: number]: 1|2|'2-int'|3|4|8};
+  setItemLayout: (index: number, layout: 1|2|'2-int'|3|4|8) => void;
   clearItemLayout: (index: number) => void;
   itemBarcodeTypes: {[key: number]: "EAN-13" | "QR Code" | "None"};
   setItemBarcodeType: (index: number, barcodeType: "EAN-13" | "QR Code" | "None") => void;
@@ -1730,7 +1731,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
-  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === 'table' ? 'table' : layout;
+  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === '2-int' ? '2-int' : layout === 'table' ? 'table' : layout;
   
   // Get the handler for the current layout
   const layoutHandler = layoutRegistry.getHandler(layoutType);
@@ -1864,6 +1865,23 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       {n}
                     </button>
                   ))}
+                  <button
+                    onClick={() => itemLayouts[i] === '2-int' ? clearItemLayout(i) : setItemLayout(i, '2-int')}
+                    style={{
+                      background: itemLayouts[i] === '2-int' ? "#667eea" : "white",
+                      color: itemLayouts[i] === '2-int' ? "white" : "#667eea",
+                      border: "1px solid #667eea",
+                      borderRadius: 4,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      transition: "all 0.2s ease"
+                    }}
+                    title="Set 2-int layout for this item"
+                  >
+                    2-int
+                  </button>
                 </div>
                 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
@@ -2246,6 +2264,22 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       {l}
                     </button>
                   ))}
+                  <button
+                    onClick={() => setItemLayout(i, '2-int')}
+                    style={{
+                      border: "1px solid",
+                      borderColor: itemLayouts[i] === '2-int' ? "#667eea" : "#E9ECEF",
+                      background: itemLayouts[i] === '2-int' ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "white",
+                      color: itemLayouts[i] === '2-int' ? "white" : "#495057",
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      fontSize: 10,
+                      fontWeight: 600
+                    }}
+                  >
+                    2-int
+                  </button>
                   {itemLayouts[i] && (
                     <button
                       onClick={() => clearItemLayout(i)}

@@ -71,6 +71,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 3. **Choose Layout**: Select your preferred catalogue layout:
    - **1-up**: Single product per page (detailed view)
    - **2-up**: Two products per page
+   - **2-int**: Two products per page with internal image above barcode
    - **4-up**: Four products per page (default)
    - **8-up**: Eight products per page (compact view)
 
