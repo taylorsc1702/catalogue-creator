@@ -311,13 +311,47 @@ export function generateCoverCSS(): string {
     
     .featured-books-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
       gap: 10px;
       max-width: 250px;
       max-height: 250px;
       width: 100%;
       height: 100%;
+    }
+    
+    /* Dynamic grid layouts based on number of images */
+    .featured-books-grid.single-image {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+      max-width: 200px;
+      max-height: 300px;
+    }
+    
+    .featured-books-grid.two-images {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+      max-width: 300px;
+      max-height: 200px;
+    }
+    
+    .featured-books-grid.three-images {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      max-width: 250px;
+      max-height: 250px;
+    }
+    
+    .featured-books-grid.three-images .featured-book-image:nth-child(3),
+    .featured-books-grid.three-images .featured-book-placeholder:nth-child(3) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      max-width: 60%;
+    }
+    
+    .featured-books-grid.four-images {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      max-width: 250px;
+      max-height: 250px;
     }
     
     .featured-book-image {
@@ -413,6 +447,26 @@ export function generateCoverCSS(): string {
         gap: 10px;
       }
       
+      .featured-books-grid.single-image {
+        max-width: 180px;
+        max-height: 280px;
+      }
+      
+      .featured-books-grid.two-images {
+        max-width: 280px;
+        max-height: 180px;
+      }
+      
+      .featured-books-grid.three-images {
+        max-width: 220px;
+        max-height: 220px;
+      }
+      
+      .featured-books-grid.four-images {
+        max-width: 220px;
+        max-height: 220px;
+      }
+      
       .cover-footer {
         padding: 6px 10px;
       }
@@ -448,6 +502,26 @@ export function generateCoverHTML(data: CoverData): string {
     }
   }).join('');
   
+  // Determine grid class based on number of valid images
+  const validImageCount = coverImageUrls.filter(url => url && url.trim()).length;
+  let gridClass = 'four-images'; // default
+  
+  switch (validImageCount) {
+    case 1:
+      gridClass = 'single-image';
+      break;
+    case 2:
+      gridClass = 'two-images';
+      break;
+    case 3:
+      gridClass = 'three-images';
+      break;
+    case 4:
+    default:
+      gridClass = 'four-images';
+      break;
+  }
+  
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   
@@ -468,7 +542,7 @@ export function generateCoverHTML(data: CoverData): string {
       </div>
       
       <div class="cover-featured-books">
-        <div class="featured-books-grid">
+        <div class="featured-books-grid ${gridClass}">
           ${featuredBooks}
         </div>
       </div>
