@@ -235,7 +235,7 @@ export function generateCoverCSS(): string {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px;
+      padding: 15px;
       box-sizing: border-box;
       page-break-after: always;
       background: white;
@@ -246,14 +246,14 @@ export function generateCoverCSS(): string {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       flex-shrink: 0;
     }
     
     .cover-logo {
       flex-shrink: 0;
-      max-width: 150px;
-      max-height: 150px;
+      max-width: 120px;
+      max-height: 120px;
     }
     
     .logo-image {
@@ -264,37 +264,37 @@ export function generateCoverCSS(): string {
     
     .cover-text-content {
       flex: 1;
-      margin-left: 20px;
+      margin-left: 15px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
     
     .cover-text-1, .cover-text-2 {
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.3;
       color: #333;
       font-family: 'Calibri', sans-serif;
     }
     
     .cover-text-1 {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 600;
     }
     
     .cover-text-2 {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 400;
     }
     
     .cover-title {
       text-align: center;
-      margin: 20px 0;
+      margin: 15px 0;
       flex-shrink: 0;
     }
     
     .cover-title h1 {
-      font-size: 36px;
+      font-size: 28px;
       font-weight: bold;
       color: #333;
       margin: 0;
@@ -313,9 +313,9 @@ export function generateCoverCSS(): string {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      gap: 15px;
-      max-width: 300px;
-      max-height: 300px;
+      gap: 10px;
+      max-width: 250px;
+      max-height: 250px;
       width: 100%;
       height: 100%;
     }
@@ -341,12 +341,12 @@ export function generateCoverCSS(): string {
       justify-content: center;
       background: #f9f9f9;
       color: #666;
-      font-size: 12px;
+      font-size: 10px;
       font-family: 'Calibri', sans-serif;
     }
     
     .cover-footer {
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
       color: white;
       flex-shrink: 0;
@@ -357,15 +357,15 @@ export function generateCoverCSS(): string {
     }
     
     .website-url {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       font-family: 'Calibri', sans-serif;
       line-height: 1.2;
     }
     
     .contact-info {
-      font-size: 10px;
+      font-size: 9px;
       font-family: 'Calibri', sans-serif;
       line-height: 1.2;
     }
