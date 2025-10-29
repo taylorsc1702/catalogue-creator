@@ -112,8 +112,7 @@ export default function Home() {
   const [frontCoverText2, setFrontCoverText2] = useState("");
   const [backCoverText1, setBackCoverText1] = useState("");
   const [backCoverText2, setBackCoverText2] = useState("");
-  const [frontCoverIsbns, setFrontCoverIsbns] = useState<string[]>(["", "", "", ""]);
-  const [backCoverIsbns, setBackCoverIsbns] = useState<string[]>(["", "", "", ""]);
+  const [coverImageUrls, setCoverImageUrls] = useState<string[]>(["", "", "", ""]);
   const [coverCatalogueName, setCoverCatalogueName] = useState("");
 
   // Logo URLs for different brands
@@ -223,8 +222,7 @@ export default function Home() {
             frontCoverText2,
             backCoverText1,
             backCoverText2,
-            frontCoverIsbns,
-            backCoverIsbns,
+            coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           }
         })
@@ -286,8 +284,7 @@ export default function Home() {
             frontCoverText2,
             backCoverText1,
             backCoverText2,
-            frontCoverIsbns,
-            backCoverIsbns,
+            coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           }
         })
@@ -333,8 +330,7 @@ export default function Home() {
             frontCoverText2,
             backCoverText1,
             backCoverText2,
-            frontCoverIsbns,
-            backCoverIsbns,
+            coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           }
         })
@@ -856,8 +852,7 @@ export default function Home() {
             frontCoverText2,
             backCoverText1,
             backCoverText2,
-            frontCoverIsbns,
-            backCoverIsbns,
+            coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           }
         })
@@ -1306,19 +1301,19 @@ export default function Home() {
                 />
               </Field>
               
-              <Field label="Front Cover Featured Books (ISBNs)">
+              <Field label="Cover Images (URLs)">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  {frontCoverIsbns.map((isbn, index) => (
+                  {coverImageUrls.map((url, index) => (
                     <input
                       key={index}
-                      type="text"
-                      value={isbn}
+                      type="url"
+                      value={url}
                       onChange={(e) => {
-                        const newIsbns = [...frontCoverIsbns];
-                        newIsbns[index] = e.target.value;
-                        setFrontCoverIsbns(newIsbns);
+                        const newUrls = [...coverImageUrls];
+                        newUrls[index] = e.target.value;
+                        setCoverImageUrls(newUrls);
                       }}
-                      placeholder={`ISBN ${index + 1}`}
+                      placeholder={`Image URL ${index + 1}`}
                       style={{ 
                         border: "2px solid #E9ECEF", 
                         borderRadius: 8, 
@@ -1327,6 +1322,9 @@ export default function Home() {
                       }}
                     />
                   ))}
+                </div>
+                <div style={{ fontSize: 12, color: "#666", marginTop: 8 }}>
+                  Add 1-4 image URLs. Layout will automatically adjust based on number of images.
                 </div>
               </Field>
             </div>
@@ -1380,30 +1378,6 @@ export default function Home() {
                   }}
                 />
               </Field>
-              
-              <Field label="Back Cover Featured Books (ISBNs)">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  {backCoverIsbns.map((isbn, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      value={isbn}
-                      onChange={(e) => {
-                        const newIsbns = [...backCoverIsbns];
-                        newIsbns[index] = e.target.value;
-                        setBackCoverIsbns(newIsbns);
-                      }}
-                      placeholder={`ISBN ${index + 1}`}
-                      style={{ 
-                        border: "2px solid #E9ECEF", 
-                        borderRadius: 8, 
-                        padding: "8px 12px", 
-                        fontSize: 14
-                      }}
-                    />
-                  ))}
-                </div>
-              </Field>
             </div>
           )}
         </div>
@@ -1442,18 +1416,35 @@ export default function Home() {
                     {coverCatalogueName || catalogueName || "Product Catalogue"}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, maxWidth: 200, margin: "0 auto" }}>
-                    {frontCoverIsbns.map((isbn, index) => (
+                    {coverImageUrls.filter(url => url.trim()).map((url, index) => (
                       <div key={index} style={{ 
                         height: 60, 
                         border: "1px dashed #ccc", 
                         borderRadius: 4, 
-                        display: "flex", 
-                        alignItems: "center", 
+                        display: "flex",
+                        alignItems: "center",
                         justifyContent: "center",
                         fontSize: 10,
-                        color: "#666"
+                        color: "#666",
+                        background: "#f9f9f9"
                       }}>
-                        {isbn ? `ISBN ${index + 1}` : "Empty"}
+                        <img 
+                          src={url} 
+                          alt={`Cover ${index + 1}`}
+                          style={{ 
+                            maxWidth: "100%", 
+                            maxHeight: "100%", 
+                            objectFit: "contain" 
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <span style={{ display: 'none' }}>Image {index + 1}</span>
                       </div>
                     ))}
                   </div>
@@ -1488,18 +1479,35 @@ export default function Home() {
                     {coverCatalogueName || catalogueName || "Product Catalogue"}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, maxWidth: 200, margin: "0 auto" }}>
-                    {backCoverIsbns.map((isbn, index) => (
+                    {coverImageUrls.filter(url => url.trim()).map((url, index) => (
                       <div key={index} style={{ 
                         height: 60, 
                         border: "1px dashed #ccc", 
                         borderRadius: 4, 
-                        display: "flex", 
-                        alignItems: "center", 
+                        display: "flex",
+                        alignItems: "center",
                         justifyContent: "center",
                         fontSize: 10,
-                        color: "#666"
+                        color: "#666",
+                        background: "#f9f9f9"
                       }}>
-                        {isbn ? `ISBN ${index + 1}` : "Empty"}
+                        <img 
+                          src={url} 
+                          alt={`Cover ${index + 1}`}
+                          style={{ 
+                            maxWidth: "100%", 
+                            maxHeight: "100%", 
+                            objectFit: "contain" 
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <span style={{ display: 'none' }}>Image {index + 1}</span>
                       </div>
                     ))}
                   </div>
