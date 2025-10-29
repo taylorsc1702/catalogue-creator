@@ -861,6 +861,23 @@ function renderMixedGoogleDocsHtml(
     margin-top: 4px;
   }
   
+  /* Internal image styles for 2-int layout */
+  .internal-image-section {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  
+  .internal-preview-image {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
   @media print {
     .page {
       page-break-after: always;
