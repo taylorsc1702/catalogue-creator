@@ -230,65 +230,71 @@ export function generateCoverCSS(): string {
   return `
     .cover-page {
       width: 100%;
-      height: 100vh;
+      min-height: 100vh;
+      max-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 40px;
+      padding: 20px;
       box-sizing: border-box;
       page-break-after: always;
       background: white;
+      overflow: hidden;
     }
     
     .cover-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
     }
     
     .cover-logo {
       flex-shrink: 0;
+      max-width: 150px;
+      max-height: 150px;
     }
     
     .logo-image {
-      max-width: 200px;
-      max-height: 200px;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
     }
     
     .cover-text-content {
       flex: 1;
-      margin-left: 40px;
+      margin-left: 20px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 10px;
     }
     
     .cover-text-1, .cover-text-2 {
-      font-size: 18px;
-      line-height: 1.6;
+      font-size: 16px;
+      line-height: 1.4;
       color: #333;
       font-family: 'Calibri', sans-serif;
     }
     
     .cover-text-1 {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 600;
     }
     
     .cover-text-2 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 400;
     }
     
     .cover-title {
       text-align: center;
-      margin: 40px 0;
+      margin: 20px 0;
+      flex-shrink: 0;
     }
     
     .cover-title h1 {
-      font-size: 48px;
+      font-size: 36px;
       font-weight: bold;
       color: #333;
       margin: 0;
@@ -300,43 +306,50 @@ export function generateCoverCSS(): string {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 0;
     }
     
     .featured-books-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      gap: 30px;
-      max-width: 400px;
+      gap: 15px;
+      max-width: 300px;
+      max-height: 300px;
+      width: 100%;
+      height: 100%;
     }
     
     .featured-book-image {
       width: 100%;
-      height: 200px;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .featured-book-placeholder {
       width: 100%;
-      height: 200px;
-      border: 2px dashed #ccc;
-      border-radius: 8px;
+      height: 100%;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f9f9f9;
       color: #666;
-      font-size: 14px;
+      font-size: 12px;
       font-family: 'Calibri', sans-serif;
     }
     
     .cover-footer {
-      padding: 12px 16px;
-      border-radius: 8px;
+      padding: 8px 12px;
+      border-radius: 4px;
       color: white;
+      flex-shrink: 0;
     }
     
     .footer-content {
@@ -344,99 +357,72 @@ export function generateCoverCSS(): string {
     }
     
     .website-url {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-family: 'Calibri', sans-serif;
       line-height: 1.2;
     }
     
     .contact-info {
-      font-size: 12px;
+      font-size: 10px;
       font-family: 'Calibri', sans-serif;
       line-height: 1.2;
     }
     
     .phone, .email {
-      margin-bottom: 5px;
+      margin-bottom: 2px;
     }
     
-    /* Dynamic cover layouts based on number of images */
-    .cover-layout-single .cover-image-single {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
-    
-    .cover-layout-single .cover-image-single img {
-      max-width: 60%;
-      max-height: 80%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .cover-layout-dual .cover-image-dual {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      height: 100%;
-      padding: 20px;
-    }
-    
-    .cover-layout-dual .cover-image-dual img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .cover-layout-triple .cover-image-triple {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 15px;
-      height: 100%;
-      padding: 20px;
-    }
-    
-    .cover-layout-triple .cover-image-triple img:nth-child(3) {
-      grid-column: 1 / -1;
-      justify-self: center;
-      max-width: 50%;
-    }
-    
-    .cover-layout-triple .cover-image-triple img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .cover-layout-quad .cover-image-quad {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 15px;
-      height: 100%;
-      padding: 20px;
-    }
-    
-    .cover-layout-quad .cover-image-quad img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
+    /* Print-specific styles */
     @media print {
       .cover-page {
         page-break-after: always;
+        page-break-inside: avoid;
         height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        margin: 0;
+        padding: 15px;
+      }
+      
+      .cover-header {
+        margin-bottom: 15px;
+      }
+      
+      .cover-logo {
+        max-width: 120px;
+        max-height: 120px;
+      }
+      
+      .cover-text-1 {
+        font-size: 18px;
+      }
+      
+      .cover-text-2 {
+        font-size: 16px;
+      }
+      
+      .cover-title h1 {
+        font-size: 28px;
+      }
+      
+      .featured-books-grid {
+        max-width: 250px;
+        max-height: 250px;
+        gap: 10px;
+      }
+      
+      .cover-footer {
+        padding: 6px 10px;
+      }
+      
+      .website-url {
+        font-size: 12px;
+      }
+      
+      .contact-info {
+        font-size: 9px;
       }
     }
   `;
@@ -453,70 +439,48 @@ export function generateCoverHTML(data: CoverData): string {
   const imageCount = coverImageUrls.length;
   const logoUrl = getLogoUrl(data.hyperlinkToggle);
   
-  // Determine layout based on number of images
-  let imageLayout = '';
-  let imageContainerClass = '';
+  // Generate featured book images using the same structure as the old system
+  const featuredBooks = coverImageUrls.slice(0, 4).map((url, index) => {
+    if (url && url.trim()) {
+      return `<img src="${url}" alt="Cover Image ${index + 1}" class="featured-book-image" />`;
+    } else {
+      return `<div class="featured-book-placeholder">Image ${index + 1}</div>`;
+    }
+  }).join('');
   
-  switch (imageCount) {
-    case 1:
-      imageLayout = `
-        <div class="cover-image-single">
-          <img src="${coverImageUrls[0]}" alt="Cover Image" />
-        </div>
-      `;
-      imageContainerClass = 'cover-layout-single';
-      break;
-      
-    case 2:
-      imageLayout = `
-        <div class="cover-image-dual">
-          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
-          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
-        </div>
-      `;
-      imageContainerClass = 'cover-layout-dual';
-      break;
-      
-    case 3:
-      imageLayout = `
-        <div class="cover-image-triple">
-          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
-          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
-          <img src="${coverImageUrls[2]}" alt="Cover Image 3" />
-        </div>
-      `;
-      imageContainerClass = 'cover-layout-triple';
-      break;
-      
-    case 4:
-    default:
-      imageLayout = `
-        <div class="cover-image-quad">
-          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
-          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
-          <img src="${coverImageUrls[2]}" alt="Cover Image 3" />
-          <img src="${coverImageUrls[3]}" alt="Cover Image 4" />
-        </div>
-      `;
-      imageContainerClass = 'cover-layout-quad';
-      break;
-  }
+  const esc = (s?: string) =>
+    (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   
   return `
-    <div class="cover-page ${imageContainerClass}">
-      <div class="cover-header" style="background-color: ${bannerColor};">
-        <img src="${logoUrl}" alt="Logo" class="cover-logo" />
-        <h1 class="cover-title">${frontCoverText1}</h1>
-        <h2 class="cover-subtitle">${frontCoverText2}</h2>
+    <div class="cover-page">
+      <div class="cover-header">
+        <div class="cover-logo">
+          <img src="${esc(logoUrl)}" alt="Logo" class="logo-image" />
+        </div>
+        <div class="cover-text-content">
+          ${frontCoverText1 ? `<div class="cover-text-1">${esc(frontCoverText1)}</div>` : ''}
+          ${frontCoverText2 ? `<div class="cover-text-2">${esc(frontCoverText2)}</div>` : ''}
+        </div>
       </div>
       
-      <div class="cover-content">
-        ${imageLayout}
+      <div class="cover-title">
+        <h1>${esc(catalogueName || 'Product Catalogue')}</h1>
+      </div>
+      
+      <div class="cover-featured-books">
+        <div class="featured-books-grid">
+          ${featuredBooks}
+        </div>
       </div>
       
       <div class="cover-footer" style="background-color: ${bannerColor};">
-        <div class="cover-website">${websiteName}</div>
-        <div class="cover-catalogue">${catalogueName}</div>
+        <div class="footer-content">
+          <div class="website-url">${esc(websiteName)}</div>
+          <div class="contact-info">
+            <div class="phone">Phone: (02) 8445 2300</div>
+            <div class="email">Email: Info@woodslane.com.au</div>
+          </div>
+        </div>
       </div>
     </div>
   `;
