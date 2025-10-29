@@ -692,8 +692,13 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
     const logoCell = headerRow.appendTableCell();
     const textCell = headerRow.appendTableCell();
     
-    logoCell.setWidth(120);
-    logoCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+    // Set cell properties safely
+    try {
+      logoCell.setWidth(120);
+      logoCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+    } catch (error) {
+      console.log('Error setting logo cell properties:', error);
+    }
     
     // Add logo
     try {
@@ -703,11 +708,17 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
       logoImage.setHeight(100);
     } catch (error) {
       console.log('Could not load logo:', error);
+      // Add placeholder text if logo fails
+      logoCell.appendParagraph('[Logo]');
     }
     
     // Add text content (right-aligned)
-    textCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-    textCell.setPaddingLeft(20);
+    try {
+      textCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+      textCell.setPaddingLeft(20);
+    } catch (error) {
+      console.log('Error setting text cell properties:', error);
+    }
     
     if (text1) {
       const text1Para = textCell.appendParagraph(text1);
@@ -757,27 +768,34 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
     for (let r = 0; r < rows; r++) {
       const row = imagesTable.appendTableRow();
       for (let c = 0; c < cols; c++) {
-        const cell = row.appendTableCell();
+      const cell = row.appendTableCell();
+      
+      // Determine which image to show first
+      let imageIndex = -1;
+      if (imageCount === 1) {
+        imageIndex = 0;
+      } else if (imageCount === 2) {
+        imageIndex = c;
+      } else if (imageCount === 3) {
+        if (r === 0) imageIndex = c;
+        else if (r === 1 && c === 0) imageIndex = 2;
+      } else {
+        imageIndex = r * cols + c;
+      }
+      
+      // Set cell properties safely (after cell is created)
+      try {
         cell.setVerticalAlignment(DocumentApp.VerticalAlignment.MIDDLE);
         cell.setPaddingTop(5);
         cell.setPaddingBottom(5);
         cell.setPaddingLeft(5);
         cell.setPaddingRight(5);
+      } catch (error) {
+        console.log('Error setting image cell properties:', error);
+      }
         
-        // Determine which image to show
-        let imageIndex = -1;
-        if (imageCount === 1) {
-          imageIndex = 0;
-        } else if (imageCount === 2) {
-          imageIndex = c;
-        } else if (imageCount === 3) {
-          if (r === 0) imageIndex = c;
-          else if (r === 1 && c === 0) imageIndex = 2;
-        } else {
-          imageIndex = r * cols + c;
-        }
-        
-        if (imageIndex >= 0 && imageIndex < validUrls.length) {
+      // Only process cells that should have images
+      if (imageIndex >= 0 && imageIndex < validUrls.length) {
           try {
             const imageBlob = UrlFetchApp.fetch(validUrls[imageIndex]).getBlob();
             const image = cell.appendImage(imageBlob);
@@ -793,19 +811,14 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
               image.setWidth(200);
               image.setHeight(250);
             }
-            
-            // Center image
-            const imagePara = cell.getChild(cell.getNumChildren() - 1);
-            if (imagePara && imagePara.getType() === DocumentApp.ElementType.PARAGRAPH) {
-              imagePara.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-            }
           } catch (error) {
             console.log('Could not load cover image:', validUrls[imageIndex]);
             const placeholder = cell.appendParagraph('[Cover Image]');
             placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           }
-        } else if (imageCount === 3 && r === 1 && c === 1) {
-          // Empty cell for 3-image layout - leave empty
+        } else {
+          // Empty cell (like in 3-image layout at position 1,1)
+          // Add empty paragraph to ensure cell has content
           cell.appendParagraph('');
         }
       }
