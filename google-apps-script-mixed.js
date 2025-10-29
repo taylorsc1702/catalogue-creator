@@ -436,14 +436,24 @@ function create2IntLayout(body, items) {
   // Create table for 2-column layout
   const table = body.appendTable();
   table.setBorderWidth(0);
-  table.setColumnWidth(0, 300);
-  table.setColumnWidth(1, 300);
   
+  // Build the structure first (rows and cells must exist before setting column widths)
   const row = table.appendTableRow();
+  const cell0 = row.appendTableCell();
+  const cell1 = row.appendTableCell();
   
-  // Create cells for 2 items
-  for (let i = 0; i < 2; i++) {
-    const cell = row.appendTableCell();
+  // NOW it's safe to set column widths
+  // (Docs only knows a column exists after at least one row/cell is added)
+  try {
+    table.setColumnWidth(0, 300);
+    table.setColumnWidth(1, 300);
+  } catch (e) {
+    // Some domains don't support setColumnWidth; fail soft
+    console.log('setColumnWidth not supported or failed:', e);
+  }
+  
+  // Configure cells and add content
+  [cell0, cell1].forEach((cell, i) => {
     cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
     cell.setPaddingTop(10);
     cell.setPaddingBottom(10);
@@ -453,7 +463,7 @@ function create2IntLayout(body, items) {
     if (i < items.length) {
       createProductCardWithInternal(cell, items[i], '2-int');
     }
-  }
+  });
 }
 
 // Create product card with internal images (for 2-int layout)
@@ -749,7 +759,14 @@ function createCoverPage(body, coverData, bannerColor, websiteName, hyperlinkTog
     // Create images grid based on count
     const imagesTable = body.appendTable();
     imagesTable.setBorderWidth(0);
-    imagesTable.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    
+    // Try to set alignment (not supported in all Google Apps Script domains)
+    try {
+      imagesTable.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    } catch (e) {
+      // setAlignment not supported; fail soft
+      console.log('setAlignment not supported or failed:', e);
+    }
     
     // Determine grid layout
     let rows, cols;
