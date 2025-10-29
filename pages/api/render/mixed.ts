@@ -28,8 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         frontCoverText2: string;
         backCoverText1: string;
         backCoverText2: string;
-        frontCoverIsbns: string[];
-        backCoverIsbns: string[];
+        coverImageUrls: string[]; // New: Direct image URLs
         catalogueName: string;
       };
     };
@@ -54,8 +53,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   frontCoverText2: string;
   backCoverText1: string;
   backCoverText2: string;
-  frontCoverIsbns: string[];
-  backCoverIsbns: string[];
+  coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
 }) {
   const options: RenderOptions = {
@@ -136,43 +134,28 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   
   if (coverData) {
     // Import cover generation functions
-    const { generateFrontCoverHTML, generateBackCoverHTML, lookupISBN } = await import('../../../utils/cover-generator');
+    const { generateCoverHTML } = await import('../../../utils/cover-generator');
     
-    // Lookup ISBNs for front cover
-    let frontCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
-    if (coverData.showFrontCover && coverData.frontCoverIsbns.some(isbn => isbn.trim())) {
-      const frontPromises = coverData.frontCoverIsbns.map(isbn => 
-        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
-      );
-      frontCoverResults = await Promise.all(frontPromises);
-    }
-    
-    // Lookup ISBNs for back cover
-    let backCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
-    if (coverData.showBackCover && coverData.backCoverIsbns.some(isbn => isbn.trim())) {
-      const backPromises = coverData.backCoverIsbns.map(isbn => 
-        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
-      );
-      backCoverResults = await Promise.all(backPromises);
-    }
-    
-    // Generate cover HTML
-    if (coverData.showFrontCover) {
-      frontCoverHtml = generateFrontCoverHTML({
+    // Generate cover HTML using direct image URLs
+    if (coverData.showFrontCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      frontCoverHtml = generateCoverHTML({
         ...coverData,
         hyperlinkToggle,
         bannerColor: bannerColor || '#F7981D',
         websiteName: websiteName || 'www.woodslane.com.au'
-      }, frontCoverResults);
+      });
     }
     
-    if (coverData.showBackCover) {
-      backCoverHtml = generateBackCoverHTML({
+    // Generate back cover HTML using the same URLs
+    if (coverData.showBackCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      backCoverHtml = generateCoverHTML({
         ...coverData,
+        frontCoverText1: coverData.backCoverText1,
+        frontCoverText2: coverData.backCoverText2,
         hyperlinkToggle,
         bannerColor: bannerColor || '#F7981D',
         websiteName: websiteName || 'www.woodslane.com.au'
-      }, backCoverResults);
+      });
     }
   }
 

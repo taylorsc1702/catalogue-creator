@@ -631,32 +631,37 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   
   if (coverData) {
     // Import cover generation functions
-    const { generateCoverHTML, generateCoverCSS } = await import('../../../utils/cover-generator');
+    const { generateCoverHTML } = await import('../../../utils/cover-generator');
     
-    // Suppress unused variable warning
-    void generateCoverCSS;
-    
-    // Lookup ISBNs for front cover
-    let frontCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
-    console.log('Front cover enabled:', coverData.showFrontCover);
-    console.log('Front cover ISBNs:', coverData.frontCoverIsbns);
-    
-    if (coverData.showFrontCover && coverData.frontCoverIsbns.some(isbn => isbn.trim())) {
-      console.log('Looking up front cover ISBNs...');
-      const frontPromises = coverData.frontCoverIsbns.map(isbn => 
-        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
-      );
-      frontCoverResults = await Promise.all(frontPromises);
-      console.log('Front cover results:', frontCoverResults);
+    // Generate cover HTML using direct image URLs
+    if (coverData.showFrontCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      console.log('Generating front cover HTML with URLs...');
+      console.log('Cover image URLs:', coverData.coverImageUrls);
+      
+      frontCoverHtml = generateCoverHTML({
+        ...coverData,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      });
+      
+      console.log('Front cover HTML length:', frontCoverHtml.length);
     }
     
-    // Lookup ISBNs for back cover
-    let backCoverResults: Array<{ success: boolean; imageUrl?: string; title?: string; author?: string; error?: string }> = [];
-    if (coverData.showBackCover && coverData.backCoverIsbns.some(isbn => isbn.trim())) {
-      const backPromises = coverData.backCoverIsbns.map(isbn => 
-        isbn.trim() ? lookupISBN(isbn) : Promise.resolve({ success: false })
-      );
-      backCoverResults = await Promise.all(backPromises);
+    // Generate back cover HTML using the same URLs
+    if (coverData.showBackCover && coverData.coverImageUrls && coverData.coverImageUrls.length > 0) {
+      console.log('Generating back cover HTML with URLs...');
+      
+      backCoverHtml = generateCoverHTML({
+        ...coverData,
+        frontCoverText1: coverData.backCoverText1,
+        frontCoverText2: coverData.backCoverText2,
+        hyperlinkToggle,
+        bannerColor: bannerColor || '#F7981D',
+        websiteName: websiteName || 'www.woodslane.com.au'
+      });
+      
+      console.log('Back cover HTML length:', backCoverHtml.length);
     }
     
     // Generate cover HTML
@@ -666,27 +671,28 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
         showFrontCover: coverData.showFrontCover,
         frontCoverText1: coverData.frontCoverText1,
         frontCoverText2: coverData.frontCoverText2,
-        catalogueName: coverData.catalogueName,
-        frontCoverIsbns: coverData.frontCoverIsbns
+        catalogueName: coverData.catalogueName
       });
-      frontCoverHtml = generateFrontCoverHTML({
+      frontCoverHtml = generateCoverHTML({
         ...coverData,
         hyperlinkToggle,
         bannerColor: bannerColor || '#F7981D',
         websiteName: websiteName || 'www.woodslane.com.au'
-      }, frontCoverResults);
+      });
       console.log('Front cover HTML length:', frontCoverHtml.length);
       console.log('Front cover HTML preview:', frontCoverHtml.substring(0, 200));
     }
     
     if (coverData.showBackCover) {
       console.log('Generating back cover HTML...');
-      backCoverHtml = generateBackCoverHTML({
+      backCoverHtml = generateCoverHTML({
         ...coverData,
+        frontCoverText1: coverData.backCoverText1,
+        frontCoverText2: coverData.backCoverText2,
         hyperlinkToggle,
         bannerColor: bannerColor || '#F7981D',
         websiteName: websiteName || 'www.woodslane.com.au'
-      }, backCoverResults);
+      });
       console.log('Back cover HTML length:', backCoverHtml.length);
     }
   }
