@@ -7,8 +7,7 @@ export type CoverData = {
   frontCoverText2: string;
   backCoverText1: string;
   backCoverText2: string;
-  frontCoverIsbns: string[];
-  backCoverIsbns: string[];
+  coverImageUrls: string[]; // New: Direct image URLs instead of ISBNs
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   bannerColor: string;
   websiteName: string;
@@ -362,11 +361,163 @@ export function generateCoverCSS(): string {
       margin-bottom: 5px;
     }
     
+    /* Dynamic cover layouts based on number of images */
+    .cover-layout-single .cover-image-single {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    
+    .cover-layout-single .cover-image-single img {
+      max-width: 60%;
+      max-height: 80%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .cover-layout-dual .cover-image-dual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      height: 100%;
+      padding: 20px;
+    }
+    
+    .cover-layout-dual .cover-image-dual img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .cover-layout-triple .cover-image-triple {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 15px;
+      height: 100%;
+      padding: 20px;
+    }
+    
+    .cover-layout-triple .cover-image-triple img:nth-child(3) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      max-width: 50%;
+    }
+    
+    .cover-layout-triple .cover-image-triple img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .cover-layout-quad .cover-image-quad {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 15px;
+      height: 100%;
+      padding: 20px;
+    }
+    
+    .cover-layout-quad .cover-image-quad img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
     @media print {
       .cover-page {
         page-break-after: always;
         height: 100vh;
       }
     }
+  `;
+}
+
+// Generate cover HTML based on number of images (1, 2, 3, or 4)
+export function generateCoverHTML(data: CoverData): string {
+  const { coverImageUrls, frontCoverText1, frontCoverText2, catalogueName, bannerColor, websiteName } = data;
+  
+  if (!coverImageUrls || coverImageUrls.length === 0) {
+    return '';
+  }
+  
+  const imageCount = coverImageUrls.length;
+  const logoUrl = getLogoUrl(data.hyperlinkToggle);
+  
+  // Determine layout based on number of images
+  let imageLayout = '';
+  let imageContainerClass = '';
+  
+  switch (imageCount) {
+    case 1:
+      imageLayout = `
+        <div class="cover-image-single">
+          <img src="${coverImageUrls[0]}" alt="Cover Image" />
+        </div>
+      `;
+      imageContainerClass = 'cover-layout-single';
+      break;
+      
+    case 2:
+      imageLayout = `
+        <div class="cover-image-dual">
+          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
+          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
+        </div>
+      `;
+      imageContainerClass = 'cover-layout-dual';
+      break;
+      
+    case 3:
+      imageLayout = `
+        <div class="cover-image-triple">
+          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
+          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
+          <img src="${coverImageUrls[2]}" alt="Cover Image 3" />
+        </div>
+      `;
+      imageContainerClass = 'cover-layout-triple';
+      break;
+      
+    case 4:
+    default:
+      imageLayout = `
+        <div class="cover-image-quad">
+          <img src="${coverImageUrls[0]}" alt="Cover Image 1" />
+          <img src="${coverImageUrls[1]}" alt="Cover Image 2" />
+          <img src="${coverImageUrls[2]}" alt="Cover Image 3" />
+          <img src="${coverImageUrls[3]}" alt="Cover Image 4" />
+        </div>
+      `;
+      imageContainerClass = 'cover-layout-quad';
+      break;
+  }
+  
+  return `
+    <div class="cover-page ${imageContainerClass}">
+      <div class="cover-header" style="background-color: ${bannerColor};">
+        <img src="${logoUrl}" alt="Logo" class="cover-logo" />
+        <h1 class="cover-title">${frontCoverText1}</h1>
+        <h2 class="cover-subtitle">${frontCoverText2}</h2>
+      </div>
+      
+      <div class="cover-content">
+        ${imageLayout}
+      </div>
+      
+      <div class="cover-footer" style="background-color: ${bannerColor};">
+        <div class="cover-website">${websiteName}</div>
+        <div class="cover-catalogue">${catalogueName}</div>
+      </div>
+    </div>
   `;
 }

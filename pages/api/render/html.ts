@@ -38,8 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         frontCoverText2: string;
         backCoverText1: string;
         backCoverText2: string;
-        frontCoverIsbns: string[];
-        backCoverIsbns: string[];
+        coverImageUrls: string[]; // New: Direct image URLs
         catalogueName: string;
       };
     };
@@ -66,8 +65,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   frontCoverText2: string;
   backCoverText1: string;
   backCoverText2: string;
-  frontCoverIsbns: string[];
-  backCoverIsbns: string[];
+  coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
 }) {
   
@@ -633,7 +631,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   
   if (coverData) {
     // Import cover generation functions
-    const { generateFrontCoverHTML, generateBackCoverHTML, generateCoverCSS, lookupISBN } = await import('../../../utils/cover-generator');
+    const { generateCoverHTML, generateCoverCSS } = await import('../../../utils/cover-generator');
     
     // Suppress unused variable warning
     void generateCoverCSS;
