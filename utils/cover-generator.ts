@@ -300,10 +300,12 @@ export function generateCoverCSS(): string {
     
     .cover-text-content {
       flex: 1;
-      margin-left: 15px;
+      margin-right: 0;
+      margin-left: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
+      text-align: right;
     }
     
     .cover-text-1, .cover-text-2 {
@@ -358,15 +360,15 @@ export function generateCoverCSS(): string {
     .featured-books-grid.single-image {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr;
-      max-width: 200px;
-      max-height: 300px;
+      max-width: 400px;
+      max-height: 600px;
     }
     
     .featured-books-grid.two-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr;
-      max-width: 300px;
-      max-height: 200px;
+      max-width: 450px;
+      max-height: 300px;
     }
     
     .featured-books-grid.three-images {
@@ -486,13 +488,13 @@ export function generateCoverCSS(): string {
       }
       
       .featured-books-grid.single-image {
-        max-width: 180px;
-        max-height: 280px;
+        max-width: 360px;
+        max-height: 560px;
       }
       
       .featured-books-grid.two-images {
-        max-width: 280px;
-        max-height: 180px;
+        max-width: 420px;
+        max-height: 270px;
       }
       
       .featured-books-grid.three-images {
