@@ -165,25 +165,29 @@ export function create2IntLayoutHandler(): LayoutHandler {
               {item.imprint && <span>🏢 {item.imprint}</span>}
               {item.weight && <span>⚖️ {item.weight}</span>}
             </div>
-            {/* Internal image section */}
+            {/* Internal images section */}
             {item.additionalImages && item.additionalImages.length > 0 && (
               <div style={{
                 marginTop: 8,
                 display: "flex",
-                justifyContent: "center"
+                justifyContent: "center",
+                gap: 8
               }}>
-                <Image 
-                  src={item.additionalImages[0]} 
-                  alt="Internal preview"
-                  width={60}
-                  height={80}
-                  style={{ 
-                    objectFit: "cover", 
-                    borderRadius: 4, 
-                    background: "#F8F9FA",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-                  }}
-                />
+                {item.additionalImages.slice(0, 2).map((img, idx) => (
+                  <Image 
+                    key={idx}
+                    src={img} 
+                    alt={`Internal preview ${idx + 1}`}
+                    width={60}
+                    height={80}
+                    style={{ 
+                      objectFit: "cover", 
+                      borderRadius: 4, 
+                      background: "#F8F9FA",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -217,7 +221,9 @@ export function create2IntLayoutHandler(): LayoutHandler {
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
             ${item.additionalImages && item.additionalImages.length > 0 ? `
               <div class="internal-image">
-                <img src="${esc(item.additionalImages[0])}" alt="Internal preview" class="internal-preview">
+                ${item.additionalImages.slice(0, 2).map((img, idx) => 
+                  `<img src="${esc(img)}" alt="Internal preview ${idx + 1}" class="internal-preview">`
+                ).join('')}
               </div>
             ` : ""}
             ${barcodeHtml || ''}
@@ -372,7 +378,7 @@ export function create2IntLayoutHandler(): LayoutHandler {
           paragraphs.push(new Paragraph({
             children: [
               new TextRun({
-                text: "[Internal Image Preview]",
+                text: "[Internal Images Preview - 2 side by side]",
                 size: 10,
                 color: "999999",
                 italics: true,
@@ -485,6 +491,7 @@ export function create2IntLayoutHandler(): LayoutHandler {
       .internal-image {
         display: flex;
         justify-content: center;
+        gap: 8px;
         margin: 8px 0;
       }
       .internal-preview {

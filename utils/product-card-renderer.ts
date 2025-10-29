@@ -425,7 +425,9 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
         ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
         ${item.additionalImages && item.additionalImages.length > 0 ? `
           <div class="internal-image-section">
-            <img src="${esc(item.additionalImages[0])}" alt="Internal preview" class="internal-preview-image">
+            ${item.additionalImages.slice(0, 2).map((img, idx) => 
+              `<img src="${esc(img)}" alt="Internal preview ${idx + 1}" class="internal-preview-image">`
+            ).join('')}
           </div>
         ` : ""}
         ${barcodeHtml}

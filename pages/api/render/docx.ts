@@ -791,25 +791,56 @@ function createProductCell(
     }
   }
 
-  // Add internal image for 2-int layout
+  // Add internal images for 2-int layout (up to 2 images side by side)
   if (layout === '2-int' && additionalImagesData && additionalImagesData.length > 0) {
     try {
-      const internalImageRun = new ImageRun({
-        data: additionalImagesData[0].base64,
-        transformation: {
-          width: 60,  // Same size as HTML
-          height: 80,
+      // Create a table to display two images side by side
+      const internalImagesTable = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: BorderStyle.NONE },
+          bottom: { style: BorderStyle.NONE },
+          left: { style: BorderStyle.NONE },
+          right: { style: BorderStyle.NONE },
         },
-        type: "png",
+        rows: [
+          new TableRow({
+            children: additionalImagesData.slice(0, 2).map(imgData => 
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new ImageRun({
+                        data: imgData.base64,
+                        transformation: {
+                          width: 60,  // Same size as HTML
+                          height: 80,
+                        },
+                        type: "png",
+                      })
+                    ],
+                    alignment: AlignmentType.CENTER,
+                  })
+                ],
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                borders: {
+                  top: { style: BorderStyle.NONE },
+                  bottom: { style: BorderStyle.NONE },
+                  left: { style: BorderStyle.NONE },
+                  right: { style: BorderStyle.NONE },
+                },
+              })
+            )
+          })
+        ]
       });
       
       paragraphs.push(new Paragraph({
-        children: [internalImageRun],
-        alignment: AlignmentType.CENTER,
+        children: [internalImagesTable],
         spacing: { before: 200, after: 150 },
       }));
     } catch (error) {
-      console.warn(`Failed to create internal image for ${item.title}:`, error);
+      console.warn(`Failed to create internal images for ${item.title}:`, error);
     }
   }
 

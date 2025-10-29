@@ -529,26 +529,58 @@ function createProductCardWithInternal(cell, item, layout) {
     desc.setSpacingAfter(8);
   }
   
-  // Internal Image (unique to 2-int layout)
+  // Internal Images (unique to 2-int layout) - up to 2 images side by side
   if (item.additionalImages && item.additionalImages.length > 0) {
     try {
-      const internalImageBlob = UrlFetchApp.fetch(item.additionalImages[0]).getBlob();
-      const internalImage = cell.appendImage(internalImageBlob);
+      // Create a table to display two images side by side
+      const internalImagesTable = cell.appendTable();
+      internalImagesTable.setBorderWidth(0);
       
-      // Set internal image size (smaller than main image)
-      internalImage.setWidth(60);
-      internalImage.setHeight(80);
+      const internalRow = internalImagesTable.appendTableRow();
       
-      // Add spacing after internal image
+      // Add up to 2 internal images
+      const imagesToShow = item.additionalImages.slice(0, 2);
+      imagesToShow.forEach((imageUrl, index) => {
+        const internalCell = internalRow.appendTableCell();
+        internalCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+        internalCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
+        
+        try {
+          const internalImageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
+          const internalImage = internalCell.appendImage(internalImageBlob);
+          
+          // Set internal image size (smaller than main image)
+          internalImage.setWidth(60);
+          internalImage.setHeight(80);
+          
+          // Center the internal image
+          const internalImageParagraph = internalCell.getChild(0);
+          if (internalImageParagraph && internalImageParagraph.getType() === DocumentApp.ElementType.PARAGRAPH) {
+            internalImageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+          }
+        } catch (error) {
+          console.warn('Could not load internal image:', imageUrl);
+          // Add placeholder text
+          const placeholder = internalCell.appendParagraph('[Internal Image]');
+          const placeholderText = placeholder.editAsText();
+          if (placeholderText) {
+            placeholderText.setFontSize(8).setItalic(true).setForegroundColor('#999999').setFontFamily('Calibri');
+          }
+          placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+        }
+      });
+      
+      // Add spacing after internal images
       cell.appendParagraph('').setSpacingAfter(5);
     } catch (error) {
-      console.warn('Could not load internal image:', item.additionalImages[0]);
-      // Add placeholder text
-      const placeholder = cell.appendParagraph('[Internal Image]');
+      console.warn('Could not create internal images table:', error);
+      // Fallback: add placeholder text
+      const placeholder = cell.appendParagraph('[Internal Images]');
       const placeholderText = placeholder.editAsText();
       if (placeholderText) {
         placeholderText.setFontSize(8).setItalic(true).setForegroundColor('#999999').setFontFamily('Calibri');
       }
+      placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
       placeholder.setSpacingAfter(5);
     }
   }

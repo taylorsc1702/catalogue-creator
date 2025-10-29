@@ -387,7 +387,9 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
               ${item.additionalImages && item.additionalImages.length > 0 ? `
                 <div class="internal-image-section">
-                  <img src="${esc(item.additionalImages[0])}" alt="Internal preview" class="internal-preview-image">
+                  ${item.additionalImages.slice(0, 2).map((img, idx) => 
+                    `<img src="${esc(img)}" alt="Internal preview ${idx + 1}" class="internal-preview-image">`
+                  ).join('')}
                 </div>
               ` : ""}
               ${barcodeHtml}
@@ -2065,6 +2067,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   .internal-image-section {
     display: flex;
     justify-content: center;
+    gap: 8px;
     margin: 8px 0;
   }
   

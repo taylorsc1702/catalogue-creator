@@ -117,29 +117,51 @@ function createProductCardWithInternal(cell, item, layout) {
       createProductDetailsTable(contentCell, item, layout);
     }
     
-    // === INTERNAL IMAGE SECTION ===
+    // === INTERNAL IMAGES SECTION (up to 2 images side by side) ===
     if (item.additionalImages && item.additionalImages.length > 0) {
       try {
-        const internalImageBlob = UrlFetchApp.fetch(item.additionalImages[0]).getBlob();
-        const internalImage = internalImageCell.appendImage(internalImageBlob);
+        // Create a table to display two images side by side
+        const internalImagesTable = internalImageCell.appendTable();
+        internalImagesTable.setBorderWidth(0);
         
-        // Set internal image size (smaller than main image)
-        const internalSize = getImageSize('internal', layout);
-        internalImage.setWidth(internalSize.width);
-        internalImage.setHeight(internalSize.height);
+        const internalRow = internalImagesTable.appendTableRow();
         
-        // Center the internal image
-        const internalImageParagraph = internalImageCell.getChild(0);
-        if (internalImageParagraph && internalImageParagraph.getType() === DocumentApp.ElementType.PARAGRAPH) {
-          internalImageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-        }
+        // Add up to 2 internal images
+        const imagesToShow = item.additionalImages.slice(0, 2);
+        imagesToShow.forEach((imageUrl, index) => {
+          const internalCell = internalRow.appendTableCell();
+          internalCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+          internalCell.setPaddingTop(2).setPaddingBottom(2).setPaddingLeft(2).setPaddingRight(2);
+          
+          try {
+            const internalImageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
+            const internalImage = internalCell.appendImage(internalImageBlob);
+            
+            // Set internal image size (smaller than main image)
+            const internalSize = getImageSize('internal', layout);
+            internalImage.setWidth(internalSize.width);
+            internalImage.setHeight(internalSize.height);
+            
+            // Center the internal image
+            const internalImageParagraph = internalCell.getChild(0);
+            if (internalImageParagraph && internalImageParagraph.getType() === DocumentApp.ElementType.PARAGRAPH) {
+              internalImageParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+            }
+          } catch (error) {
+            console.warn('Could not load internal image:', imageUrl);
+            // Add placeholder text
+            const placeholder = internalCell.appendParagraph('[Internal Image]');
+            styleParagraph(placeholder, t => t.setFontSize(8).setItalic(true).setForegroundColor('#999999'));
+            placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+          }
+        });
         
-        // Add spacing after internal image
+        // Add spacing after internal images
         internalImageCell.appendParagraph('').setSpacingAfter(3);
       } catch (error) {
-        console.warn('Could not load internal image:', item.additionalImages[0]);
-        // Add placeholder text
-        const placeholder = internalImageCell.appendParagraph('[Internal Image]');
+        console.warn('Could not create internal images table:', error);
+        // Fallback: add placeholder text
+        const placeholder = internalImageCell.appendParagraph('[Internal Images]');
         styleParagraph(placeholder, t => t.setFontSize(8).setItalic(true).setForegroundColor('#999999'));
         placeholder.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
       }
