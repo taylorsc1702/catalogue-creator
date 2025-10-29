@@ -230,8 +230,9 @@ export function generateCoverCSS(): string {
   return `
     .cover-page {
       width: 100%;
-      min-height: 100vh;
-      max-height: 100vh;
+      max-width: 8.5in;
+      min-height: 11in;
+      max-height: 11in;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -240,6 +241,7 @@ export function generateCoverCSS(): string {
       page-break-after: always;
       background: white;
       overflow: hidden;
+      margin: 0 auto;
     }
     
     .cover-header {
@@ -413,8 +415,10 @@ export function generateCoverCSS(): string {
       .cover-page {
         page-break-after: always;
         page-break-inside: avoid;
-        height: 100vh;
-        max-height: 100vh;
+        width: 8.5in;
+        height: 11in;
+        max-width: 8.5in;
+        max-height: 11in;
         overflow: hidden;
         margin: 0;
         padding: 15px;
