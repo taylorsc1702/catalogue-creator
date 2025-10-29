@@ -386,7 +386,17 @@ export default function Home() {
           barcodeType,
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
-          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm }
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          coverData: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            coverImageUrls,
+            catalogueName: coverCatalogueName || catalogueName
+          }
         })
       });
       
