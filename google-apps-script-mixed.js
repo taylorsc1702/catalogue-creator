@@ -208,6 +208,7 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
 }
 
 // Create 1-up layout (full page with internals at bottom)
+// Matches HTML: 200x300 image (not 250x375)
 function createSingleItemLayout(body, item, showFields, bannerColor, websiteName, utmParams) {
   console.log('Creating 1-up layout for:', item.title);
   
@@ -220,20 +221,28 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
   const leftCell = row.appendTableCell();
   const rightCell = row.appendTableCell();
   
+  // Set column widths to prevent overflow (match HTML proportions)
+  try {
+    table.setColumnWidth(0, 220); // Left column: image (~200px + padding)
+    table.setColumnWidth(1, 320); // Right column: content (flexible)
+  } catch (e) {
+    console.log('setColumnWidth not supported or failed:', e);
+  }
+  
   // Left column: Image and Author Bio
   leftCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-  leftCell.setPaddingTop(10);
-  leftCell.setPaddingBottom(10);
-  leftCell.setPaddingLeft(10);
-  leftCell.setPaddingRight(10);
+  leftCell.setPaddingTop(6);  // Match HTML: 8px ≈ 6pt
+  leftCell.setPaddingBottom(6);
+  leftCell.setPaddingLeft(6);
+  leftCell.setPaddingRight(6);
   
-  // Add image
+  // Add image - MATCH HTML SIZE: 200x300 (not 250x375)
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = leftCell.appendImage(imageBlob);
-      image.setWidth(250);
-      image.setHeight(375); // Maintain aspect ratio
+      image.setWidth(200);   // HTML uses 200px
+      image.setHeight(300);  // HTML uses 300px (aspect ratio maintained)
     } catch (error) {
       console.log('Could not load image:', error);
       leftCell.appendParagraph('Image not available');
@@ -261,42 +270,42 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
   
   // Right column: Product details
   rightCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-  rightCell.setPaddingTop(10);
-  rightCell.setPaddingBottom(10);
-  rightCell.setPaddingLeft(10);
-  rightCell.setPaddingRight(10);
+  rightCell.setPaddingTop(6);  // Match HTML: 8px ≈ 6pt
+  rightCell.setPaddingBottom(6);
+  rightCell.setPaddingLeft(6);
+  rightCell.setPaddingRight(6);
   
-  // Title
+  // Title - MATCH HTML MIXED VIEW: 24px (or 20px in some contexts)
   const titleParagraph = rightCell.appendParagraph(item.title || '');
   const titleText = titleParagraph.editAsText();
   if (titleText) {
-    titleText.setFontSize(14).setBold(true).setFontFamily('Calibri');
+    titleText.setFontSize(24).setBold(true).setFontFamily('Calibri'); // HTML mixed: 24px
   }
   
-  // Subtitle
+  // Subtitle - MATCH HTML MIXED VIEW: 18px
   if (item.subtitle) {
     const subtitleParagraph = rightCell.appendParagraph(item.subtitle);
     const subtitleText = subtitleParagraph.editAsText();
     if (subtitleText) {
-      subtitleText.setFontSize(10).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+      subtitleText.setFontSize(18).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri'); // HTML mixed: 18px
     }
   }
   
-  // Author
+  // Author - MATCH HTML MIXED VIEW: 16px
   if (item.author) {
     const authorParagraph = rightCell.appendParagraph(item.author);
     const authorText = authorParagraph.editAsText();
     if (authorText) {
-      authorText.setFontSize(10).setForegroundColor('#000000').setFontFamily('Calibri');
+      authorText.setFontSize(16).setForegroundColor('#000000').setFontFamily('Calibri'); // HTML mixed: 16px
     }
   }
   
-  // Description
+  // Description - MATCH HTML MIXED VIEW: 14px
   if (item.description) {
     const descParagraph = rightCell.appendParagraph(item.description);
     const descText = descParagraph.editAsText();
     if (descText) {
-      descText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+      descText.setFontSize(14).setForegroundColor('#333333').setFontFamily('Calibri'); // HTML mixed: 14px
     }
   }
   
@@ -399,6 +408,7 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
 }
 
 // Create multi-item layout (2-up, 3-up, 4-up, 8-up)
+// Matches HTML: 3-up uses 1 column x 3 rows (not 3 columns x 1 row)
 function createMultiItemLayout(body, pageItems, layout) {
   console.log(`Creating ${layout}-up layout with ${pageItems.length} items`);
   
@@ -406,26 +416,61 @@ function createMultiItemLayout(body, pageItems, layout) {
   const table = body.appendTable();
   table.setBorderWidth(0);
   
-  // Configure table based on layout
-  const rows = layout === 8 ? 2 : layout === 4 ? 2 : 1;
-  const cols = layout === 8 ? 4 : layout === 4 ? 2 : layout;
+  // Configure table based on layout - MATCH HTML MIXED VIEW
+  // HTML: 1-up: 1x1, 2-up: 2x1, 3-up: 1x3 (1 column, 3 rows!), 4-up: 2x2, 8-up: 4x2
+  let rows, cols;
+  if (layout === 1) {
+    rows = 1; cols = 1;
+  } else if (layout === 2 || layout === '2-int') {
+    rows = 1; cols = 2;
+  } else if (layout === 3) {
+    rows = 3; cols = 1; // 3-up uses 1 COLUMN with 3 ROWS (not 3 columns!)
+  } else if (layout === 4) {
+    rows = 2; cols = 2;
+  } else if (layout === 8) {
+    rows = 2; cols = 4;
+  } else {
+    rows = 1; cols = layout;
+  }
   
-  // Create table structure
+  // Create table structure FIRST (cells must exist before setting column widths)
   for (let row = 0; row < rows; row++) {
     const tableRow = table.appendTableRow();
     for (let col = 0; col < cols; col++) {
       const cell = tableRow.appendTableCell();
       cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-      cell.setPaddingTop(10);
-      cell.setPaddingBottom(10);
-      cell.setPaddingLeft(10);
-      cell.setPaddingRight(10);
+      cell.setPaddingTop(6);  // Match HTML: 8px ≈ 6pt
+      cell.setPaddingBottom(6);
+      cell.setPaddingLeft(6);
+      cell.setPaddingRight(6);
       
       const index = row * cols + col;
       if (index < pageItems.length) {
         createProductCard(cell, pageItems[index].item, layout);
       }
     }
+  }
+  
+  // NOW set column widths (must be done after cells exist)
+  // A4 page width ~7.5in = ~540pt, leave ~20pt margin on each side = ~500pt available
+  try {
+    if (layout === 1) {
+      table.setColumnWidth(0, 540); // Full width for 1-up
+    } else if (layout === 2 || layout === '2-int') {
+      table.setColumnWidth(0, 250); // Half width for each column
+      table.setColumnWidth(1, 250);
+    } else if (layout === 3) {
+      table.setColumnWidth(0, 540); // Full width (only 1 column for 3-up)
+    } else if (layout === 4) {
+      table.setColumnWidth(0, 250); // Half width for each column (2x2 grid)
+      table.setColumnWidth(1, 250);
+    } else if (layout === 8) {
+      for (let i = 0; i < 4; i++) {
+        table.setColumnWidth(i, 125); // Quarter width for each column (4x2 grid)
+      }
+    }
+  } catch (e) {
+    console.log('setColumnWidth not supported or failed:', e);
   }
 }
 
@@ -618,20 +663,21 @@ function createProductCardWithInternal(cell, item, layout) {
 function createProductCard(cell, item, layout) {
   console.log(`Creating product card for layout ${layout}:`, item.title);
   
-  // Image sizes based on layout (updated to match HTML export)
+  // Image sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
   const sizes = {
-    2: { width: 175, height: 263 },
-    3: { width: 106, height: 158 },
-    4: { width: 88, height: 132 },
-    8: { width: 40, height: 60 }
+    2: { width: 175, height: 263 }, // Matches HTML: 175x263
+    3: { width: 80, height: 120 },    // HTML: 80x120 (not 106x158!)
+    4: { width: 88, height: 132 },   // Matches HTML: 88x132
+    8: { width: 40, height: 60 }     // Matches HTML: 40x60
   };
   
-  // Font sizes based on layout (updated to match HTML export)
-  const titleSizes = { 2: 16, 3: 14, 4: 11, 8: 9 };
-  const subtitleSizes = { 2: 12, 3: 11, 4: 10, 8: 7 };
-  const authorSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };
-  const descSizes = { 2: 11, 3: 10, 4: 10, 8: 6 };
-  const priceSizes = { 2: 14, 3: 13, 4: 10, 8: 8 };
+  // Font sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
+  // HTML mixed view font sizes: 2-up: 16/12/12/11/14, 3-up: 14/11/11/10/-, 4-up: 11/10/10/10/10, 8-up: 9/8/8/7/8
+  const titleSizes = { 2: 16, 3: 14, 4: 11, 8: 9 };   // Title
+  const subtitleSizes = { 2: 12, 3: 11, 4: 10, 8: 8 }; // Subtitle (HTML mixed: 12/11/10/8)
+  const authorSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };   // Author (HTML: 10/11/10/8)
+  const descSizes = { 2: 11, 3: 10, 4: 10, 8: 7 };     // Description (HTML: 9/10/10/7)
+  const priceSizes = { 2: 14, 3: 13, 4: 10, 8: 8 };    // Price (HTML: 11/13/10/8 - need to check)
   const skuSizes = { 2: 12, 3: 8, 4: 7, 8: 6 };
   
   // Add image
