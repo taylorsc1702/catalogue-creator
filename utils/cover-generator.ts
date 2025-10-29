@@ -531,17 +531,14 @@ export function generateCoverHTML(data: CoverData): string {
   const imageCount = coverImageUrls.length;
   const logoUrl = getLogoUrl(data.hyperlinkToggle);
   
-  // Generate featured book images using the same structure as the old system
-  const featuredBooks = coverImageUrls.slice(0, 4).map((url, index) => {
-    if (url && url.trim()) {
-      return `<img src="${url}" alt="Cover Image ${index + 1}" class="featured-book-image" />`;
-    } else {
-      return `<div class="featured-book-placeholder">Image ${index + 1}</div>`;
-    }
+  // Generate featured book images - only create containers for valid URLs
+  const validUrls = coverImageUrls.filter(url => url && url.trim());
+  const featuredBooks = validUrls.map((url, index) => {
+    return `<img src="${url}" alt="Cover Image ${index + 1}" class="featured-book-image" />`;
   }).join('');
   
   // Determine grid class based on number of valid images
-  const validImageCount = coverImageUrls.filter(url => url && url.trim()).length;
+  const validImageCount = validUrls.length;
   let gridClass = 'four-images'; // default
   
   switch (validImageCount) {
