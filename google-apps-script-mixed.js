@@ -3,6 +3,40 @@
  * Generates Google Docs with mixed layouts (different layouts per page)
  */
 
+// HTTP POST handler - entry point for web app
+function doPost(e) {
+  try {
+    // Parse the JSON payload
+    const data = JSON.parse(e.postData.contents);
+    
+    // Create the catalogue document
+    const result = createMixedCatalogueDocument(data);
+    
+    // Return JSON response
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    console.error('Error in doPost:', error);
+    
+    // Return error response
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString(),
+      message: error.message || 'Unknown error occurred'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// HTTP GET handler (for testing)
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true,
+    message: 'Google Apps Script for Mixed Layout Catalogue Creator is running',
+    version: '1.0.0'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
 // Main function to create mixed layout catalogue document
 function createMixedCatalogueDocument(data) {
   try {
