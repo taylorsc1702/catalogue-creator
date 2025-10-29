@@ -408,65 +408,94 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
 }
 
 // Create multi-item layout (2-up, 3-up, 4-up, 8-up)
-// Matches HTML: 3-up uses 1 column x 3 rows (not 3 columns x 1 row)
+// PRINT-OPTIMIZED: Fixed dimensions, confined boxes, proper scaling
 function createMultiItemLayout(body, pageItems, layout) {
   console.log(`Creating ${layout}-up layout with ${pageItems.length} items`);
   
   // Create table for grid layout
   const table = body.appendTable();
-  table.setBorderWidth(0);
+  table.setBorderWidth(1); // Visible border to define boxes
   
-  // Configure table based on layout - MATCH HTML MIXED VIEW
-  // HTML: 1-up: 1x1, 2-up: 2x1, 3-up: 1x3 (1 column, 3 rows!), 4-up: 2x2, 8-up: 4x2
-  let rows, cols;
+  // Configure table based on layout - PRINT FRIENDLY GRID
+  let rows, cols, cellWidth, cellHeight;
   if (layout === 1) {
     rows = 1; cols = 1;
+    cellWidth = 520; // Leave margins
+    cellHeight = 680; // Full page height minus headers/footers
   } else if (layout === 2 || layout === '2-int') {
     rows = 1; cols = 2;
+    cellWidth = 255; // Half width with gap
+    cellHeight = 680;
   } else if (layout === 3) {
-    rows = 3; cols = 1; // 3-up uses 1 COLUMN with 3 ROWS (not 3 columns!)
+    rows = 3; cols = 1; // 3 ROWS vertically stacked
+    cellWidth = 520; // Full width
+    cellHeight = 220; // Each row gets ~220pt (680/3 with spacing)
   } else if (layout === 4) {
     rows = 2; cols = 2;
+    cellWidth = 255; // Quarter page
+    cellHeight = 330; // Half page height
   } else if (layout === 8) {
     rows = 2; cols = 4;
+    cellWidth = 125; // Eighth page
+    cellHeight = 330;
   } else {
     rows = 1; cols = layout;
+    cellWidth = 520 / layout;
+    cellHeight = 680;
   }
   
-  // Create table structure FIRST (cells must exist before setting column widths)
+  // Create table structure with fixed dimensions
   for (let row = 0; row < rows; row++) {
     const tableRow = table.appendTableRow();
+    // Set fixed row height for stability
+    try {
+      tableRow.setMinimumHeight(cellHeight);
+    } catch (e) {
+      console.log('setMinimumHeight not supported:', e);
+    }
+    
     for (let col = 0; col < cols; col++) {
       const cell = tableRow.appendTableCell();
+      
+      // Fixed cell dimensions - prevents shifting
       cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-      cell.setPaddingTop(6);  // Match HTML: 8px ≈ 6pt
-      cell.setPaddingBottom(6);
-      cell.setPaddingLeft(6);
-      cell.setPaddingRight(6);
+      cell.setPaddingTop(4);  // Minimal padding for print
+      cell.setPaddingBottom(4);
+      cell.setPaddingLeft(4);
+      cell.setPaddingRight(4);
+      
+      // Set fixed cell width to prevent overflow
+      try {
+        cell.setWidth(cellWidth);
+      } catch (e) {
+        console.log('setWidth not supported:', e);
+      }
       
       const index = row * cols + col;
       if (index < pageItems.length) {
-        createProductCard(cell, pageItems[index].item, layout);
+        createProductCard(cell, pageItems[index].item, layout, cellWidth, cellHeight);
+      } else {
+        // Empty cell - add placeholder to maintain structure
+        cell.appendParagraph('').setSpacingAfter(1);
       }
     }
   }
   
-  // NOW set column widths (must be done after cells exist)
-  // A4 page width ~7.5in = ~540pt, leave ~20pt margin on each side = ~500pt available
+  // Set column widths AFTER cells exist (prevents overflow)
   try {
     if (layout === 1) {
-      table.setColumnWidth(0, 540); // Full width for 1-up
+      table.setColumnWidth(0, cellWidth);
     } else if (layout === 2 || layout === '2-int') {
-      table.setColumnWidth(0, 250); // Half width for each column
-      table.setColumnWidth(1, 250);
+      table.setColumnWidth(0, cellWidth);
+      table.setColumnWidth(1, cellWidth);
     } else if (layout === 3) {
-      table.setColumnWidth(0, 540); // Full width (only 1 column for 3-up)
+      table.setColumnWidth(0, cellWidth); // Single column for 3 rows
     } else if (layout === 4) {
-      table.setColumnWidth(0, 250); // Half width for each column (2x2 grid)
-      table.setColumnWidth(1, 250);
+      table.setColumnWidth(0, cellWidth);
+      table.setColumnWidth(1, cellWidth);
     } else if (layout === 8) {
       for (let i = 0; i < 4; i++) {
-        table.setColumnWidth(i, 125); // Quarter width for each column (4x2 grid)
+        table.setColumnWidth(i, cellWidth);
       }
     }
   } catch (e) {
@@ -660,99 +689,138 @@ function createProductCardWithInternal(cell, item, layout) {
 }
 
 // Create product card for multi-item layouts
-// 3-up uses special horizontal 3-column layout (image | content | details)
-function createProductCard(cell, item, layout) {
+// PRINT-OPTIMIZED: Fixed dimensions, confined content, prevents overflow
+function createProductCard(cell, item, layout, cellWidth, cellHeight) {
   console.log(`Creating product card for layout ${layout}:`, item.title);
   
   // 3-up uses special horizontal layout - handle separately
   if (layout === 3) {
-    createProductCard3Up(cell, item);
+    createProductCard3Up(cell, item, cellWidth, cellHeight);
     return;
   }
   
-  // Image sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
-  const sizes = {
-    2: { width: 175, height: 263 }, // HTML mixed: 175x263
-    4: { width: 88, height: 132 },   // HTML mixed: 88x132
-    8: { width: 40, height: 60 }     // HTML mixed: 40x60
-  };
+  // Available space for content (cell width minus padding)
+  const contentWidth = cellWidth - 8; // Minus left/right padding
+  const maxContentHeight = cellHeight - 8; // Minus top/bottom padding
   
-  // Font sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
-  // HTML mixed view font sizes: 2-up: 16/12/12/11/14, 3-up: 14/11/11/10/-, 4-up: 11/10/10/10/10, 8-up: 9/8/8/7/8
-  const titleSizes = { 2: 16, 3: 14, 4: 11, 8: 9 };   // Title
-  const subtitleSizes = { 2: 12, 3: 11, 4: 10, 8: 8 }; // Subtitle (HTML mixed: 12/11/10/8)
-  const authorSizes = { 2: 12, 3: 11, 4: 10, 8: 8 };   // Author (HTML: 10/11/10/8)
-  const descSizes = { 2: 11, 3: 10, 4: 10, 8: 7 };     // Description (HTML: 9/10/10/7)
-  const priceSizes = { 2: 14, 3: 13, 4: 10, 8: 8 };    // Price (HTML: 11/13/10/8 - need to check)
-  const skuSizes = { 2: 12, 3: 8, 4: 7, 8: 6 };
+  // Image sizes - SCALED TO FIT IN CONFINED BOX
+  // Scale images to fit within cell width, maintaining aspect ratio
+  let imageWidth, imageHeight;
+  if (layout === 2 || layout === '2-int') {
+    imageWidth = Math.min(175, contentWidth * 0.7); // Max 70% of cell width
+    imageHeight = imageWidth * 1.5; // Maintain book aspect ratio
+  } else if (layout === 4) {
+    imageWidth = Math.min(88, contentWidth * 0.35);
+    imageHeight = imageWidth * 1.5;
+  } else if (layout === 8) {
+    imageWidth = Math.min(40, contentWidth * 0.32);
+    imageHeight = imageWidth * 1.5;
+  } else {
+    imageWidth = Math.min(contentWidth * 0.6, 200);
+    imageHeight = imageWidth * 1.5;
+  }
   
-  // Add image
+  // Font sizes - SCALED FOR PRINT AND CONFINED BOXES
+  // Smaller fonts for smaller boxes to prevent overflow
+  const titleSizes = { 2: 14, 4: 10, 8: 8 };      // Reduced for stability
+  const subtitleSizes = { 2: 11, 4: 9, 8: 7 };    // Scaled down
+  const authorSizes = { 2: 11, 4: 9, 8: 7 };      // Scaled down
+  const descSizes = { 2: 10, 4: 9, 8: 6 };        // Scaled down
+  const priceSizes = { 2: 12, 4: 9, 8: 7 };       // Scaled down
+  const skuSizes = { 2: 10, 4: 7, 8: 6 };
+  
+  // Add image - SCALED TO FIT
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = cell.appendImage(imageBlob);
-      const size = sizes[layout] || sizes[4];
-      image.setWidth(size.width);
-      image.setHeight(size.height);
+      // Use calculated dimensions that fit in the box
+      image.setWidth(imageWidth);
+      image.setHeight(imageHeight);
+      cell.appendParagraph('').setSpacingAfter(2); // Small gap after image
     } catch (error) {
       console.log('Could not load image:', error);
-      cell.appendParagraph('Image not available');
+      cell.appendParagraph('Image not available').setFontSize(8);
     }
   }
   
-  // Title
-  const titleParagraph = cell.appendParagraph(item.title || '');
+  // Title - TRUNCATED IF TOO LONG FOR BOX
+  const titleFontSize = titleSizes[layout] || 11;
+  const maxTitleLength = Math.floor(contentWidth / (titleFontSize * 0.6)); // Chars that fit in width
+  const truncatedTitle = (item.title || '').length > maxTitleLength 
+    ? (item.title || '').substring(0, maxTitleLength - 3) + '...'
+    : (item.title || '');
+  
+  const titleParagraph = cell.appendParagraph(truncatedTitle);
   const titleText = titleParagraph.editAsText();
   if (titleText) {
-    titleText.setFontSize(titleSizes[layout] || 11).setBold(true).setFontFamily('Calibri');
+    titleText.setFontSize(titleFontSize).setBold(true).setFontFamily('Calibri');
   }
+  titleParagraph.setSpacingAfter(2);
   
-  // Subtitle
+  // Subtitle - TRUNCATED IF TOO LONG
   if (item.subtitle) {
-    const subtitleParagraph = cell.appendParagraph(item.subtitle);
+    const subtitleFontSize = subtitleSizes[layout] || 9;
+    const maxSubtitleLength = Math.floor(contentWidth / (subtitleFontSize * 0.6));
+    const truncatedSubtitle = item.subtitle.length > maxSubtitleLength
+      ? item.subtitle.substring(0, maxSubtitleLength - 3) + '...'
+      : item.subtitle;
+    
+    const subtitleParagraph = cell.appendParagraph(truncatedSubtitle);
     const subtitleText = subtitleParagraph.editAsText();
     if (subtitleText) {
-      subtitleText.setFontSize(subtitleSizes[layout] || 9).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+      subtitleText.setFontSize(subtitleFontSize).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
     }
+    cell.appendParagraph('').setSpacingAfter(1); // Small gap
   }
   
-  // Author
+  // Author - TRUNCATED IF TOO LONG
   if (item.author) {
-    const authorParagraph = cell.appendParagraph(item.author);
+    const authorFontSize = authorSizes[layout] || 10;
+    const maxAuthorLength = Math.floor(contentWidth / (authorFontSize * 0.6));
+    const truncatedAuthor = item.author.length > maxAuthorLength
+      ? item.author.substring(0, maxAuthorLength - 3) + '...'
+      : item.author;
+    
+    const authorParagraph = cell.appendParagraph(truncatedAuthor);
     const authorText = authorParagraph.editAsText();
     if (authorText) {
-      authorText.setFontSize(authorSizes[layout] || 10).setForegroundColor('#000000').setFontFamily('Calibri');
+      authorText.setFontSize(authorFontSize).setForegroundColor('#000000').setFontFamily('Calibri');
     }
+    cell.appendParagraph('').setSpacingAfter(2); // Small gap
   }
   
-  // Description - MATCH HTML TRUNCATION EXACTLY
-  // HTML truncation: 2-up: 1000→997, 4-up: 950→947, 8-up: ~100
+  // Description - AGGRESSIVE TRUNCATION FOR PRINT STABILITY
+  // Much shorter limits to ensure content fits in confined boxes
   if (item.description) {
-    // Strip HTML tags (like HTML does with htmlToPlainText)
+    // Strip HTML tags
     const plainDescription = item.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     
-    let maxLength;
+    // Calculate max chars based on available space and font size
+    // Rough estimate: 1 char per point at small fonts, less at larger
+    const descFontSize = descSizes[layout] || 8;
+    const charsPerLine = Math.floor(contentWidth / (descFontSize * 0.6)); // Approximate chars per line
+    const maxLines = Math.floor((maxContentHeight - imageHeight - 100) / (descFontSize * 1.2)); // Available lines
+    const maxLength = Math.floor(charsPerLine * maxLines * 0.9); // 90% to be safe
+    
     let truncatedDesc;
-    if (layout === 2) {
-      maxLength = 1000;
-      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 997) + '...' : plainDescription;
+    if (layout === 2 || layout === '2-int') {
+      truncatedDesc = plainDescription.length > 600 ? plainDescription.substring(0, 597) + '...' : plainDescription;
     } else if (layout === 4) {
-      maxLength = 950;
-      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 947) + '...' : plainDescription;
+      truncatedDesc = plainDescription.length > 300 ? plainDescription.substring(0, 297) + '...' : plainDescription;
     } else if (layout === 8) {
-      maxLength = 100; // Much shorter for 8-up
-      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 97) + '...' : plainDescription;
+      truncatedDesc = plainDescription.length > 80 ? plainDescription.substring(0, 77) + '...' : plainDescription;
     } else {
-      truncatedDesc = plainDescription; // No truncation for other layouts
+      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, maxLength - 3) + '...' : plainDescription;
     }
     
     if (truncatedDesc) {
-      const descParagraph = cell.appendParagraph(truncatedDesc);
-      const descText = descParagraph.editAsText();
-      if (descText) {
-        descText.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
+    const descParagraph = cell.appendParagraph(truncatedDesc);
+    const descText = descParagraph.editAsText();
+    if (descText) {
+      descText.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
       }
-      descParagraph.setSpacingAfter(4);
+      descParagraph.setSpacingAfter(2);
     }
   }
   
@@ -776,58 +844,94 @@ function createProductCard(cell, item, layout) {
 }
 
 // Create 3-up product card - special horizontal 3-column layout (image | content | details)
-// Matches HTML: grid-template-columns: 176px 1fr 100px
-function createProductCard3Up(cell, item) {
+// PRINT-OPTIMIZED: Fixed dimensions, confined boxes, prevents overflow
+function createProductCard3Up(cell, item, cellWidth, cellHeight) {
   console.log('Creating 3-up special layout for:', item.title);
   
-  // Create horizontal table with 3 columns
+  // Create horizontal table with 3 columns - CONFINED BOXES
   const table = cell.appendTable();
-  table.setBorderWidth(0);
+  table.setBorderWidth(1); // Visible border to define boxes
   
   // Create row and 3 cells
   const row = table.appendTableRow();
+  
+  // Set fixed row height to confine content
+  try {
+    row.setMinimumHeight(cellHeight - 8); // Match cell height minus padding
+  } catch (e) {
+    console.log('setMinimumHeight not supported:', e);
+  }
+  
   const imageCell = row.appendTableCell();
   const contentCell = row.appendTableCell();
   const detailsCell = row.appendTableCell();
   
-  // Set column widths to match HTML: 176px 1fr 100px (approx)
+  // Calculate column widths - FIXED PROPORTIONS
+  const totalWidth = cellWidth - 8; // Minus padding
+  const imageWidth = totalWidth * 0.25;  // 25% for image (confinement)
+  const detailsWidth = totalWidth * 0.15; // 15% for details (confinement)
+  const contentWidth = totalWidth * 0.60; // 60% for content (main area)
+  
+  // Set column widths - FIXED FOR STABILITY
   try {
-    table.setColumnWidth(0, 132); // 176px ≈ 132pt (image)
-    table.setColumnWidth(1, 360); // Flexible content area
-    table.setColumnWidth(2, 75);  // 100px ≈ 75pt (details)
+    table.setColumnWidth(0, imageWidth);
+    table.setColumnWidth(1, contentWidth);
+    table.setColumnWidth(2, detailsWidth);
   } catch (e) {
     console.log('setColumnWidth not supported or failed:', e);
   }
   
-  // Configure cells
+  // Configure cells - MINIMAL PADDING FOR CONFINED BOXES
   imageCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-  imageCell.setPaddingTop(6);
-  imageCell.setPaddingBottom(6);
-  imageCell.setPaddingLeft(6);
-  imageCell.setPaddingRight(6);
+  imageCell.setPaddingTop(3);
+  imageCell.setPaddingBottom(3);
+  imageCell.setPaddingLeft(3);
+  imageCell.setPaddingRight(3);
+  
+  // Set fixed width to prevent overflow
+  try {
+    imageCell.setWidth(imageWidth);
+  } catch (e) {
+    console.log('setWidth not supported:', e);
+  }
   
   contentCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-  contentCell.setPaddingTop(6);
-  contentCell.setPaddingBottom(6);
-  contentCell.setPaddingLeft(6);
-  contentCell.setPaddingRight(6);
+  contentCell.setPaddingTop(3);
+  contentCell.setPaddingBottom(3);
+  contentCell.setPaddingLeft(3);
+  contentCell.setPaddingRight(3);
+  
+  try {
+    contentCell.setWidth(contentWidth);
+  } catch (e) {
+    console.log('setWidth not supported:', e);
+  }
   
   detailsCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-  detailsCell.setPaddingTop(6);
-  detailsCell.setPaddingBottom(6);
-  detailsCell.setPaddingLeft(6);
-  detailsCell.setPaddingRight(6);
+  detailsCell.setPaddingTop(3);
+  detailsCell.setPaddingBottom(3);
+  detailsCell.setPaddingLeft(3);
+  detailsCell.setPaddingRight(3);
   
-  // Column 1: Image (172x228)
+  try {
+    detailsCell.setWidth(detailsWidth);
+  } catch (e) {
+    console.log('setWidth not supported:', e);
+  }
+  
+  // Column 1: Image - SCALED TO FIT IN CONFINED BOX
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = imageCell.appendImage(imageBlob);
-      image.setWidth(172);   // HTML: 172px
-      image.setHeight(228);  // HTML: 228px
+      // Scale to fit - max width is 95% of cell width
+      const maxImageWidth = imageWidth * 0.95;
+      const imageAspectRatio = 228 / 172; // Original aspect ratio
+      image.setWidth(maxImageWidth);
+      image.setHeight(maxImageWidth * imageAspectRatio);
     } catch (error) {
       console.log('Could not load image:', error);
-      imageCell.appendParagraph('Image not available');
+      imageCell.appendParagraph('Img N/A').setFontSize(7);
     }
   }
   
@@ -860,18 +964,30 @@ function createProductCard3Up(cell, item) {
     authorParagraph.setSpacingAfter(2);
   }
   
-  // Description (10px, 1200→1197 chars, plain text)
+  // Description - AGGRESSIVELY TRUNCATED FOR CONFINED BOX
+  // Calculate based on available space in content cell
   if (item.description) {
     const plainDescription = item.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-    const truncatedDesc = plainDescription.length > 1200 ? plainDescription.substring(0, 1197) + '...' : plainDescription;
+    
+    // Calculate max chars: contentWidth - padding, font size 9pt
+    const descFontSize = 9;
+    const charsPerLine = Math.floor((contentWidth - 6) / (descFontSize * 0.6));
+    const availableHeight = cellHeight - 100; // Reserve space for title/subtitle/author
+    const maxLines = Math.floor(availableHeight / (descFontSize * 1.3));
+    const maxLength = Math.floor(charsPerLine * maxLines * 0.85); // 85% safety margin
+    
+    // More aggressive truncation - max 400 chars for 3-up
+    const truncatedDesc = plainDescription.length > Math.min(400, maxLength) 
+      ? plainDescription.substring(0, Math.min(397, maxLength - 3)) + '...' 
+      : plainDescription;
     
     if (truncatedDesc) {
       const descParagraph = contentCell.appendParagraph(truncatedDesc);
       const descText = descParagraph.editAsText();
       if (descText) {
-        descText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+        descText.setFontSize(descFontSize).setForegroundColor('#333333').setFontFamily('Calibri');
       }
-      descParagraph.setSpacingAfter(4);
+      descParagraph.setSpacingAfter(2);
     }
   }
   
