@@ -76,7 +76,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     const assignedLayout = layoutAssignments[i];
     
     // If layout changes or page is full, start new page
-    if (assignedLayout !== currentLayout || itemsInPage >= currentLayout) {
+    const currentLayoutNum = currentLayout === '2-int' ? 2 : currentLayout;
+    if (assignedLayout !== currentLayout || itemsInPage >= currentLayoutNum) {
       if (currentPage.length > 0) {
         pages.push({ items: currentPage, layout: currentLayout });
       }

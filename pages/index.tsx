@@ -771,7 +771,7 @@ export default function Home() {
     setItems(newItems);
   }
 
-  function setItemLayout(index: number, layout: 1|2|3|4|8) {
+  function setItemLayout(index: number, layout: 1|2|'2-int'|3|4|8) {
     setItemLayouts({...itemLayouts, [index]: layout});
   }
 

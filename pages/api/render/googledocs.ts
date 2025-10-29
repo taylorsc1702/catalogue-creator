@@ -85,7 +85,7 @@ function renderGoogleDocsHtml(
   websiteName: string,
   utmParams?: UtmParams
 ) {
-  const perPage = layout;
+  const perPage = layout === '2-int' ? 2 : layout;
   const chunks: ItemWithImages[][] = [];
   for (let i = 0; i < itemsWithImages.length; i += perPage) {
     chunks.push(itemsWithImages.slice(i, i + perPage));

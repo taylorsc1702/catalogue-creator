@@ -397,12 +397,51 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
   `;
 };
 
-export const renderProductCard = (item: Item, layout: 1 | 2 | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
+export const renderProductCard2Int = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  
+  return `
+    <div class="product-card layout-2-vertical">
+      <div class="product-image-2up">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
+      </div>
+      <div class="product-content-2up">
+        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+        <div class="product-specs">
+          ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+          ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+          ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+        </div>
+        <div class="product-meta">
+          ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+          ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+        </div>
+        ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.additionalImages && item.additionalImages.length > 0 ? `
+          <div class="internal-image-section">
+            <img src="${esc(item.additionalImages[0])}" alt="Internal preview" class="internal-preview-image">
+          </div>
+        ` : ""}
+        ${barcodeHtml}
+      </div>
+    </div>
+  `;
+};
+
+export const renderProductCard = (item: Item, layout: 1 | 2 | '2-int' | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
   switch (layout) {
     case 1:
       return renderProductCard1Up(item, globalIndex, options);
     case 2:
       return renderProductCard2Up(item, globalIndex, options);
+    case '2-int':
+      return renderProductCard2Int(item, globalIndex, options);
     case 3:
       return renderProductCard3Up(item, globalIndex, options);
     case 4:

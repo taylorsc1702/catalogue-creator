@@ -209,7 +209,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images and generated ${itemsWithImages.filter(i => i.barcodeData).length} barcodes successfully`);
 
     // Create pages with 1, 2, 3, or 4 products each based on layout
-    const productsPerPage = layout === 1 ? 1 : layout === 2 ? 2 : layout === 3 ? 3 : 4;
+    const productsPerPage = layout === 1 ? 1 : layout === 2 || layout === '2-int' ? 2 : layout === 3 ? 3 : 4;
     const pages = [];
     
     // Helper function to create banner paragraph
@@ -256,7 +256,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         pages.push(createBannerParagraph(true)); // Header banner
         pages.push(...pageContent);
         pages.push(createBannerParagraph(false)); // Footer banner
-      } else if (layout === 2) {
+      } else if (layout === 2 || layout === '2-int') {
         // 2-per-page layout (side by side)
         const pageTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
@@ -487,7 +487,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 function createProductCell(
   item: Item | undefined, 
   index: number, 
-  layout: number, 
+  layout: number | '2-int', 
   imageData?: { base64: string; width: number; height: number; mimeType: string } | null,
   generateProductUrl?: (handle: string) => string,
   barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null,
@@ -509,7 +509,7 @@ function createProductCell(
 
   // Adjust font sizes based on layout
   const is1PerPage = layout === 1;
-  const is2PerPage = layout === 2;
+  const is2PerPage = layout === 2 || layout === '2-int';
   const is3PerPage = layout === 3;
   const titleSize = is1PerPage ? 24 : is2PerPage ? 18 : is3PerPage ? 16 : 14;
   const subtitleSize = is1PerPage ? 18 : is2PerPage ? 14 : is3PerPage ? 12 : 12;
@@ -788,6 +788,28 @@ function createProductCell(
           color: "F5F5F5",
         },
       }));
+    }
+  }
+
+  // Add internal image for 2-int layout
+  if (layout === '2-int' && additionalImagesData && additionalImagesData.length > 0) {
+    try {
+      const internalImageRun = new ImageRun({
+        data: additionalImagesData[0].base64,
+        transformation: {
+          width: 60,  // Same size as HTML
+          height: 80,
+        },
+        type: "png",
+      });
+      
+      paragraphs.push(new Paragraph({
+        children: [internalImageRun],
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 200, after: 150 },
+      }));
+    } catch (error) {
+      console.warn(`Failed to create internal image for ${item.title}:`, error);
     }
   }
 

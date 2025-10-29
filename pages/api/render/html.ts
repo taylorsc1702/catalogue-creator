@@ -603,7 +603,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
     const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
     // Fill empty slots for proper grid layout
-    const emptySlots = layout - page.length;
+    const emptySlots = (layout === '2-int' ? 2 : typeof layout === 'number' ? layout : 4) - page.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
     return `<div class="page ${layoutClass}">
