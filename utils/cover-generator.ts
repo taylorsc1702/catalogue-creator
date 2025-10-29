@@ -289,7 +289,7 @@ export function generateCoverCSS(): string {
     
     .cover-title {
       text-align: center;
-      margin: 15px 0;
+      margin: 0 0 15px 0;
       flex-shrink: 0;
     }
     
