@@ -660,15 +660,21 @@ function createProductCardWithInternal(cell, item, layout) {
 }
 
 // Create product card for multi-item layouts
+// 3-up uses special horizontal 3-column layout (image | content | details)
 function createProductCard(cell, item, layout) {
   console.log(`Creating product card for layout ${layout}:`, item.title);
   
+  // 3-up uses special horizontal layout - handle separately
+  if (layout === 3) {
+    createProductCard3Up(cell, item);
+    return;
+  }
+  
   // Image sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
   const sizes = {
-    2: { width: 175, height: 263 }, // Matches HTML: 175x263
-    3: { width: 80, height: 120 },    // HTML: 80x120 (not 106x158!)
-    4: { width: 88, height: 132 },   // Matches HTML: 88x132
-    8: { width: 40, height: 60 }     // Matches HTML: 40x60
+    2: { width: 175, height: 263 }, // HTML mixed: 175x263
+    4: { width: 88, height: 132 },   // HTML mixed: 88x132
+    8: { width: 40, height: 60 }     // HTML mixed: 40x60
   };
   
   // Font sizes based on layout - MATCH HTML MIXED VIEW EXACTLY
@@ -719,17 +725,34 @@ function createProductCard(cell, item, layout) {
     }
   }
   
-  // Description (truncated for smaller layouts)
+  // Description - MATCH HTML TRUNCATION EXACTLY
+  // HTML truncation: 2-up: 1000→997, 4-up: 950→947, 8-up: ~100
   if (item.description) {
-    const maxLength = layout === 8 ? 50 : layout === 4 ? 950 : 150; // Updated 4-up to 950 chars
-    const truncatedDesc = item.description.length > maxLength 
-      ? item.description.substring(0, maxLength) + '...' 
-      : item.description;
+    // Strip HTML tags (like HTML does with htmlToPlainText)
+    const plainDescription = item.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     
-    const descParagraph = cell.appendParagraph(truncatedDesc);
-    const descText = descParagraph.editAsText();
-    if (descText) {
-      descText.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
+    let maxLength;
+    let truncatedDesc;
+    if (layout === 2) {
+      maxLength = 1000;
+      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 997) + '...' : plainDescription;
+    } else if (layout === 4) {
+      maxLength = 950;
+      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 947) + '...' : plainDescription;
+    } else if (layout === 8) {
+      maxLength = 100; // Much shorter for 8-up
+      truncatedDesc = plainDescription.length > maxLength ? plainDescription.substring(0, 97) + '...' : plainDescription;
+    } else {
+      truncatedDesc = plainDescription; // No truncation for other layouts
+    }
+    
+    if (truncatedDesc) {
+      const descParagraph = cell.appendParagraph(truncatedDesc);
+      const descText = descParagraph.editAsText();
+      if (descText) {
+        descText.setFontSize(descSizes[layout] || 8).setForegroundColor('#333333').setFontFamily('Calibri');
+      }
+      descParagraph.setSpacingAfter(4);
     }
   }
   
@@ -749,6 +772,191 @@ function createProductCard(cell, item, layout) {
     if (skuText) {
       skuText.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
     }
+  }
+}
+
+// Create 3-up product card - special horizontal 3-column layout (image | content | details)
+// Matches HTML: grid-template-columns: 176px 1fr 100px
+function createProductCard3Up(cell, item) {
+  console.log('Creating 3-up special layout for:', item.title);
+  
+  // Create horizontal table with 3 columns
+  const table = cell.appendTable();
+  table.setBorderWidth(0);
+  
+  // Create row and 3 cells
+  const row = table.appendTableRow();
+  const imageCell = row.appendTableCell();
+  const contentCell = row.appendTableCell();
+  const detailsCell = row.appendTableCell();
+  
+  // Set column widths to match HTML: 176px 1fr 100px (approx)
+  try {
+    table.setColumnWidth(0, 132); // 176px ≈ 132pt (image)
+    table.setColumnWidth(1, 360); // Flexible content area
+    table.setColumnWidth(2, 75);  // 100px ≈ 75pt (details)
+  } catch (e) {
+    console.log('setColumnWidth not supported or failed:', e);
+  }
+  
+  // Configure cells
+  imageCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+  imageCell.setPaddingTop(6);
+  imageCell.setPaddingBottom(6);
+  imageCell.setPaddingLeft(6);
+  imageCell.setPaddingRight(6);
+  
+  contentCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+  contentCell.setPaddingTop(6);
+  contentCell.setPaddingBottom(6);
+  contentCell.setPaddingLeft(6);
+  contentCell.setPaddingRight(6);
+  
+  detailsCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+  detailsCell.setPaddingTop(6);
+  detailsCell.setPaddingBottom(6);
+  detailsCell.setPaddingLeft(6);
+  detailsCell.setPaddingRight(6);
+  
+  // Column 1: Image (172x228)
+  if (item.imageUrl) {
+    try {
+      const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
+      const image = imageCell.appendImage(imageBlob);
+      image.setWidth(172);   // HTML: 172px
+      image.setHeight(228);  // HTML: 228px
+    } catch (error) {
+      console.log('Could not load image:', error);
+      imageCell.appendParagraph('Image not available');
+    }
+  }
+  
+  // Column 2: Content (title, subtitle, author, description)
+  // Title (14px)
+  const titleParagraph = contentCell.appendParagraph(item.title || '');
+  const titleText = titleParagraph.editAsText();
+  if (titleText) {
+    titleText.setFontSize(14).setBold(true).setFontFamily('Calibri');
+  }
+  titleParagraph.setSpacingAfter(2);
+  
+  // Subtitle (11px)
+  if (item.subtitle) {
+    const subtitleParagraph = contentCell.appendParagraph(item.subtitle);
+    const subtitleText = subtitleParagraph.editAsText();
+    if (subtitleText) {
+      subtitleText.setFontSize(11).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+    subtitleParagraph.setSpacingAfter(2);
+  }
+  
+  // Author (11px)
+  if (item.author) {
+    const authorParagraph = contentCell.appendParagraph(item.author);
+    const authorText = authorParagraph.editAsText();
+    if (authorText) {
+      authorText.setFontSize(11).setForegroundColor('#444444').setFontFamily('Calibri');
+    }
+    authorParagraph.setSpacingAfter(2);
+  }
+  
+  // Description (10px, 1200→1197 chars, plain text)
+  if (item.description) {
+    const plainDescription = item.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    const truncatedDesc = plainDescription.length > 1200 ? plainDescription.substring(0, 1197) + '...' : plainDescription;
+    
+    if (truncatedDesc) {
+      const descParagraph = contentCell.appendParagraph(truncatedDesc);
+      const descText = descParagraph.editAsText();
+      if (descText) {
+        descText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+      }
+      descParagraph.setSpacingAfter(4);
+    }
+  }
+  
+  // Column 3: Details (meta information and barcode)
+  // Details as list items (10px font)
+  if (item.imprint) {
+    const detailParagraph = detailsCell.appendParagraph(item.imprint);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.imidis) {
+    const detailParagraph = detailsCell.appendParagraph('Discount: ' + item.imidis);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.binding) {
+    const detailParagraph = detailsCell.appendParagraph(item.binding);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.pages) {
+    const detailParagraph = detailsCell.appendParagraph(item.pages + ' Pages');
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.dimensions) {
+    const detailParagraph = detailsCell.appendParagraph(item.dimensions);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.releaseDate) {
+    const detailParagraph = detailsCell.appendParagraph(item.releaseDate);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.sku) {
+    const detailParagraph = detailsCell.appendParagraph('ISBN: ' + item.sku);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(1);
+  }
+  
+  if (item.price) {
+    const detailParagraph = detailsCell.appendParagraph('AUD$ ' + item.price);
+    const detailText = detailParagraph.editAsText();
+    if (detailText) {
+      detailText.setFontSize(10).setForegroundColor('#333333').setFontFamily('Calibri');
+    }
+    detailParagraph.setSpacingAfter(4);
+  }
+  
+  // Barcode
+  if (item.barcode) {
+    const barcodeParagraph = detailsCell.appendParagraph(item.barcode);
+    const barcodeText = barcodeParagraph.editAsText();
+    if (barcodeText) {
+      barcodeText.setFontSize(8).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+    barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   }
 }
 
