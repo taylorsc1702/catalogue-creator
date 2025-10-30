@@ -190,14 +190,26 @@ export function buildShopifyQuery(opts: {
 }) {
   // Handle list takes priority
   if (opts.handleList && opts.handleList.length > 0) {
-    const parts = opts.handleList.map((value) => {
-      const v = escapeVal(value.trim());
-      // If looks like an ISBN (12-13 digits possibly with hyphens removed), search by SKU as well
-      const digits = v.replace(/[^0-9]/g, "");
-      if (digits.length === 12 || digits.length === 13) {
-        return `(handle:'${v}' OR sku:'${digits}')`;
+    const parts = opts.handleList.map((rawValue) => {
+      const v = escapeVal(rawValue.trim());
+      const digits = v.replace(/[^0-9Xx]/g, "");
+      const terms: string[] = [];
+      // Always try handle by original value
+      terms.push(`handle:'${v}'`);
+      // If it resembles an ISBN/UPC, also try SKU variants
+      if (digits.length >= 10 && digits.length <= 13) {
+        const clean = digits.toUpperCase();
+        terms.push(`sku:'${clean.replace(/X$/,'')}'`);
+        if (clean.length === 10) {
+          const as13 = isbn10To13(clean);
+          if (as13) terms.push(`sku:'${as13}'`);
+        }
+        if (clean.length === 12) {
+          // Some feeds store 12-digit UPC with a leading 0 as 13-digit EAN
+          terms.push(`sku:'0${clean}'`);
+        }
       }
-      return `(handle:'${v}')`;
+      return `(${terms.join(' OR ')})`;
     });
     return `(${parts.join(' OR ')})`;
   }
@@ -232,3 +244,16 @@ function escapeVal(v: string) {
 
 export const firstDefined = (...vals: (string | undefined)[]) =>
   vals.find(v => v?.trim());
+
+// Convert ISBN-10 to ISBN-13 (prefix 978 and recompute check digit)
+function isbn10To13(isbn10: string): string | null {
+  const d = isbn10.replace(/[^0-9X]/gi, '').toUpperCase();
+  if (d.length !== 10) return null;
+  const core9 = d.slice(0, 9);
+  if (!/^\d{9}$/.test(core9)) return null;
+  const pref = '978' + core9;
+  const digits = pref.split('').map(n => parseInt(n, 10));
+  const sum = digits.reduce((acc, n, i) => acc + n * (i % 2 === 0 ? 1 : 3), 0);
+  const check = (10 - (sum % 10)) % 10;
+  return pref + String(check);
+}
