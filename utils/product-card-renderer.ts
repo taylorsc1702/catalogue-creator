@@ -240,6 +240,8 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
               ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
               ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
               ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+            ${item.icillus ? `<div class=\"meta-item\"><strong>ICILLUS:</strong> ${esc(item.icillus)}</div>` : ""}
+            ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
               ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
             </div>
             <div class="barcode-right">${barcodeHtml}</div>
