@@ -1221,7 +1221,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   /* Layout 3: Horizontal row (Image | Content | Details) */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 176px 1fr 100px;
+    grid-template-columns: 212px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -1238,8 +1238,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .product-image-3up .book-cover {
-    width: 172px;
-    height: 228px;
+    width: 206px;
+    height: 274px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -1286,7 +1286,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
     margin-top: 6px;
     padding: 6px;
     border: 1px solid #e0e0e0;
-    background: #fafafa;
+    background: #ffffff;
     max-height: 120px;
     overflow: hidden;
     text-align: justify;
@@ -1628,7 +1628,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .page.layout-3 .product-image {
-    width: 106px;
+    width: 206px;
   }
   
   .page.layout-8 .product-image {
@@ -1650,8 +1650,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .page.layout-3 .book-cover {
-    width: 106px;
-    height: 158px;
+    width: 206px;
+    height: 274px;
   }
   
   .page.layout-8 .book-cover {
