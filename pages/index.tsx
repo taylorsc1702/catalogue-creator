@@ -116,12 +116,7 @@ export default function Home() {
   const [coverCatalogueName, setCoverCatalogueName] = useState("");
 
   // Email state
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailRecipients, setEmailRecipients] = useState("");
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
-  const [emailType, setEmailType] = useState<'mixed' | 'single'>('mixed');
-  const [emailSending, setEmailSending] = useState(false);
+  const [emailGenerating, setEmailGenerating] = useState(false);
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -1005,12 +1000,22 @@ export default function Home() {
                     return;
                   }
                   
-                  html2canvasLib(iframeDoc.body, {
-                    scale: 2,
+                  // Find the main content container to avoid capturing unnecessary whitespace
+                  const bodyEl = iframeDoc.body;
+                  const mainContent = bodyEl.querySelector('.catalogue-container, .page, table, main') || bodyEl;
+                  
+                  html2canvasLib(mainContent, {
+                    scale: 1, // Reduced from 2 - 1 is fine for text
                     useCORS: true,
-                    logging: false
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    removeContainer: false,
+                    windowWidth: mainContent.scrollWidth || 794, // A4 width in pixels at 96dpi
+                    windowHeight: mainContent.scrollHeight || 1123 // A4 height in pixels at 96dpi
                   }).then((canvas: HTMLCanvasElement) => {
-                    const imgData = canvas.toDataURL('image/png');
+                    // Use JPEG with compression for much smaller file size (especially for text)
+                    const imgData = canvas.toDataURL('image/jpeg', 0.85); // 0.85 quality = good balance
+                    
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const jsPDF = (window as Record<string, any>).jspdf?.jsPDF;
                     if (!jsPDF) {
@@ -1020,22 +1025,23 @@ export default function Home() {
                     const pdf = new jsPDF({
                       orientation: 'portrait',
                       unit: 'mm',
-                      format: 'a4'
+                      format: 'a4',
+                      compress: true // Enable PDF compression
                     });
                     
-                    const imgWidth = 210;
-                    const pageHeight = 297;
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 297; // A4 height in mm
                     const imgHeight = (canvas.height * imgWidth) / canvas.width;
                     let heightLeft = imgHeight;
                     let position = 0;
                     
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST'); // FAST compression
                     heightLeft -= pageHeight;
                     
                     while (heightLeft >= 0) {
                       position = heightLeft - imgHeight;
                       pdf.addPage();
-                      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
                       heightLeft -= pageHeight;
                     }
                     
@@ -1060,12 +1066,7 @@ export default function Home() {
   }
 
   async function openEmailWithOutlook(type: 'mixed' | 'single') {
-    if (!emailRecipients.trim()) {
-      alert('Please enter at least one recipient email address');
-      return;
-    }
-
-    setEmailSending(true);
+    setEmailGenerating(true);
     try {
       // Generate PDF
       const pdfBase64 = await generatePDF(type);
@@ -1093,34 +1094,21 @@ export default function Home() {
       // Wait a moment for download to start
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Create mailto link
-      const recipients = emailRecipients.split(',').map(e => e.trim()).filter(Boolean).join(',');
-      const subject = encodeURIComponent(emailSubject || `${type === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue - ${catalogueName || new Date().toLocaleDateString()}`);
-      const body = encodeURIComponent((emailBody || `Please find the attached ${type === 'mixed' ? 'mixed layout' : 'single layout'} product catalogue.`) + `\n\n[The PDF file "${filename}" has been downloaded to your Downloads folder. Please attach it.]`);
+      // Open mailto: link with optional subject/body hints, but no recipients
+      // User can select recipients from their Outlook contacts
+      const subject = encodeURIComponent(`${type === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue - ${catalogueName || new Date().toLocaleDateString()}`);
+      const body = encodeURIComponent(`Please find the attached ${type === 'mixed' ? 'mixed layout' : 'single layout'} product catalogue.\n\nThe PDF file "${filename}" has been downloaded to your Downloads folder. Please attach it.`);
       
       // Open mailto: link (will open default email client - Outlook)
-      const mailtoLink = `mailto:${recipients}?subject=${subject}&body=${body}`;
+      const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
       window.location.href = mailtoLink;
       
-      alert(`PDF downloaded as "${filename}". Outlook should open. Please attach the downloaded PDF file.`);
-      
-      setShowEmailModal(false);
-      setEmailRecipients('');
-      setEmailSubject('');
-      setEmailBody('');
       URL.revokeObjectURL(url);
     } catch (error) {
       alert('Error preparing email: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
-      setEmailSending(false);
+      setEmailGenerating(false);
     }
-  }
-
-  function openEmailModal(type: 'mixed' | 'single') {
-    setEmailType(type);
-    setEmailSubject(`${type === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue - ${catalogueName || new Date().toLocaleDateString()}`);
-    setEmailBody(`Please find the attached ${type === 'mixed' ? 'mixed layout' : 'single layout'} product catalogue.`);
-    setShowEmailModal(true);
   }
 
   return (
@@ -1830,7 +1818,9 @@ export default function Home() {
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
             <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
-            <button onClick={() => openEmailModal('single')} disabled={!items.length} style={btn()}>📧 Outlook - PDF</button>
+            <button onClick={() => openEmailWithOutlook('single')} disabled={!items.length || emailGenerating} style={btn()}>
+              {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - PDF'}
+            </button>
           </div>
 
 
@@ -1848,8 +1838,8 @@ export default function Home() {
               <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
                 🚀 Mixed Google Doc
               </button>
-              <button onClick={() => openEmailModal('mixed')} disabled={!items.length} style={btn()}>
-                📧 Outlook - Mixed Layout (PDF)
+              <button onClick={() => openEmailWithOutlook('mixed')} disabled={!items.length || emailGenerating} style={btn()}>
+                {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - Mixed Layout (PDF)'}
               </button>
               {showOrderEditor && (
                 <span style={{ fontSize: 13, color: '#656F91' }}>
@@ -1863,154 +1853,6 @@ export default function Home() {
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
-
-      {/* Email Modal */}
-      {showEmailModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          padding: 20
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: 12,
-            padding: 32,
-            maxWidth: 600,
-            width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-          }}>
-            <h2 style={{ marginTop: 0, marginBottom: 24, color: '#2C3E50' }}>
-              📧 Open Outlook - {emailType === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue
-            </h2>
-            <div style={{ marginBottom: 16, padding: 12, background: '#E3F2FD', borderRadius: 8, fontSize: 13, color: '#1565C0' }}>
-              ℹ️ The PDF will be downloaded to your Downloads folder, then Outlook will open. Please attach the downloaded PDF file.
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
-                Recipients (comma-separated) *
-              </label>
-              <input
-                type="email"
-                multiple
-                value={emailRecipients}
-                onChange={(e) => setEmailRecipients(e.target.value)}
-                placeholder="email1@example.com, email2@example.com"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #E9ECEF',
-                  borderRadius: 8,
-                  fontSize: 14
-                }}
-                disabled={emailSending}
-              />
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
-                Subject
-              </label>
-              <input
-                type="text"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #E9ECEF',
-                  borderRadius: 8,
-                  fontSize: 14
-                }}
-                disabled={emailSending}
-              />
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
-                Message
-              </label>
-              <textarea
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                rows={4}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #E9ECEF',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  fontFamily: 'inherit',
-                  resize: 'vertical'
-                }}
-                disabled={emailSending}
-              />
-            </div>
-
-            <div style={{ 
-              display: 'flex', 
-              gap: 12, 
-              justifyContent: 'flex-end',
-              marginTop: 24
-            }}>
-              <button
-                onClick={() => {
-                  setShowEmailModal(false);
-                  setEmailRecipients('');
-                  setEmailSubject('');
-                  setEmailBody('');
-                }}
-                disabled={emailSending}
-                style={{
-                  padding: '12px 24px',
-                  border: '2px solid #DEE2E6',
-                  borderRadius: 8,
-                  background: 'white',
-                  color: '#495057',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: emailSending ? 'not-allowed' : 'pointer',
-                  opacity: emailSending ? 0.5 : 1
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => openEmailWithOutlook(emailType)}
-                disabled={emailSending || !emailRecipients.trim()}
-                style={{
-                  padding: '12px 24px',
-                  border: 'none',
-                  borderRadius: 8,
-                  background: emailSending || !emailRecipients.trim() ? '#CCC' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: emailSending || !emailRecipients.trim() ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {emailSending ? 'Preparing...' : 'Open Outlook'}
-              </button>
-            </div>
-
-            {emailSending && (
-              <div style={{ marginTop: 16, color: '#6C757D', fontSize: 14, textAlign: 'center' }}>
-                Generating PDF and opening Outlook, please wait...
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
