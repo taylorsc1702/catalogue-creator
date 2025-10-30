@@ -732,35 +732,32 @@ async function renderMixedGoogleDocsHtml(
   }
   
   /* 3-up layout specific styles */
-  .layout-3-row {
-    display: grid;
-  grid-template-columns: 200px 1fr 100px; /* image | content | details */
-    gap: 10px;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    background: #ffffff;
-  min-height: 260px;
-  height: 260px;
-    max-width: 100%;
-    overflow: hidden;
-  }
-  
-  .product-image-3up {
-    display: flex;
-  align-items: center;
-    justify-content: center;
-  height: 100%;
-  }
-  
-  .product-image-3up .book-cover {
-  height: 75%;
-  width: auto;
+.layout-3-row {
+  display: grid;
+  grid-template-columns: 344px 1fr 100px; /* wider image column */
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  min-height: 300px;
   max-width: 100%;
-    object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+  overflow: hidden;
+}
+  
+.product-image-3up {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+  
+.product-image-3up .book-cover {
+  width: 344px;
+  height: auto;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
   
   .product-content-3up {
     display: flex;

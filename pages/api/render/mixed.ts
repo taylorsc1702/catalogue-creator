@@ -860,28 +860,25 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   
 .layout-3-row {
   display: grid;
-  grid-template-columns: 200px 1fr 100px; /* image | content | details */
+  grid-template-columns: 344px 1fr 100px; /* wider image column */
   gap: 10px;
   padding: 10px;
   border: 1px solid #e0e0e0;
   background: #ffffff;
-  min-height: 260px;
-  height: 260px; /* fixed height so the image can be 75% of the tile */
+  min-height: 300px;
   max-width: 100%;
   overflow: hidden;
 }
   
 .product-image-3up {
   display: flex;
-  align-items: center; /* center vertically inside the card */
+  align-items: center;
   justify-content: center;
-  height: 100%;
 }
   
 .product-image-3up .book-cover {
-  height: 75%; /* make image 3/4 of card height */
-  width: auto;
-  max-width: 100%;
+  width: 344px; /* explicit larger width */
+  height: auto;
   object-fit: contain;
   border: 1px solid #ddd;
   border-radius: 4px;
