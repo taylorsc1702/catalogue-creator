@@ -858,9 +858,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     display: grid !important;
   }
   
-.layout-3-row {
-  display: grid;
-  grid-template-columns: 176px 1fr 100px;
+  .layout-3-row {
+    display: grid;
+    grid-template-columns: 212px 1fr 100px;
   gap: 10px;
   padding: 10px;
   border: 1px solid #e0e0e0;
@@ -876,9 +876,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   justify-content: center;
 }
   
-.product-image-3up .book-cover {
-  width: 172px;
-  height: 228px;
+  .product-image-3up .book-cover {
+    width: 206px; /* +20% */
+    height: 274px; /* +20% */
   object-fit: contain;
   border: 1px solid #ddd;
   border-radius: 4px;

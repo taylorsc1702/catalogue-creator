@@ -734,7 +734,7 @@ async function renderMixedGoogleDocsHtml(
   /* 3-up layout specific styles */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 176px 1fr 100px;
+    grid-template-columns: 212px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -751,8 +751,8 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-image-3up .book-cover {
-    width: 172px;
-    height: 228px;
+    width: 206px;
+    height: 274px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
