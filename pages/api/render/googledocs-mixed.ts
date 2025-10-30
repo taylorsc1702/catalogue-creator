@@ -732,9 +732,9 @@ async function renderMixedGoogleDocsHtml(
   }
   
   /* 3-up layout specific styles */
-.layout-3-row {
+  .layout-3-row {
     display: grid;
-  grid-template-columns: 360px 1fr 100px;
+  grid-template-columns: 176px 1fr 100px; /* keep content start fixed */
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -744,19 +744,21 @@ async function renderMixedGoogleDocsHtml(
     overflow: hidden;
   }
   
-.product-image-3up {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .product-image-3up {
+    display: flex;
+    align-items: flex-start;
+  justify-content: flex-start;
+  overflow: visible;
+  }
   
-.product-image-3up .book-cover {
+  .product-image-3up .book-cover {
   width: 344px;
   height: 456px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-left: -86px;
   }
   
   .product-content-3up {
@@ -792,7 +794,7 @@ async function renderMixedGoogleDocsHtml(
     font-family: 'Calibri', sans-serif;
   }
   
-.product-description-3up {
+  .product-description-3up {
     font-size: 11px;
     color: #333;
     line-height: 1.3;

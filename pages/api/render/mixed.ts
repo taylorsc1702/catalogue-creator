@@ -859,8 +859,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   }
   
 .layout-3-row {
-    display: grid;
-  grid-template-columns: 360px 1fr 100px;
+  display: grid;
+  grid-template-columns: 176px 1fr 100px; /* keep content start fixed */
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -872,18 +872,20 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   
 .product-image-3up {
   display: flex;
-  align-items: center; /* center vertically within tile */
-  justify-content: center;
+  align-items: flex-start; /* original vertical alignment */
+  justify-content: flex-start; /* keep image hard-left */
+  overflow: visible; /* allow visual overflow to left */
 }
   
 .product-image-3up .book-cover {
-  width: 344px; /* 100% larger than original 172 */
-  height: 456px;
-    object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+  width: 344px; /* 2x original width */
+  height: 456px; /* 2x original height */
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-left: -86px; /* shift left by half the growth to keep right edge similar */
+}
   
   .product-content-3up {
     display: flex;
