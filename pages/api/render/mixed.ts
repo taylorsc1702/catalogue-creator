@@ -11,7 +11,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -31,13 +31,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         coverImageUrls: string[]; // New: Direct image URLs
         catalogueName: string;
       };
+      appendView?: 'none' | 'list' | 'compact-list' | 'table';
     };
     
     if (!items?.length) throw new Error("No items provided");
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -55,7 +56,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}) {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table') {
   const options: RenderOptions = {
     showFields,
     hyperlinkToggle,
@@ -162,6 +163,86 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
       });
     }
   }
+
+  // Build optional appended pages
+  const renderListRows = (_compact: boolean) => items.map((it, idx) => `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${esc(it.title || '')}</td>
+        <td>${esc(it.author || '')}</td>
+        <td>${esc(((it as unknown) as {isbn13?: string}).isbn13 || it.sku || '')}</td>
+        <td>${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
+      </tr>
+    `).join('');
+
+  const listTable = (_compact: boolean) => `
+    <div class="page layout-table" data-layout="table">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+      <div class="page-content" style="display:block;">
+        <table class="list-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
+          <thead class="table-header">
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd; width:28px;">#</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderListRows(false)}
+          </tbody>
+        </table>
+      </div>
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+    </div>`;
+
+  const simpleTable = () => `
+    <div class="page layout-table" data-layout="table">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+      <div class="page-content" style="display:block;">
+        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
+          <thead class="table-header">
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(it => {
+              const idObj = (it as unknown as { isbn13?: string; sku?: string });
+              const isbnVal = idObj.isbn13 || it.sku || '';
+              return `
+              <tr>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.title || '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.author || '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+    </div>`;
+
+  const appendedPagesHtml = appendView === 'list'
+    ? listTable(false)
+    : appendView === 'compact-list'
+      ? listTable(true)
+      : appendView === 'table'
+        ? simpleTable()
+        : '';
 
   return `<!doctype html>
 <html>
@@ -1165,6 +1246,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
 <body>
   ${frontCoverHtml}
   ${pagesHtml}
+  ${appendedPagesHtml}
   ${backCoverHtml}
 </body>
 </html>`;

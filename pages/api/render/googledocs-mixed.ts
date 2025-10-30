@@ -10,7 +10,7 @@ type ItemWithImages = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
+    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
       title?: string;
@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         coverImageUrls: string[];
         catalogueName: string;
       };
+      appendView?: 'none' | 'list' | 'compact-list' | 'table';
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -38,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
 
     // Generate the HTML with banner parameters
-    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData);
+    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -67,7 +68,8 @@ async function generateMixedGoogleDocsHtml(
     backCoverText2: string;
     coverImageUrls: string[];
     catalogueName: string;
-  }
+  },
+  appendView?: 'none' | 'list' | 'compact-list' | 'table'
 ) {
   // Download images for all items
   console.log("Downloading images for mixed Google Docs export...");
@@ -91,7 +93,7 @@ async function generateMixedGoogleDocsHtml(
   const itemsWithImages = await Promise.all(imagePromises);
   console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
 
-  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData);
+  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
 }
 
 async function renderMixedGoogleDocsHtml(
@@ -114,7 +116,8 @@ async function renderMixedGoogleDocsHtml(
     backCoverText2: string;
     coverImageUrls: string[];
     catalogueName: string;
-  }
+  },
+  appendView?: 'none' | 'list' | 'compact-list' | 'table'
 ) {
   const options: RenderOptions = {
     showFields,
@@ -228,6 +231,89 @@ async function renderMixedGoogleDocsHtml(
       });
     }
   }
+
+  // Build optional appended pages
+  const renderListRows = (_compact: boolean) => itemsWithImages.map(({item}, idx) => {
+      const idObj = (item as unknown as { isbn13?: string; sku?: string });
+      const isbnVal = idObj.isbn13 || item.sku || '';
+      return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${esc(item.title || '')}</td>
+        <td>${esc(item.author || '')}</td>
+        <td>${esc(isbnVal)}</td>
+        <td>${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
+      </tr>`;
+    }).join('');
+
+  const listTable = (_compact: boolean) => `
+    <div class="page layout-table" data-layout="table">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+      <div class="page-content" style="display:block;">
+        <table class="list-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
+          <thead class="table-header">
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd; width:28px;">#</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderListRows(false)}
+          </tbody>
+        </table>
+      </div>
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+    </div>`;
+
+  const simpleTable = () => `
+    <div class="page layout-table" data-layout="table">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+      <div class="page-content" style="display:block;">
+        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
+          <thead class="table-header">
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsWithImages.map(({item}) => {
+              const idObj = (item as unknown as { isbn13?: string; sku?: string });
+              const isbnVal = idObj.isbn13 || item.sku || '';
+              return `
+              <tr>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.title || '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.author || '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+        ${esc(websiteName || 'www.woodslane.com.au')}
+      </div>
+    </div>`;
+
+  const appendedPagesHtml = appendView === 'list'
+    ? listTable(false)
+    : appendView === 'compact-list'
+      ? listTable(true)
+      : appendView === 'table'
+        ? simpleTable()
+        : '';
 
   return `<!doctype html>
 <html>
@@ -956,6 +1042,7 @@ async function renderMixedGoogleDocsHtml(
 <body>
   ${frontCoverHtml}
   ${pagesHtml}
+  ${appendedPagesHtml}
   ${backCoverHtml}
 </body>
 </html>`;

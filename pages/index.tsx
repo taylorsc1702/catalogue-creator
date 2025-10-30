@@ -117,6 +117,8 @@ export default function Home() {
 
   // Email state
   const [emailGenerating, setEmailGenerating] = useState(false);
+  // Append view for mixed exports
+  const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -858,6 +860,7 @@ export default function Home() {
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          appendView,
           coverData: {
             showFrontCover,
             showBackCover,
@@ -930,6 +933,7 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          appendView,
                 coverData: {
                   showFrontCover,
                   showBackCover,
@@ -1874,6 +1878,25 @@ export default function Home() {
 
           {items.length > 0 && (
             <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: '#495057', fontWeight: 600 }}>Append view</span>
+                <select
+                  value={appendView}
+                  onChange={(e) => setAppendView(e.target.value as 'none'|'list'|'compact-list'|'table')}
+                  style={{
+                    border: '2px solid #E9ECEF',
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    fontSize: 13,
+                    background: '#FAFBFC'
+                  }}
+                >
+                  <option value="none">None</option>
+                  <option value="list">List</option>
+                  <option value="compact-list">Compact list</option>
+                  <option value="table">Table</option>
+                </select>
+              </label>
               <button 
                 onClick={() => setShowOrderEditor(!showOrderEditor)} 
                 style={btn(showOrderEditor)}
