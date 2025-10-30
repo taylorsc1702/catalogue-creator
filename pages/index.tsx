@@ -115,6 +115,14 @@ export default function Home() {
   const [coverImageUrls, setCoverImageUrls] = useState<string[]>(["", "", "", ""]);
   const [coverCatalogueName, setCoverCatalogueName] = useState("");
 
+  // Email state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailRecipients, setEmailRecipients] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailType, setEmailType] = useState<'mixed' | 'single'>('mixed');
+  const [emailSending, setEmailSending] = useState(false);
+
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
     const logos = {
@@ -898,6 +906,223 @@ export default function Home() {
     }
   }
 
+  async function generatePDF(type: 'mixed' | 'single'): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create a hidden iframe to load the HTML and generate PDF
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '-9999px';
+        iframe.style.width = '210mm';
+        iframe.style.height = '297mm';
+        document.body.appendChild(iframe);
+
+        // Load HTML content
+        const loadHtml = async () => {
+          let htmlUrl = '';
+          if (type === 'mixed') {
+            const layoutAssignments = items.map((_, i) => itemLayouts[i] || layout);
+            const resp = await fetch("/api/render/mixed", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ 
+                items,
+                layoutAssignments,
+                showFields: { authorBio: true },
+                hyperlinkToggle,
+                itemBarcodeTypes,
+                barcodeType,
+                bannerColor: getBannerColor(hyperlinkToggle),
+                websiteName: getWebsiteName(hyperlinkToggle),
+                utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                coverData: {
+                  showFrontCover,
+                  showBackCover,
+                  frontCoverText1,
+                  frontCoverText2,
+                  backCoverText1,
+                  backCoverText2,
+                  coverImageUrls,
+                  catalogueName: coverCatalogueName || catalogueName
+                }
+              })
+            });
+            const html = await resp.text();
+            const blob = new Blob([html], { type: 'text/html' });
+            htmlUrl = URL.createObjectURL(blob);
+          } else {
+            const resp = await fetch("/api/render/html", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ 
+                items,
+                layout,
+                showFields: { authorBio: layout === 1 },
+                hyperlinkToggle,
+                itemBarcodeTypes,
+                barcodeType,
+                bannerColor: getBannerColor(hyperlinkToggle),
+                websiteName: getWebsiteName(hyperlinkToggle),
+                utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                coverData: {
+                  showFrontCover,
+                  showBackCover,
+                  frontCoverText1,
+                  frontCoverText2,
+                  backCoverText1,
+                  backCoverText2,
+                  coverImageUrls,
+                  catalogueName: coverCatalogueName || catalogueName
+                }
+              })
+            });
+            const html = await resp.text();
+            const blob = new Blob([html], { type: 'text/html' });
+            htmlUrl = URL.createObjectURL(blob);
+          }
+
+          iframe.src = htmlUrl;
+          
+          iframe.onload = () => {
+            setTimeout(() => {
+              // Use html2canvas and jsPDF to generate PDF
+              const script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+              script.onload = () => {
+                const pdfScript = document.createElement('script');
+                pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js';
+                pdfScript.onload = () => {
+                  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                  if (!iframeDoc) {
+                    reject(new Error('Could not access iframe document'));
+                    return;
+                  }
+                  
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const html2canvasLib = (window as Record<string, any>).html2canvas;
+                  if (!html2canvasLib) {
+                    reject(new Error('html2canvas library not loaded'));
+                    return;
+                  }
+                  
+                  html2canvasLib(iframeDoc.body, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                  }).then((canvas: HTMLCanvasElement) => {
+                    const imgData = canvas.toDataURL('image/png');
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const jsPDF = (window as Record<string, any>).jspdf?.jsPDF;
+                    if (!jsPDF) {
+                      reject(new Error('jsPDF library not loaded'));
+                      return;
+                    }
+                    const pdf = new jsPDF({
+                      orientation: 'portrait',
+                      unit: 'mm',
+                      format: 'a4'
+                    });
+                    
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    while (heightLeft >= 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                      heightLeft -= pageHeight;
+                    }
+                    
+                    const pdfBase64 = pdf.output('datauristring');
+                    document.body.removeChild(iframe);
+                    URL.revokeObjectURL(htmlUrl);
+                    resolve(pdfBase64);
+                  }).catch(reject);
+                };
+                document.head.appendChild(pdfScript);
+              };
+              document.head.appendChild(script);
+            }, 2000); // Wait for images to load
+          };
+        };
+
+        loadHtml();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async function openEmailWithOutlook(type: 'mixed' | 'single') {
+    if (!emailRecipients.trim()) {
+      alert('Please enter at least one recipient email address');
+      return;
+    }
+
+    setEmailSending(true);
+    try {
+      // Generate PDF
+      const pdfBase64 = await generatePDF(type);
+      
+      // Convert base64 to blob
+      const base64Data = pdfBase64.split(',')[1] || pdfBase64;
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      
+      // Create download link and trigger download
+      const url = URL.createObjectURL(blob);
+      const filename = `catalogue-${type}-${new Date().toISOString().split('T')[0]}.pdf`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Wait a moment for download to start
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Create mailto link
+      const recipients = emailRecipients.split(',').map(e => e.trim()).filter(Boolean).join(',');
+      const subject = encodeURIComponent(emailSubject || `${type === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue - ${catalogueName || new Date().toLocaleDateString()}`);
+      const body = encodeURIComponent((emailBody || `Please find the attached ${type === 'mixed' ? 'mixed layout' : 'single layout'} product catalogue.`) + `\n\n[The PDF file "${filename}" has been downloaded to your Downloads folder. Please attach it.]`);
+      
+      // Open mailto: link (will open default email client - Outlook)
+      const mailtoLink = `mailto:${recipients}?subject=${subject}&body=${body}`;
+      window.location.href = mailtoLink;
+      
+      alert(`PDF downloaded as "${filename}". Outlook should open. Please attach the downloaded PDF file.`);
+      
+      setShowEmailModal(false);
+      setEmailRecipients('');
+      setEmailSubject('');
+      setEmailBody('');
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Error preparing email: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setEmailSending(false);
+    }
+  }
+
+  function openEmailModal(type: 'mixed' | 'single') {
+    setEmailType(type);
+    setEmailSubject(`${type === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue - ${catalogueName || new Date().toLocaleDateString()}`);
+    setEmailBody(`Please find the attached ${type === 'mixed' ? 'mixed layout' : 'single layout'} product catalogue.`);
+    setShowEmailModal(true);
+  }
+
   return (
     <div style={{ 
       padding: 32, 
@@ -1605,6 +1830,7 @@ export default function Home() {
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
             <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
+            <button onClick={() => openEmailModal('single')} disabled={!items.length} style={btn()}>📧 Outlook - PDF</button>
           </div>
 
 
@@ -1622,6 +1848,9 @@ export default function Home() {
               <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
                 🚀 Mixed Google Doc
               </button>
+              <button onClick={() => openEmailModal('mixed')} disabled={!items.length} style={btn()}>
+                📧 Outlook - Mixed Layout (PDF)
+              </button>
               {showOrderEditor && (
                 <span style={{ fontSize: 13, color: '#656F91' }}>
                   💡 Use arrows to reorder items, assign layouts, or enter position numbers
@@ -1634,6 +1863,154 @@ export default function Home() {
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
       </div>
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: 20
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: 12,
+            padding: 32,
+            maxWidth: 600,
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: 24, color: '#2C3E50' }}>
+              📧 Open Outlook - {emailType === 'mixed' ? 'Mixed Layout' : 'Single Layout'} Catalogue
+            </h2>
+            <div style={{ marginBottom: 16, padding: 12, background: '#E3F2FD', borderRadius: 8, fontSize: 13, color: '#1565C0' }}>
+              ℹ️ The PDF will be downloaded to your Downloads folder, then Outlook will open. Please attach the downloaded PDF file.
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
+                Recipients (comma-separated) *
+              </label>
+              <input
+                type="email"
+                multiple
+                value={emailRecipients}
+                onChange={(e) => setEmailRecipients(e.target.value)}
+                placeholder="email1@example.com, email2@example.com"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #E9ECEF',
+                  borderRadius: 8,
+                  fontSize: 14
+                }}
+                disabled={emailSending}
+              />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
+                Subject
+              </label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #E9ECEF',
+                  borderRadius: 8,
+                  fontSize: 14
+                }}
+                disabled={emailSending}
+              />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#495057' }}>
+                Message
+              </label>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #E9ECEF',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+                disabled={emailSending}
+              />
+            </div>
+
+            <div style={{ 
+              display: 'flex', 
+              gap: 12, 
+              justifyContent: 'flex-end',
+              marginTop: 24
+            }}>
+              <button
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setEmailRecipients('');
+                  setEmailSubject('');
+                  setEmailBody('');
+                }}
+                disabled={emailSending}
+                style={{
+                  padding: '12px 24px',
+                  border: '2px solid #DEE2E6',
+                  borderRadius: 8,
+                  background: 'white',
+                  color: '#495057',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: emailSending ? 'not-allowed' : 'pointer',
+                  opacity: emailSending ? 0.5 : 1
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => openEmailWithOutlook(emailType)}
+                disabled={emailSending || !emailRecipients.trim()}
+                style={{
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: 8,
+                  background: emailSending || !emailRecipients.trim() ? '#CCC' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: emailSending || !emailRecipients.trim() ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {emailSending ? 'Preparing...' : 'Open Outlook'}
+              </button>
+            </div>
+
+            {emailSending && (
+              <div style={{ marginTop: 16, color: '#6C757D', fontSize: 14, textAlign: 'center' }}>
+                Generating PDF and opening Outlook, please wait...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
