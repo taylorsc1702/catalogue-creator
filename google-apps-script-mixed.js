@@ -181,9 +181,10 @@ function createMixedCatalogueDocument(data) {
 function createMixedPage(body, pageItems, layout, showFields, bannerColor, websiteName, utmParams) {
   console.log(`Creating page with layout ${layout} and ${pageItems.length} items`);
   
-  // Add banner header
+  // Add banner header - REDUCED SPACING
   const bannerParagraph = body.appendParagraph(websiteName);
   bannerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  bannerParagraph.setSpacingAfter(2); // Reduced spacing after header (was default)
   const bannerText = bannerParagraph.editAsText();
   if (bannerText) {
     bannerText.setBackgroundColor(bannerColor).setForegroundColor('#FFFFFF').setBold(true).setFontSize(14).setFontFamily('Calibri');
@@ -192,13 +193,16 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
   // Add content based on layout
   if (layout === 1) {
     createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams);
+    // Add internals box at bottom for 1-up
+    addInternalsBoxFor1Up(body, pageItems[0].item, showFields);
   } else if (layout === '2-int') {
     create2IntLayout(body, pageItems.map(p => p.item));
   } else {
     createMultiItemLayout(body, pageItems, layout);
   }
   
-  // Add banner footer
+  // Add banner footer - REDUCED SPACING
+  body.appendParagraph('').setSpacingAfter(2); // Small gap before footer
   const footerParagraph = body.appendParagraph(websiteName);
   footerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   const footerText = footerParagraph.editAsText();
@@ -236,13 +240,13 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
   leftCell.setPaddingLeft(6);
   leftCell.setPaddingRight(6);
   
-  // Add image - MATCH HTML SIZE: 200x300 (not 250x375)
+  // Add image - 60% OF ORIGINAL SIZE (200x300 -> 120x180)
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = leftCell.appendImage(imageBlob);
-      image.setWidth(200);   // HTML uses 200px
-      image.setHeight(300);  // HTML uses 300px (aspect ratio maintained)
+      image.setWidth(120);   // 60% of 200
+      image.setHeight(180);  // 60% of 300 (aspect ratio maintained)
     } catch (error) {
       console.log('Could not load image:', error);
       leftCell.appendParagraph('Image not available');
@@ -275,37 +279,37 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
   rightCell.setPaddingLeft(6);
   rightCell.setPaddingRight(6);
   
-  // Title - MATCH HTML MIXED VIEW: 24px (or 20px in some contexts)
+  // Title - 2 POINTS SMALLER (24 -> 22)
   const titleParagraph = rightCell.appendParagraph(item.title || '');
   const titleText = titleParagraph.editAsText();
   if (titleText) {
-    titleText.setFontSize(24).setBold(true).setFontFamily('Calibri'); // HTML mixed: 24px
+    titleText.setFontSize(22).setBold(true).setFontFamily('Calibri'); // 24 - 2 = 22
   }
   
-  // Subtitle - MATCH HTML MIXED VIEW: 18px
+  // Subtitle - 2 POINTS SMALLER (18 -> 16)
   if (item.subtitle) {
     const subtitleParagraph = rightCell.appendParagraph(item.subtitle);
     const subtitleText = subtitleParagraph.editAsText();
     if (subtitleText) {
-      subtitleText.setFontSize(18).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri'); // HTML mixed: 18px
+      subtitleText.setFontSize(16).setItalic(true).setForegroundColor('#666666').setFontFamily('Calibri'); // 18 - 2 = 16
     }
   }
   
-  // Author - MATCH HTML MIXED VIEW: 16px
+  // Author - 2 POINTS SMALLER (16 -> 14)
   if (item.author) {
     const authorParagraph = rightCell.appendParagraph(item.author);
     const authorText = authorParagraph.editAsText();
     if (authorText) {
-      authorText.setFontSize(16).setForegroundColor('#000000').setFontFamily('Calibri'); // HTML mixed: 16px
+      authorText.setFontSize(14).setForegroundColor('#000000').setFontFamily('Calibri'); // 16 - 2 = 14
     }
   }
   
-  // Description - MATCH HTML MIXED VIEW: 14px
+  // Description - 2 POINTS SMALLER (14 -> 12)
   if (item.description) {
     const descParagraph = rightCell.appendParagraph(item.description);
     const descText = descParagraph.editAsText();
     if (descText) {
-      descText.setFontSize(14).setForegroundColor('#333333').setFontFamily('Calibri'); // HTML mixed: 14px
+      descText.setFontSize(12).setForegroundColor('#333333').setFontFamily('Calibri'); // 14 - 2 = 12
     }
   }
   
@@ -364,46 +368,86 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
     }
   }
   
-  // Price
+  // Price - 2 POINTS SMALLER (14 -> 12)
   if (showFields.price && item.price) {
-    const priceParagraph = rightCell.appendParagraph('$' + item.price);
+    const priceParagraph = rightCell.appendParagraph('AUD$ ' + item.price);
     const priceText = priceParagraph.editAsText();
     if (priceText) {
-      priceText.setFontSize(14).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri');
+      priceText.setFontSize(12).setBold(true).setForegroundColor('#d63384').setFontFamily('Calibri'); // 14 - 2 = 12
     }
+    priceParagraph.setSpacingAfter(4);
   }
   
-  // Internals section (full width at bottom)
+  // Meta text sizes - ALL 2 POINTS SMALLER (12 -> 10)
+  // (Meta text already handled in detailsTable above)
+}
+
+// Add internals box at bottom for 1-up layout
+function addInternalsBoxFor1Up(body, item, showFields) {
   if (showFields.internals && item.additionalImages && item.additionalImages.length > 0) {
-    const internalsTitle = body.appendParagraph('Internals:');
+    // Add spacing before internals box
+    body.appendParagraph('').setSpacingAfter(4);
+    
+    // Create bordered box for internals
+    const internalsTable = body.appendTable();
+    internalsTable.setBorderWidth(1); // Visible border to create box
+    
+    const numImages = Math.min(item.additionalImages.length, 4);
+    
+    // Create header row that spans all columns
+    const headerRow = internalsTable.appendTableRow();
+    const headerCell = headerRow.appendTableCell();
+    // Make header span all columns if multiple images
+    if (numImages > 1) {
+      try {
+        headerCell.merge().setNumColumns(numImages);
+      } catch (e) {
+        console.log('merge not supported:', e);
+      }
+    }
+    headerCell.setPaddingTop(4);
+    headerCell.setPaddingBottom(4);
+    headerCell.setPaddingLeft(4);
+    headerCell.setPaddingRight(4);
+    
+    const internalsTitle = headerCell.appendParagraph('Internals:');
     const internalsTitleText = internalsTitle.editAsText();
     if (internalsTitleText) {
-      internalsTitleText.setFontSize(14).setBold(true).setForegroundColor('#1565C0').setFontFamily('Calibri');
+      internalsTitleText.setFontSize(12).setBold(true).setForegroundColor('#1565C0').setFontFamily('Calibri'); // 2 points smaller
     }
     
-    // Create table for internals (up to 4 images)
-    const internalsTable = body.appendTable();
-    internalsTable.setBorderWidth(0);
-    const internalsRow = internalsTable.appendTableRow();
-    
+    // Create row for images
+    const imagesRow = internalsTable.appendTableRow();
     item.additionalImages.slice(0, 4).forEach((imageUrl, index) => {
-      const cell = internalsRow.appendTableCell();
+      const cell = imagesRow.appendTableCell();
       cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-      cell.setPaddingTop(10);
-      cell.setPaddingBottom(10);
-      cell.setPaddingLeft(10);
-      cell.setPaddingRight(10);
+      cell.setPaddingTop(4);
+      cell.setPaddingBottom(4);
+      cell.setPaddingLeft(4);
+      cell.setPaddingRight(4);
       
       try {
         const imageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
         const image = cell.appendImage(imageBlob);
-        image.setWidth(120);
-        image.setHeight(160);
+        image.setWidth(110);  // Slightly smaller to fit in box
+        image.setHeight(147); // Maintain aspect ratio
       } catch (error) {
         console.log('Could not load internal image:', error);
-        cell.appendParagraph('Image not available');
+        cell.appendParagraph('Img N/A').setFontSize(8);
       }
     });
+    
+    // Set column widths after cells exist
+    try {
+      if (numImages > 0) {
+        const colWidth = 520 / numImages; // Divide full width by number of images
+        for (let i = 0; i < numImages; i++) {
+          internalsTable.setColumnWidth(i, colWidth);
+        }
+      }
+    } catch (e) {
+      console.log('setColumnWidth not supported:', e);
+    }
   }
 }
 
@@ -429,7 +473,7 @@ function createMultiItemLayout(body, pageItems, layout) {
   } else if (layout === 3) {
     rows = 3; cols = 1; // 3 ROWS vertically stacked
     cellWidth = 520; // Full width
-    cellHeight = 220; // Each row gets ~220pt (680/3 with spacing)
+    cellHeight = 210; // Reduced to fit 3 on page (was 220)
   } else if (layout === 4) {
     rows = 2; cols = 2;
     cellWidth = 255; // Quarter page
@@ -459,10 +503,12 @@ function createMultiItemLayout(body, pageItems, layout) {
       
       // Fixed cell dimensions - prevents shifting
       cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-      cell.setPaddingTop(4);  // Minimal padding for print
-      cell.setPaddingBottom(4);
-      cell.setPaddingLeft(4);
-      cell.setPaddingRight(4);
+      // Reduced padding for 3-up to fit more content
+      const cellPadding = layout === 3 ? 2 : 4;  // Less padding for 3-up
+      cell.setPaddingTop(cellPadding);
+      cell.setPaddingBottom(cellPadding);
+      cell.setPaddingLeft(cellPadding);
+      cell.setPaddingRight(cellPadding);
       
       // Set fixed cell width to prevent overflow
       try {
@@ -527,12 +573,12 @@ function create2IntLayout(body, items) {
   }
   
   // Configure cells and add content
-  // Match HTML: padding 8px (approximately 6pt in Google Apps Script)
+  // REDUCED LEFT PADDING FOR 2-INT (6 -> 3) so text fits better
   [cell0, cell1].forEach((cell, i) => {
     cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
-    cell.setPaddingTop(6);  // 8px ≈ 6pt
+    cell.setPaddingTop(6);
     cell.setPaddingBottom(6);
-    cell.setPaddingLeft(6);
+    cell.setPaddingLeft(3);  // REDUCED from 6 to 3 for better text fit
     cell.setPaddingRight(6);
     
     if (i < items.length) {
@@ -546,14 +592,14 @@ function create2IntLayout(body, items) {
 function createProductCardWithInternal(cell, item, layout) {
   console.log(`Creating 2-int product card for:`, item.title);
   
-  // Image at top (175x263, same as 2-up)
+  // Image at top - 75% OF ORIGINAL SIZE (175x263 -> 131x197)
   if (item.imageUrl) {
     try {
       const imageBlob = UrlFetchApp.fetch(item.imageUrl).getBlob();
       const image = cell.appendImage(imageBlob);
-      image.setWidth(175);
-      image.setHeight(263);
-      cell.appendParagraph('').setSpacingAfter(4); // Gap after image
+      image.setWidth(131);  // 75% of 175
+      image.setHeight(197); // 75% of 263
+      cell.appendParagraph('').setSpacingAfter(3); // Gap after image
     } catch (error) {
       console.log('Could not load image:', error);
       cell.appendParagraph('Image not available');
@@ -629,9 +675,9 @@ function createProductCardWithInternal(cell, item, layout) {
     metaItems.forEach((meta, index) => {
       const metaParagraph = cell.appendParagraph(meta);
       const metaText = metaParagraph.editAsText();
-      if (metaText) {
-        metaText.setFontSize(12).setForegroundColor('#666666').setFontFamily('Calibri');
-      }
+    if (metaText) {
+      metaText.setFontSize(10).setForegroundColor('#666666').setFontFamily('Calibri'); // 12 - 2 = 10
+    }
       metaParagraph.setSpacingAfter(1);
     });
     cell.appendParagraph('').setSpacingAfter(4); // Gap after meta
@@ -976,9 +1022,9 @@ function createProductCard3Up(cell, item, cellWidth, cellHeight) {
     const maxLines = Math.floor(availableHeight / (descFontSize * 1.3));
     const maxLength = Math.floor(charsPerLine * maxLines * 0.85); // 85% safety margin
     
-    // More aggressive truncation - max 400 chars for 3-up
-    const truncatedDesc = plainDescription.length > Math.min(400, maxLength) 
-      ? plainDescription.substring(0, Math.min(397, maxLength - 3)) + '...' 
+    // More aggressive truncation - max 250 chars for 3-up (reduced from 400)
+    const truncatedDesc = plainDescription.length > Math.min(250, maxLength) 
+      ? plainDescription.substring(0, Math.min(247, maxLength - 3)) + '...' 
       : plainDescription;
     
     if (truncatedDesc) {
