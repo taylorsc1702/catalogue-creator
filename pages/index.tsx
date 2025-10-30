@@ -119,6 +119,10 @@ export default function Home() {
   const [emailGenerating, setEmailGenerating] = useState(false);
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
+  // Preview & page reordering modal
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [pageGroups, setPageGroups] = useState<number[][]>([]); // array of arrays of item indices per page
+  const [reorderedPageGroups, setReorderedPageGroups] = useState<number[][]>([]);
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -902,6 +906,74 @@ export default function Home() {
     } catch (error) {
       alert("Error generating mixed layout: " + (error instanceof Error ? error.message : "Unknown error"));
     }
+  }
+
+  // Compute page groups based on current per-item layout assignments
+  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8}): number[][] {
+    const groups: number[][] = [];
+    if (!currentItems.length) return groups;
+    const layoutAssignments = currentItems.map((_, i) => currentItemLayouts[i] || layout);
+    let current: number[] = [];
+    let currentLayout = layoutAssignments[0];
+    let capacity = currentLayout === '2-int' ? 2 : currentLayout;
+    for (let i = 0; i < currentItems.length; i++) {
+      const assigned = layoutAssignments[i];
+      const assignedCapacity = assigned === '2-int' ? 2 : assigned;
+      if (current.length === 0) {
+        currentLayout = assigned;
+        capacity = assignedCapacity;
+      }
+      if (assigned !== currentLayout || current.length >= capacity) {
+        if (current.length) groups.push(current);
+        current = [i];
+        currentLayout = assigned;
+        capacity = assignedCapacity;
+      } else {
+        current.push(i);
+      }
+    }
+    if (current.length) groups.push(current);
+    return groups;
+  }
+
+  function openPreviewAndReorder() {
+    const groups = computePageGroups(items, itemLayouts);
+    setPageGroups(groups);
+    setReorderedPageGroups(groups);
+    setShowPreviewModal(true);
+  }
+
+  function movePage(upIndex: number, direction: -1 | 1) {
+    setReorderedPageGroups(prev => {
+      const idx = upIndex;
+      const to = idx + direction;
+      if (to < 0 || to >= prev.length) return prev;
+      const copy = prev.map(pg => [...pg]);
+      const [moved] = copy.splice(idx, 1);
+      copy.splice(to, 0, moved);
+      return copy;
+    });
+  }
+
+  function applyPageOrder() {
+    // Flatten new order to a list of old indices
+    const flatOldIndices = reorderedPageGroups.flat();
+    // Rebuild items
+    const newItems = flatOldIndices.map(i => items[i]);
+    // Rebuild per-index maps
+    const newItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8} = {};
+    const newItemBarcodeTypes: {[key:number]: "EAN-13"|"QR Code"|"None"} = {};
+    const newItemAuthorBioToggle: {[key:number]: boolean} = {};
+    flatOldIndices.forEach((oldIdx, newIdx) => {
+      if (itemLayouts[oldIdx] !== undefined) newItemLayouts[newIdx] = itemLayouts[oldIdx];
+      if (itemBarcodeTypes[oldIdx] !== undefined) newItemBarcodeTypes[newIdx] = itemBarcodeTypes[oldIdx];
+      if (itemAuthorBioToggle[oldIdx] !== undefined) newItemAuthorBioToggle[newIdx] = itemAuthorBioToggle[oldIdx];
+    });
+    setItems(newItems);
+    setItemLayouts(newItemLayouts);
+    setItemBarcodeTypes(newItemBarcodeTypes);
+    setItemAuthorBioToggle(newItemAuthorBioToggle);
+    setShowPreviewModal(false);
   }
 
   async function generatePDF(type: 'mixed' | 'single'): Promise<string> {
@@ -1906,6 +1978,12 @@ export default function Home() {
               <button onClick={openMixedLayout} disabled={!items.length} style={btn()}>
                 🎨 Mixed Layout View
               </button>
+              <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
+                🧩 Preview & Reorder Pages
+              </button>
+              <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
+                🧩 Preview & Reorder Pages
+              </button>
               <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
                 🚀 Mixed Google Doc
               </button>
@@ -1923,6 +2001,54 @@ export default function Home() {
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
       <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      {showPreviewModal && (
+        <div style={{position:'fixed',inset:0 as unknown as number,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}}>
+          <div style={{background:'#fff',borderRadius:12,padding:16,width:'90vw',maxWidth:1100,maxHeight:'85vh',overflow:'auto',boxShadow:'0 12px 32px rgba(0,0,0,0.25)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <h3 style={{margin:0,fontSize:18}}>Preview & Reorder Pages</h3>
+              <button onClick={()=>setShowPreviewModal(false)} style={btn(false)}>Close</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:16}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))',gap:12}}>
+                {reorderedPageGroups.map((group, i)=>{
+                  const firstIdx = group[0];
+                  const lastIdx = group[group.length-1];
+                  const layoutLabel = (itemLayouts[firstIdx] || layout).toString();
+                  return (
+                    <div key={i} style={{border:'1px solid #E9ECEF',borderRadius:10,padding:10,background:'#fff'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                        <strong>Page {i+1}</strong>
+                        <span style={{fontSize:12,color:'#6c757d'}}>Layout: {layoutLabel}</span>
+                      </div>
+                      <div style={{fontSize:12,color:'#495057',marginBottom:8}}>Items {firstIdx+1}–{lastIdx+1}</div>
+                      <ul style={{margin:0,paddingLeft:18,fontSize:12,maxHeight:120,overflow:'auto'}}>
+                        {group.map(idx => (
+                          <li key={idx} title={items[idx]?.title || ''}>{items[idx]?.title || '(Untitled)'}</li>
+                        ))}
+                      </ul>
+                      <div style={{display:'flex',gap:8,marginTop:10}}>
+                        <button onClick={()=>movePage(i,-1)} style={btn(false)} disabled={i===0}>↑ Move Up</button>
+                        <button onClick={()=>movePage(i,1)} style={btn(false)} disabled={i===reorderedPageGroups.length-1}>↓ Move Down</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{border:'1px solid #E9ECEF',borderRadius:10,padding:12,background:'#FAFBFC'}}>
+                <div style={{fontSize:13,color:'#495057',marginBottom:8,fontWeight:600}}>Actions</div>
+                <div style={{display:'grid',gap:8}}>
+                  <button onClick={applyPageOrder} style={btn(true)}>Apply Order</button>
+                  <button onClick={()=>{setReorderedPageGroups(pageGroups);}} style={btn(false)}>Reset Order</button>
+                  <button onClick={openMixedLayout} style={btn(false)}>Open Mixed Layout View</button>
+                </div>
+                <div style={{fontSize:12,color:'#6c757d',marginTop:12}}>
+                  This preview lists the items per page. After applying, all exports will use the new order.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
