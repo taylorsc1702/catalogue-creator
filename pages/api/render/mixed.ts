@@ -289,7 +289,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.title || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.author || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(isbnVal)}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.price || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.imidis || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\"></td>
               </tr>`;

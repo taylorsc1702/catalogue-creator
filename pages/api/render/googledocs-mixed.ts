@@ -359,7 +359,7 @@ async function renderMixedGoogleDocsHtml(
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.title || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.author || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(isbnVal)}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.price || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.imidis || '')}</td>
                 <td style=\"padding:6px; border:1px solid #eee;\"></td>
               </tr>`;

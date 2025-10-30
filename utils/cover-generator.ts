@@ -542,7 +542,8 @@ export function generateCoverHTML(data: CoverData): string {
   // Generate featured book images - only create containers for valid URLs
   const validUrls = coverImageUrls.filter(url => url && url.trim());
   const featuredBooks = validUrls.map((url, index) => {
-    return `<img src="${url}" alt="Cover Image ${index + 1}" class="featured-book-image" />`;
+    const spanAll = validUrls.length === 1 ? 'style="grid-column:1 / -1; grid-row:1 / -1;"' : '';
+    return `<img src="${url}" alt="Cover Image ${index + 1}" class="featured-book-image" ${spanAll} />`;
   }).join('');
   
   // Determine grid class based on number of valid images
@@ -551,7 +552,7 @@ export function generateCoverHTML(data: CoverData): string {
   
   switch (validImageCount) {
     case 1:
-      gridClass = 'single-image';
+      gridClass = 'four-images'; // use full 4-grid area
       break;
     case 2:
       gridClass = 'two-images';
