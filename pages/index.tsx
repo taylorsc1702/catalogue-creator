@@ -121,8 +121,10 @@ export default function Home() {
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [pageGroups, setPageGroups] = useState<number[][]>([]); // array of arrays of item indices per page
-  const [reorderedPageGroups, setReorderedPageGroups] = useState<number[][]>([]);
+  type PageGroup = number[] | 'APPEND';
+  const [pageGroups, setPageGroups] = useState<PageGroup[]>([]);
+  const [reorderedPageGroups, setReorderedPageGroups] = useState<PageGroup[]>([]);
+  const [appendInsertIndex, setAppendInsertIndex] = useState<number | null>(null);
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -865,6 +867,7 @@ export default function Home() {
           websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           appendView,
+          appendInsertIndex,
           coverData: {
             showFrontCover,
             showBackCover,
@@ -909,8 +912,8 @@ export default function Home() {
   }
 
   // Compute page groups based on current per-item layout assignments
-  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8}): number[][] {
-    const groups: number[][] = [];
+  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8}): PageGroup[] {
+    const groups: PageGroup[] = [];
     if (!currentItems.length) return groups;
     const layoutAssignments = currentItems.map((_, i) => currentItemLayouts[i] || layout);
     let current: number[] = [];
@@ -933,6 +936,8 @@ export default function Home() {
       }
     }
     if (current.length) groups.push(current);
+    // If an appended view is selected, add a synthetic APPEND page at the end
+    if (appendView !== 'none') groups.push('APPEND');
     return groups;
   }
 
@@ -948,7 +953,7 @@ export default function Home() {
       const idx = upIndex;
       const to = idx + direction;
       if (to < 0 || to >= prev.length) return prev;
-      const copy = prev.map(pg => [...pg]);
+      const copy = prev.map(pg => (pg === 'APPEND' ? 'APPEND' : [...pg] as PageGroup));
       const [moved] = copy.splice(idx, 1);
       copy.splice(to, 0, moved);
       return copy;
@@ -957,7 +962,7 @@ export default function Home() {
 
   function applyPageOrder() {
     // Flatten new order to a list of old indices
-    const flatOldIndices = reorderedPageGroups.flat();
+    const flatOldIndices = reorderedPageGroups.filter(g => g !== 'APPEND').flat() as number[];
     // Rebuild items
     const newItems = flatOldIndices.map(i => items[i]);
     // Rebuild per-index maps
@@ -973,6 +978,9 @@ export default function Home() {
     setItemLayouts(newItemLayouts);
     setItemBarcodeTypes(newItemBarcodeTypes);
     setItemAuthorBioToggle(newItemAuthorBioToggle);
+    // Update append insertion index
+    const idx = reorderedPageGroups.findIndex(g => g === 'APPEND');
+    setAppendInsertIndex(idx >= 0 ? idx : null);
     setShowPreviewModal(false);
   }
 
@@ -1005,7 +1013,8 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
-          appendView,
+                appendView,
+                appendInsertIndex,
                 coverData: {
                   showFrontCover,
                   showBackCover,
@@ -2011,6 +2020,21 @@ export default function Home() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:16}}>
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))',gap:12}}>
                 {reorderedPageGroups.map((group, i)=>{
+                  if (group === 'APPEND') {
+                    return (
+                      <div key={`append-${i}`} style={{border:'1px solid #E9ECEF',borderRadius:10,padding:10,background:'#fff'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                          <strong>Page {i+1}</strong>
+                          <span style={{fontSize:12,color:'#6c757d'}}>Appended: {appendView.replace('-', ' ')}</span>
+                        </div>
+                        <div style={{fontSize:12,color:'#495057',marginBottom:8}}>Summary page</div>
+                        <div style={{display:'flex',gap:8,marginTop:10}}>
+                          <button onClick={()=>movePage(i,-1)} style={btn(false)} disabled={i===0}>↑ Move Up</button>
+                          <button onClick={()=>movePage(i,1)} style={btn(false)} disabled={i===reorderedPageGroups.length-1}>↓ Move Down</button>
+                        </div>
+                      </div>
+                    );
+                  }
                   const firstIdx = group[0];
                   const lastIdx = group[group.length-1];
                   const layoutLabel = (itemLayouts[firstIdx] || layout).toString();

@@ -14,7 +14,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView, appendInsertIndex } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -35,13 +35,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         catalogueName: string;
       };
       appendView?: 'none' | 'list' | 'compact-list' | 'table';
+      appendInsertIndex?: number | null;
     };
     
     if (!items?.length) throw new Error("No items provided");
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView, appendInsertIndex);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -59,7 +60,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, appendView?: 'none' | 'list' | 'compact-list' | 'table') {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null) {
   const options: RenderOptions = {
     showFields,
     hyperlinkToggle,
@@ -97,7 +98,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     pages.push({ items: currentPage, layout: currentLayout });
   }
 
-  const pagesHtml = pages.map((page) => {
+  const pageHtmlArray = pages.map((page) => {
     const createProductCard = (it: Item) => {
       // Find the global index of this item
       const globalIndex = items.findIndex(item => item.handle === it.handle);
@@ -130,7 +131,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
-  }).join("");
+  });
 
   // Generate covers if requested
   let frontCoverHtml = '';
@@ -308,6 +309,19 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
       : appendView === 'table'
         ? simpleTable()
         : '';
+
+  // Merge pages with optional appended view at desired index
+  let mergedPagesHtml = '';
+  if (appendedPagesHtml) {
+    const insertAt = typeof appendInsertIndex === 'number' && appendInsertIndex >= 0 && appendInsertIndex <= pageHtmlArray.length
+      ? appendInsertIndex
+      : pageHtmlArray.length; // default to end
+    const before = pageHtmlArray.slice(0, insertAt).join("");
+    const after = pageHtmlArray.slice(insertAt).join("");
+    mergedPagesHtml = `${before}${appendedPagesHtml}${after}`;
+  } else {
+    mergedPagesHtml = pageHtmlArray.join("");
+  }
 
   return `<!doctype html>
 <html>
@@ -1310,8 +1324,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
 </head>
 <body>
   ${frontCoverHtml}
-  ${pagesHtml}
-  ${appendedPagesHtml}
+  ${mergedPagesHtml}
   ${backCoverHtml}
 </body>
 </html>`;

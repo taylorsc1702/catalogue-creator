@@ -199,14 +199,28 @@ export function buildShopifyQuery(opts: {
       // If it resembles an ISBN/UPC, also try SKU variants
       if (digits.length >= 10 && digits.length <= 13) {
         const clean = digits.toUpperCase();
-        terms.push(`sku:'${clean.replace(/X$/,'')}'`);
+        const asSku = clean.replace(/X$/,'');
+        // Try across product and variant search fields often used for ISBN storage
+        terms.push(`sku:'${asSku}'`);
+        terms.push(`variants.sku:'${asSku}'`);
+        terms.push(`barcode:'${asSku}'`);
+        terms.push(`variants.barcode:'${asSku}'`);
         if (clean.length === 10) {
           const as13 = isbn10To13(clean);
-          if (as13) terms.push(`sku:'${as13}'`);
+          if (as13) {
+            terms.push(`sku:'${as13}'`);
+            terms.push(`variants.sku:'${as13}'`);
+            terms.push(`barcode:'${as13}'`);
+            terms.push(`variants.barcode:'${as13}'`);
+          }
         }
         if (clean.length === 12) {
           // Some feeds store 12-digit UPC with a leading 0 as 13-digit EAN
-          terms.push(`sku:'0${clean}'`);
+          const upc13 = `0${clean}`;
+          terms.push(`sku:'${upc13}'`);
+          terms.push(`variants.sku:'${upc13}'`);
+          terms.push(`barcode:'${upc13}'`);
+          terms.push(`variants.barcode:'${upc13}'`);
         }
       }
       return `(${terms.join(' OR ')})`;

@@ -10,7 +10,7 @@ type ItemWithImages = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView } = req.body as {
+    const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView, appendInsertIndex } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
       title?: string;
@@ -32,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         catalogueName: string;
       };
       appendView?: 'none' | 'list' | 'compact-list' | 'table';
+      appendInsertIndex?: number | null;
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -39,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
 
     // Generate the HTML with banner parameters
-    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
+    const html = await generateMixedGoogleDocsHtml(items, layoutAssignments, title, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView, appendInsertIndex);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -69,7 +70,8 @@ async function generateMixedGoogleDocsHtml(
     coverImageUrls: string[];
     catalogueName: string;
   },
-  appendView?: 'none' | 'list' | 'compact-list' | 'table'
+  appendView?: 'none' | 'list' | 'compact-list' | 'table',
+  appendInsertIndex?: number | null
 ) {
   // Download images for all items
   console.log("Downloading images for mixed Google Docs export...");
@@ -93,7 +95,7 @@ async function generateMixedGoogleDocsHtml(
   const itemsWithImages = await Promise.all(imagePromises);
   console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images successfully`);
 
-  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView);
+  return renderMixedGoogleDocsHtml(itemsWithImages, layoutAssignments, title, showFields, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView, appendInsertIndex);
 }
 
 async function renderMixedGoogleDocsHtml(
@@ -117,7 +119,8 @@ async function renderMixedGoogleDocsHtml(
     coverImageUrls: string[];
     catalogueName: string;
   },
-  appendView?: 'none' | 'list' | 'compact-list' | 'table'
+  appendView?: 'none' | 'list' | 'compact-list' | 'table',
+  appendInsertIndex?: number | null
 ) {
   const options: RenderOptions = {
     showFields,
@@ -159,7 +162,7 @@ async function renderMixedGoogleDocsHtml(
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-  const pagesHtml = pages.map((page) => {
+  const pageHtmlArray = pages.map((page) => {
     const createProductCard = (itemWithImages: ItemWithImages) => {
       const item = itemWithImages.item;
       if (!item) return '<div class="product-card empty"></div>';
@@ -195,7 +198,7 @@ async function renderMixedGoogleDocsHtml(
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
-  }).join("");
+  });
 
   // Generate covers if requested
   let frontCoverHtml = '';
@@ -376,6 +379,18 @@ async function renderMixedGoogleDocsHtml(
       : appendView === 'table'
         ? simpleTable()
         : '';
+
+  let mergedPagesHtml = '';
+  if (appendedPagesHtml) {
+    const insertAt = typeof appendInsertIndex === 'number' && appendInsertIndex >= 0 && appendInsertIndex <= pageHtmlArray.length
+      ? appendInsertIndex
+      : pageHtmlArray.length;
+    const before = pageHtmlArray.slice(0, insertAt).join("");
+    const after = pageHtmlArray.slice(insertAt).join("");
+    mergedPagesHtml = `${before}${appendedPagesHtml}${after}`;
+  } else {
+    mergedPagesHtml = pageHtmlArray.join("");
+  }
 
   return `<!doctype html>
 <html>
@@ -1103,8 +1118,7 @@ async function renderMixedGoogleDocsHtml(
 </head>
 <body>
   ${frontCoverHtml}
-  ${pagesHtml}
-  ${appendedPagesHtml}
+  ${mergedPagesHtml}
   ${backCoverHtml}
 </body>
 </html>`;
