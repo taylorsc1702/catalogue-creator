@@ -860,25 +860,25 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   
 .layout-3-row {
   display: grid;
-  grid-template-columns: 344px 1fr 100px; /* wider image column */
+  grid-template-columns: 176px 1fr 100px;
   gap: 10px;
   padding: 10px;
   border: 1px solid #e0e0e0;
   background: #ffffff;
-  min-height: 300px;
+  min-height: 180px;
   max-width: 100%;
   overflow: hidden;
 }
   
 .product-image-3up {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
   
 .product-image-3up .book-cover {
-  width: 344px; /* explicit larger width */
-  height: auto;
+  width: 172px;
+  height: 228px;
   object-fit: contain;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -919,18 +919,18 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   }
   
 .product-description-3up {
-    font-size: 11px;
-    color: #333;
-    line-height: 1.3;
-    margin-top: 6px;
-    padding: 6px;
-    border: 1px solid #e0e0e0;
+  font-size: 11px;
+  color: #333;
+  line-height: 1.3;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid #e0e0e0;
   background: #ffffff;
-  max-height: 180px; /* allow more content */
-    overflow: hidden;
-    text-align: justify;
-    font-family: 'Calibri', sans-serif;
-  }
+  max-height: 120px;
+  overflow: hidden;
+  text-align: justify;
+  font-family: 'Calibri', sans-serif;
+}
   
   .product-details-3up {
     display: flex;

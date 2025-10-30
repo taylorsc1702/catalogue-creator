@@ -732,32 +732,32 @@ async function renderMixedGoogleDocsHtml(
   }
   
   /* 3-up layout specific styles */
-.layout-3-row {
-  display: grid;
-  grid-template-columns: 344px 1fr 100px; /* wider image column */
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-  min-height: 300px;
-  max-width: 100%;
-  overflow: hidden;
-}
+  .layout-3-row {
+    display: grid;
+    grid-template-columns: 176px 1fr 100px;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    min-height: 180px;
+    max-width: 100%;
+    overflow: hidden;
+  }
   
-.product-image-3up {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .product-image-3up {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
   
-.product-image-3up .book-cover {
-  width: 344px;
-  height: auto;
-  object-fit: contain;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+  .product-image-3up .book-cover {
+    width: 172px;
+    height: 228px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
   
   .product-content-3up {
     display: flex;
@@ -800,7 +800,7 @@ async function renderMixedGoogleDocsHtml(
     padding: 6px;
     border: 1px solid #e0e0e0;
   background: #ffffff;
-  max-height: 180px;
+    max-height: 120px;
     overflow: hidden;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
