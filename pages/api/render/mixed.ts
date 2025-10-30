@@ -858,9 +858,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     display: grid !important;
   }
   
-  .layout-3-row {
+.layout-3-row {
     display: grid;
-  grid-template-columns: 260px 1fr 100px;
+  grid-template-columns: 360px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -870,15 +870,15 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     overflow: hidden;
   }
   
-  .product-image-3up {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-  }
+.product-image-3up {
+  display: flex;
+  align-items: center; /* center vertically within tile */
+  justify-content: center;
+}
   
-  .product-image-3up .book-cover {
-  width: 258px;
-  height: 342px;
+.product-image-3up .book-cover {
+  width: 344px; /* 100% larger than original 172 */
+  height: 456px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -918,7 +918,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     font-family: 'Calibri', sans-serif;
   }
   
-  .product-description-3up {
+.product-description-3up {
     font-size: 11px;
     color: #333;
     line-height: 1.3;
@@ -926,7 +926,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     padding: 6px;
     border: 1px solid #e0e0e0;
   background: #ffffff;
-    max-height: 120px;
+  max-height: 180px; /* allow more content */
     overflow: hidden;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
