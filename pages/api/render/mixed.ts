@@ -455,10 +455,10 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     width: 175px;
     height: 263px;
   }
-  .page.layout-3 .book-cover {
-    width: 80px;
-    height: 120px;
-  }
+.page.layout-3 .book-cover {
+  width: 206px; /* align with 3-up image size */
+  height: 274px;
+}
   .page.layout-8 .book-cover {
     width: 40px;
     height: 60px;
