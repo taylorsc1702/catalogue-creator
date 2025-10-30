@@ -190,8 +190,16 @@ export function buildShopifyQuery(opts: {
 }) {
   // Handle list takes priority
   if (opts.handleList && opts.handleList.length > 0) {
-    const handleQuery = opts.handleList.map(handle => `handle:'${escapeVal(handle)}'`).join(" OR ");
-    return `(${handleQuery})`;
+    const parts = opts.handleList.map((value) => {
+      const v = escapeVal(value.trim());
+      // If looks like an ISBN (12-13 digits possibly with hyphens removed), search by SKU as well
+      const digits = v.replace(/[^0-9]/g, "");
+      if (digits.length === 12 || digits.length === 13) {
+        return `(handle:'${v}' OR sku:'${digits}')`;
+      }
+      return `(handle:'${v}')`;
+    });
+    return `(${parts.join(' OR ')})`;
   }
 
   const p: string[] = [];

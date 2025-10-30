@@ -6,7 +6,10 @@ import {
   UtmParams,
   RenderOptions,
   esc,
-  renderProductCard
+  renderProductCard,
+  generateProductUrl,
+  generateEAN13Barcode,
+  generateQRCode
 } from "../../../utils/product-card-renderer";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -175,6 +178,18 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
       </tr>
     `).join('');
 
+  // Precompute barcode data URLs for appended views
+  const appendedBarcodeDataUrls = items.map((it, idx) => {
+    const itemType = (itemBarcodeTypes && itemBarcodeTypes[idx]) || (barcodeType || 'None');
+    const url = generateProductUrl(it.handle, hyperlinkToggle, utmParams);
+    const idObj = (it as unknown as { isbn13?: string; sku?: string });
+    let ean13 = idObj.isbn13 || it.sku || it.handle.replace(/[^0-9]/g, '');
+    if (!ean13) ean13 = ''.padStart(13, '0');
+    if (ean13.length < 13) ean13 = ean13.padStart(13, '0');
+    if (ean13.length > 13) ean13 = ean13.substring(0, 13);
+    return itemType === 'EAN-13' ? generateEAN13Barcode(ean13) : (itemType === 'QR Code' ? generateQRCode(url) : '');
+  });
+
   const appendedListHtml = () => `
     <div class="page layout-table" data-layout="list" style="page-break-after: always;">
       <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
@@ -203,7 +218,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
                 <td style=\"padding:8px 6px\">${esc(it.title)}</td>
                 <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
                 <td style=\"padding:8px 6px;color:#666\">${esc(it.imprint || '-')}</td>
-                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:110px;height:50px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:110px;height:auto\\\"/>` : ''}</td>
                 <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
               </tr>`).join('')}
           </tbody>
@@ -238,7 +253,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
                 <td style=\"padding:6px\">${esc(it.title)}</td>
                 <td style=\"padding:6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
                 <td style=\"padding:6px;color:#666\">${esc(it.imprint || '-')}</td>
-                <td style=\"padding:6px;text-align:center\"><div style=\"width:95px;height:35px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:95px;height:auto\\\"/>` : ''}</td>
                 <td style=\"padding:6px;text-align:center\"><div style=\"width:40px;height:25px;border:2px solid #333;border-radius:3px;margin:0 auto\"></div></td>
               </tr>`).join('')}
           </tbody>
@@ -260,6 +275,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Disc</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">QTY</th>
             </tr>
           </thead>
           <tbody>
@@ -272,6 +289,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.author || '')}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc((((it as unknown) as {discount?: string | number}).discount ?? '') as string)}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\"></td>
               </tr>`;
             }).join('')}
           </tbody>

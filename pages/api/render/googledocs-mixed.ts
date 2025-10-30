@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { downloadImageAsBase64 } from "@/lib/image-utils";
-import { renderProductCard, RenderOptions, Item, HyperlinkToggle, BarcodeType, UtmParams } from "../../../utils/product-card-renderer";
+import { renderProductCard, RenderOptions, Item, HyperlinkToggle, BarcodeType, UtmParams, generateProductUrl, generateEAN13Barcode, generateQRCode } from "../../../utils/product-card-renderer";
 
 type ItemWithImages = {
   item: Item;
@@ -246,6 +246,19 @@ async function renderMixedGoogleDocsHtml(
       </tr>`;
     }).join('');
 
+  // Precompute image and barcode data URLs for appended views
+  const appendedImageDataUrls = itemsWithImages.map(({ imageData }) => imageData ? `data:${imageData.mimeType};base64,${imageData.base64}` : 'https://via.placeholder.com/40x60?text=No+Image');
+  const appendedBarcodeDataUrls = itemsWithImages.map(({ item }, idx) => {
+    const itemType = (itemBarcodeTypes && itemBarcodeTypes[idx]) || (barcodeType || 'None');
+    const url = generateProductUrl(item.handle, hyperlinkToggle, utmParams);
+    const idObj = (item as unknown as { isbn13?: string; sku?: string });
+    let ean13 = idObj.isbn13 || item.sku || item.handle.replace(/[^0-9]/g, '');
+    if (!ean13) ean13 = ''.padStart(13, '0');
+    if (ean13.length < 13) ean13 = ean13.padStart(13, '0');
+    if (ean13.length > 13) ean13 = ean13.substring(0, 13);
+    return itemType === 'EAN-13' ? generateEAN13Barcode(ean13) : (itemType === 'QR Code' ? generateQRCode(url) : '');
+  });
+
   const appendedListHtml = () => `
     <div class="page layout-table" data-layout="list">
       <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
@@ -272,14 +285,44 @@ async function renderMixedGoogleDocsHtml(
               <tr style=\"border-bottom:1px solid #e9ecef\">
                 <td style=\"padding:8px 6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
                 <td style=\"padding:8px 6px;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>
-                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:40px;height:60px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px;text-align:center\"><img src=\"${esc(appendedImageDataUrls[idx])}\" style=\"width:40px;height:60px;object-fit:cover;border:1px solid #ddd;border-radius:4px\"/></td>
                 <td style=\"padding:8px 6px\">${esc(item.author || '-')}</td>
                 <td style=\"padding:8px 6px\">${esc(item.title)}</td>
                 <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>
                 <td style=\"padding:8px 6px;color:#666\">${esc(item.imprint || '-')}</td>
-                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:110px;height:50px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:110px;height:auto\\\"/>` : ''}</td>
                 <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
               </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+    </div>`;
+
+  const appendedCompactListHtml = () => `
+    <div class="page layout-table" data-layout="compact-list">
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-content" style="display:block;">
+        <table style="width:100%;border-collapse:collapse;font-size:8pt;box-shadow:0 2px 6px rgba(0,0,0,0.1)">
+          <thead style="background:#667eea;color:#fff">
+            <tr>
+              <th style="padding:8px 6px;text-align:left;width:30px">#</th>
+              <th style="padding:8px 6px;text-align:left;width:100px">ISBN</th>
+              <th style="padding:8px 6px;text-align:left;width:120px">Author</th>
+              <th style="padding:8px 6px;text-align:left;width:150px">Title</th>
+              <th style="padding:8px 6px;text-align:right;width:60px">Price</th>
+              <th style="padding:8px 6px;text-align:left;width:110px">Publisher</th>
+              <th style="padding:8px 6px;text-align:center;width:100px">Barcode</th>
+              <th style="padding:8px 6px;text-align:center;width:45px">Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsWithImages.map(({item}, idx) => {
+              const idObj = (item as unknown as { isbn13?: string; sku?: string });
+              const isbnVal = idObj.isbn13 || item.sku || '';
+              return `
+              <tr style=\"border-bottom:1px solid #e9ecef\">\n                <td style=\"padding:6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>\n                <td style=\"padding:6px;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>\n                <td style=\"padding:6px\">${esc(item.author || '-')}</td>\n                <td style=\"padding:6px\">${esc(item.title)}</td>\n                <td style=\"padding:6px;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>\n                <td style=\"padding:6px;color:#666\">${esc(item.imprint || '-')}</td>\n                <td style=\"padding:6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:95px;height:auto\\\"/>` : ''}</td>\n                <td style=\"padding:6px;text-align:center\"><div style=\"width:40px;height:25px;border:2px solid #333;border-radius:3px;margin:0 auto\"></div></td>\n              </tr>`;
             }).join('')}
           </tbody>
         </table>
@@ -300,6 +343,8 @@ async function renderMixedGoogleDocsHtml(
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
               <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Disc</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">QTY</th>
             </tr>
           </thead>
           <tbody>
@@ -312,6 +357,8 @@ async function renderMixedGoogleDocsHtml(
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.author || '')}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc((((item as unknown) as {discount?: string | number}).discount ?? '') as string)}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\"></td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -325,7 +372,7 @@ async function renderMixedGoogleDocsHtml(
   const appendedPagesHtml = appendView === 'list'
     ? appendedListHtml()
     : appendView === 'compact-list'
-      ? simpleTable() /* reuse compact-like simple table below or implement a dedicated compact variant similarly */
+      ? appendedCompactListHtml()
       : appendView === 'table'
         ? simpleTable()
         : '';
