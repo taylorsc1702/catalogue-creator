@@ -357,7 +357,7 @@ async function renderMixedGoogleDocsHtml(
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.author || '')}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc((((item as unknown) as {discount?: string | number}).discount ?? '') as string)}</td>
+                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(item.imidis || '')}</td>
                 <td style=\"padding:6px; border-bottom:1px solid #eee;\"></td>
               </tr>`;
             }).join('')}
