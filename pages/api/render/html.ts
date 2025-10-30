@@ -737,6 +737,27 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
       padding: 20px 0;  /* Add vertical padding for centered pages */
       background: #f5f5f5;  /* Light gray background to show page boundaries */
     }
+    
+    /* Ensure white background for PDF generation */
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+    }
+    
+    /* Force white background during PDF generation */
+    body.pdf-generation {
+      background: #ffffff !important;
+    }
+    
+    body.pdf-generation * {
+      background: #ffffff !important;
+    }
+    
+    body.pdf-generation .page,
+    body.pdf-generation .cover-page {
+      background: #ffffff !important;
+    }
   }
   
   /* Page structure - EXACTLY like working mixed layout */

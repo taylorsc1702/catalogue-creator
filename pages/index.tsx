@@ -1038,17 +1038,45 @@ export default function Home() {
                     
                     try {
                       const canvas = await html2canvasLib(page, {
-                        scale: 1,
+                        scale: 2, // Doubled for better resolution
                         useCORS: true,
                         logging: false,
                         backgroundColor: '#ffffff',
                         removeContainer: false,
-                        width: 794, // A4 width in pixels at 96dpi
-                        height: 1123 // A4 height in pixels at 96dpi
+                        width: 1588, // A4 width in pixels at 192dpi (794 * 2)
+                        height: 2246, // A4 height in pixels at 192dpi (1123 * 2)
+                        allowTaint: true,
+                        foreignObjectRendering: true,
+                        imageTimeout: 15000,
+                        onclone: (clonedDoc: Document) => {
+                          // Add PDF generation class to body
+                          clonedDoc.body.classList.add('pdf-generation');
+                          
+                          // Ensure all page elements have white background
+                          const clonedPage = clonedDoc.querySelector('.page, .cover-page') as HTMLElement;
+                          if (clonedPage) {
+                            clonedPage.style.backgroundColor = '#ffffff';
+                            clonedPage.style.background = '#ffffff';
+                          }
+                          
+                          // Ensure body has white background
+                          clonedDoc.body.style.backgroundColor = '#ffffff';
+                          clonedDoc.body.style.background = '#ffffff';
+                          
+                          // Force all elements to have white background
+                          const allElements = clonedDoc.querySelectorAll('*');
+                          allElements.forEach(el => {
+                            const htmlEl = el as HTMLElement;
+                            if (htmlEl.style.backgroundColor === '#f5f5f5' || htmlEl.style.background === '#f5f5f5') {
+                              htmlEl.style.backgroundColor = '#ffffff';
+                              htmlEl.style.background = '#ffffff';
+                            }
+                          });
+                        }
                       });
                       
-                      // Convert to JPEG for smaller file size
-                      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                      // Convert to JPEG with higher quality for better resolution
+                      const imgData = canvas.toDataURL('image/jpeg', 0.95);
                       
                       // Add page to PDF (except for the first page which is already created)
                       if (pageIndex > 0) {
@@ -1058,7 +1086,7 @@ export default function Home() {
                       // Add image to PDF
                       const imgWidth = 210; // A4 width in mm
                       const imgHeight = 297; // A4 height in mm
-                      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+                      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'MEDIUM');
                       
                       // Process next page
                       setTimeout(() => processPage(pageIndex + 1), 100);

@@ -1004,6 +1004,24 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     .page {
       page-break-after: always;
     }
+    
+    body {
+      background: #ffffff !important;
+    }
+  }
+  
+  /* Force white background during PDF generation */
+  body.pdf-generation {
+    background: #ffffff !important;
+  }
+  
+  body.pdf-generation * {
+    background: #ffffff !important;
+  }
+  
+  body.pdf-generation .page,
+  body.pdf-generation .cover-page {
+    background: #ffffff !important;
   }
   
   /* Cover Styles */
