@@ -175,30 +175,76 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
       </tr>
     `).join('');
 
-  const listTable = (_compact: boolean) => `
-    <div class="page layout-table" data-layout="table">
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
-      </div>
+  const appendedListHtml = () => `
+    <div class="page layout-table" data-layout="list" style="page-break-after: always;">
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
       <div class="page-content" style="display:block;">
-        <table class="list-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
-          <thead class="table-header">
+        <table style="width:100%;border-collapse:collapse;font-size:10pt;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+          <thead style="background:#667eea;color:#fff">
             <tr>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd; width:28px;">#</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+              <th style="padding:10px 8px;text-align:left;width:40px">#</th>
+              <th style="padding:10px 8px;text-align:left;width:110px">ISBN</th>
+              <th style="padding:10px 8px;text-align:left;width:70px">Image</th>
+              <th style="padding:10px 8px;text-align:left;width:150px">Author</th>
+              <th style="padding:10px 8px;text-align:left;">Title</th>
+              <th style="padding:10px 8px;text-align:left;width:80px">Price</th>
+              <th style="padding:10px 8px;text-align:left;width:150px">Publisher</th>
+              <th style="padding:10px 8px;text-align:left;width:120px">Barcode</th>
+              <th style="padding:10px 8px;text-align:center;width:60px">Qty</th>
             </tr>
           </thead>
           <tbody>
-            ${renderListRows(false)}
+            ${items.map((it, idx) => `
+              <tr style=\"border-bottom:1px solid #e9ecef\">
+                <td style=\"padding:8px 6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
+                <td style=\"padding:8px 6px;font-family:'Courier New',monospace;color:#666\">${esc(it.handle)}</td>
+                <td style=\"padding:8px 6px;text-align:center\"><img src=\"${esc(it.imageUrl || 'https://via.placeholder.com/40x60?text=No+Image')}\" style=\"width:40px;height:60px;object-fit:cover;border:1px solid #ddd;border-radius:4px\"/></td>
+                <td style=\"padding:8px 6px\">${esc(it.author || '-')}</td>
+                <td style=\"padding:8px 6px\">${esc(it.title)}</td>
+                <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
+                <td style=\"padding:8px 6px;color:#666\">${esc(it.imprint || '-')}</td>
+                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:110px;height:50px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
+              </tr>`).join('')}
           </tbody>
         </table>
       </div>
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+    </div>`;
+
+  const appendedCompactListHtml = () => `
+    <div class="page layout-table" data-layout="compact-list" style="page-break-after: always;">
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-content" style="display:block;">
+        <table style="width:100%;border-collapse:collapse;font-size:8pt;box-shadow:0 2px 6px rgba(0,0,0,0.1)">
+          <thead style="background:#667eea;color:#fff">
+            <tr>
+              <th style="padding:8px 6px;text-align:left;width:30px">#</th>
+              <th style="padding:8px 6px;text-align:left;width:100px">ISBN</th>
+              <th style="padding:8px 6px;text-align:left;width:120px">Author</th>
+              <th style="padding:8px 6px;text-align:left;width:150px">Title</th>
+              <th style="padding:8px 6px;text-align:right;width:60px">Price</th>
+              <th style="padding:8px 6px;text-align:left;width:110px">Publisher</th>
+              <th style="padding:8px 6px;text-align:center;width:100px">Barcode</th>
+              <th style="padding:8px 6px;text-align:center;width:45px">Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((it, idx) => `
+              <tr style=\"border-bottom:1px solid #e9ecef\">
+                <td style=\"padding:6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
+                <td style=\"padding:6px;font-family:'Courier New',monospace;color:#666\">${esc(it.handle)}</td>
+                <td style=\"padding:6px\">${esc(it.author || '-')}</td>
+                <td style=\"padding:6px\">${esc(it.title)}</td>
+                <td style=\"padding:6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
+                <td style=\"padding:6px;color:#666\">${esc(it.imprint || '-')}</td>
+                <td style=\"padding:6px;text-align:center\"><div style=\"width:95px;height:35px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:6px;text-align:center\"><div style=\"width:40px;height:25px;border:2px solid #333;border-radius:3px;margin:0 auto\"></div></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
       </div>
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
     </div>`;
 
   const simpleTable = () => `
@@ -237,9 +283,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     </div>`;
 
   const appendedPagesHtml = appendView === 'list'
-    ? listTable(false)
+    ? appendedListHtml()
     : appendView === 'compact-list'
-      ? listTable(true)
+      ? appendedCompactListHtml()
       : appendView === 'table'
         ? simpleTable()
         : '';

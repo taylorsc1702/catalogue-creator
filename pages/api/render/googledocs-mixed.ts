@@ -246,30 +246,45 @@ async function renderMixedGoogleDocsHtml(
       </tr>`;
     }).join('');
 
-  const listTable = (_compact: boolean) => `
-    <div class="page layout-table" data-layout="table">
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
-      </div>
+  const appendedListHtml = () => `
+    <div class="page layout-table" data-layout="list">
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
       <div class="page-content" style="display:block;">
-        <table class="list-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
-          <thead class="table-header">
+        <table style="width:100%;border-collapse:collapse;font-size:10pt;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+          <thead style="background:#667eea;color:#fff">
             <tr>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd; width:28px;">#</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
+              <th style="padding:10px 8px;text-align:left;width:40px">#</th>
+              <th style="padding:10px 8px;text-align:left;width:110px">ISBN</th>
+              <th style="padding:10px 8px;text-align:left;width:70px">Image</th>
+              <th style="padding:10px 8px;text-align:left;width:150px">Author</th>
+              <th style="padding:10px 8px;text-align:left;">Title</th>
+              <th style="padding:10px 8px;text-align:left;width:80px">Price</th>
+              <th style="padding:10px 8px;text-align:left;width:150px">Publisher</th>
+              <th style="padding:10px 8px;text-align:left;width:120px">Barcode</th>
+              <th style="padding:10px 8px;text-align:center;width:60px">Qty</th>
             </tr>
           </thead>
           <tbody>
-            ${renderListRows(false)}
+            ${itemsWithImages.map(({item}, idx) => {
+              const idObj = (item as unknown as { isbn13?: string; sku?: string });
+              const isbnVal = idObj.isbn13 || item.sku || '';
+              return `
+              <tr style=\"border-bottom:1px solid #e9ecef\">
+                <td style=\"padding:8px 6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
+                <td style=\"padding:8px 6px;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>
+                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:40px;height:60px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px\">${esc(item.author || '-')}</td>
+                <td style=\"padding:8px 6px\">${esc(item.title)}</td>
+                <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>
+                <td style=\"padding:8px 6px;color:#666\">${esc(item.imprint || '-')}</td>
+                <td style=\"padding:8px 6px;text-align:center\"><div style=\"width:110px;height:50px;border:1px dashed #ccc;display:inline-block\"></div></td>
+                <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
       </div>
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
-      </div>
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
     </div>`;
 
   const simpleTable = () => `
@@ -308,9 +323,9 @@ async function renderMixedGoogleDocsHtml(
     </div>`;
 
   const appendedPagesHtml = appendView === 'list'
-    ? listTable(false)
+    ? appendedListHtml()
     : appendView === 'compact-list'
-      ? listTable(true)
+      ? simpleTable() /* reuse compact-like simple table below or implement a dedicated compact variant similarly */
       : appendView === 'table'
         ? simpleTable()
         : '';
