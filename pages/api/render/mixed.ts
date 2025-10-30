@@ -860,31 +860,32 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   
 .layout-3-row {
   display: grid;
-  grid-template-columns: 176px 1fr 100px; /* keep content start fixed */
-    gap: 10px;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    background: #ffffff;
-    min-height: 180px;
-    max-width: 100%;
-    overflow: hidden;
-  }
+  grid-template-columns: 200px 1fr 100px; /* image | content | details */
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  min-height: 260px;
+  height: 260px; /* fixed height so the image can be 75% of the tile */
+  max-width: 100%;
+  overflow: hidden;
+}
   
 .product-image-3up {
   display: flex;
-  align-items: flex-start; /* original vertical alignment */
-  justify-content: flex-start; /* keep image hard-left */
-  overflow: visible; /* allow visual overflow to left */
+  align-items: center; /* center vertically inside the card */
+  justify-content: center;
+  height: 100%;
 }
   
 .product-image-3up .book-cover {
-  width: 344px; /* 2x original width */
-  height: 456px; /* 2x original height */
+  height: 75%; /* make image 3/4 of card height */
+  width: auto;
+  max-width: 100%;
   object-fit: contain;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-left: -86px; /* shift left by half the growth to keep right edge similar */
 }
   
   .product-content-3up {
