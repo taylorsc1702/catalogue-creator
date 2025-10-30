@@ -348,6 +348,7 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
           ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
         ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
@@ -387,6 +388,7 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
             ${item.imprint ? `<div class="meta-item-4up"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
             ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
             ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+          ${item.imidis ? `<div class=\"meta-item-4up\"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
           </div>
         </div>
         <div class="barcode-section-right">
@@ -420,6 +422,7 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
           ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
         ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}

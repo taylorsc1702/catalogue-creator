@@ -632,8 +632,8 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .book-cover-2up {
-    width: 175px;
-    height: 263px;
+    width: 210px;
+    height: 316px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -649,7 +649,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     color: #000;
     margin: 0;
@@ -658,7 +658,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-subtitle {
-    font-size: 12px;
+    font-size: 14px;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -667,7 +667,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-author {
-    font-size: 12px;
+    font-size: 14px;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -675,7 +675,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-description {
-    font-size: 11px;
+    font-size: 13px;
     color: #333;
     line-height: 1.3;
     margin: 4px 0;
@@ -734,7 +734,7 @@ async function renderMixedGoogleDocsHtml(
   /* 3-up layout specific styles */
   .layout-3-row {
     display: grid;
-    grid-template-columns: 176px 1fr 100px;
+    grid-template-columns: 260px 1fr 100px;
     gap: 10px;
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -751,8 +751,8 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-image-3up .book-cover {
-    width: 172px;
-    height: 228px;
+    width: 258px;
+    height: 342px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -799,7 +799,7 @@ async function renderMixedGoogleDocsHtml(
     margin-top: 6px;
     padding: 6px;
     border: 1px solid #e0e0e0;
-    background: #fafafa;
+    background: #ffffff;
     max-height: 120px;
     overflow: hidden;
     text-align: justify;
@@ -890,7 +890,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-subtitle-4up {
-    font-size: 10px;
+    font-size: 12px;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -899,7 +899,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-author-4up {
-    font-size: 10px;
+    font-size: 12px;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -911,7 +911,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-description-4up {
-    font-size: 10px;
+    font-size: 12px;
     color: #333;
     line-height: 1.2;
     text-align: justify;
@@ -939,7 +939,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .spec-item-4up {
-    font-size: 9px;
+    font-size: 11px;
     color: #666;
     background: #f5f5f5;
     padding: 2px 4px;
@@ -954,7 +954,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .meta-item-4up {
-    font-size: 9px;
+    font-size: 11px;
     color: #666;
     margin-bottom: 0px;
     font-family: 'Calibri', sans-serif;
@@ -967,7 +967,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .barcode-section-right .barcode img {
-    max-width: 55px; /* 50px * 1.1 = 55px (10% bigger) */
+    max-width: 83px;
     height: auto;
   }
   

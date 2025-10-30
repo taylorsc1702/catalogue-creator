@@ -349,9 +349,9 @@ export function generateCoverCSS(): string {
     
     .featured-books-grid {
       display: grid;
-      gap: 10px;
-      max-width: 250px;
-      max-height: 250px;
+      gap: 16px;
+      max-width: 520px;
+      max-height: 680px;
       width: 100%;
       height: 100%;
     }
@@ -360,22 +360,22 @@ export function generateCoverCSS(): string {
     .featured-books-grid.single-image {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr;
-      max-width: 400px;
-      max-height: 600px;
+      max-width: 700px;
+      max-height: 900px;
     }
     
     .featured-books-grid.two-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr;
-      max-width: 450px;
-      max-height: 300px;
+      max-width: 700px;
+      max-height: 450px;
     }
     
     .featured-books-grid.three-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      max-width: 250px;
-      max-height: 250px;
+      max-width: 520px;
+      max-height: 520px;
     }
     
     .featured-books-grid.three-images .featured-book-image:nth-child(3),
@@ -388,8 +388,8 @@ export function generateCoverCSS(): string {
     .featured-books-grid.four-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      max-width: 250px;
-      max-height: 250px;
+      max-width: 520px;
+      max-height: 520px;
     }
     
     .featured-book-image {
@@ -482,29 +482,29 @@ export function generateCoverCSS(): string {
       }
       
       .featured-books-grid {
-        max-width: 250px;
-        max-height: 250px;
-        gap: 10px;
+        max-width: 520px;
+        max-height: 680px;
+        gap: 16px;
       }
       
       .featured-books-grid.single-image {
-        max-width: 360px;
-        max-height: 560px;
+        max-width: 700px;
+        max-height: 900px;
       }
       
       .featured-books-grid.two-images {
-        max-width: 420px;
-        max-height: 270px;
+        max-width: 700px;
+        max-height: 450px;
       }
       
       .featured-books-grid.three-images {
-        max-width: 220px;
-        max-height: 220px;
+        max-width: 520px;
+        max-height: 520px;
       }
       
       .featured-books-grid.four-images {
-        max-width: 220px;
-        max-height: 220px;
+        max-width: 520px;
+        max-height: 520px;
       }
       
       .cover-footer {
