@@ -1017,7 +1017,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .barcode-section-right .barcode img {
-    max-width: 50px;
+    max-width: 55px; /* 50px * 1.1 = 55px (10% bigger) */
     height: auto;
   }
   
@@ -1895,7 +1895,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .layout-2-vertical .barcode img {
-    max-width: 80px;
+    max-width: 88px; /* 80px * 1.1 = 88px (10% bigger) */
     height: auto;
   }
   
@@ -2082,8 +2082,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .internal-preview-image {
-    width: 60px;
-    height: 80px;
+    width: 72px; /* 60px * 1.2 = 72px (20% bigger) */
+    height: 96px; /* 80px * 1.2 = 96px (20% bigger) */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;
