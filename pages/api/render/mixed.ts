@@ -269,15 +269,15 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       <div class="page-content" style="display:block;">
-        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px;">
+        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px; border:1px solid #ccc;">
           <thead class="table-header">
             <tr>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Title</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Author</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">ISBN</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Price</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">Disc</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ddd;">QTY</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Title</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Author</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">ISBN</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Price</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Disc</th>
+              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">QTY</th>
             </tr>
           </thead>
           <tbody>
@@ -286,12 +286,12 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
               const isbnVal = idObj.isbn13 || it.sku || '';
               return `
               <tr>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.title || '')}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.author || '')}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(isbnVal)}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\">${esc(it.imidis || '')}</td>
-                <td style=\"padding:6px; border-bottom:1px solid #eee;\"></td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.title || '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.author || '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(isbnVal)}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.price ? `AUD$ ${it.price}` : '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\">${esc(it.imidis || '')}</td>
+                <td style=\"padding:6px; border:1px solid #eee;\"></td>
               </tr>`;
             }).join('')}
           </tbody>

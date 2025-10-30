@@ -360,15 +360,15 @@ export function generateCoverCSS(): string {
     .featured-books-grid.single-image {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr;
-      max-width: 700px;
-      max-height: 900px;
+      max-width: 1200px; /* doubled */
+      max-height: 1600px; /* doubled */
     }
     
     .featured-books-grid.two-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr;
-      max-width: 700px;
-      max-height: 450px;
+      max-width: 910px; /* +30% */
+      max-height: 585px; /* +30% */
     }
     
     .featured-books-grid.three-images {
@@ -388,8 +388,8 @@ export function generateCoverCSS(): string {
     .featured-books-grid.four-images {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      max-width: 520px;
-      max-height: 520px;
+      max-width: 624px; /* +20% */
+      max-height: 624px; /* +20% */
     }
     
     .featured-book-image {
@@ -400,7 +400,7 @@ export function generateCoverCSS(): string {
       object-fit: contain;
       border: 1px solid #ddd;
       border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: none; /* remove shadow for screen and print */
     }
     
     .featured-book-placeholder {
@@ -488,13 +488,13 @@ export function generateCoverCSS(): string {
       }
       
       .featured-books-grid.single-image {
-        max-width: 700px;
-        max-height: 900px;
+        max-width: 1200px; /* doubled */
+        max-height: 1600px; /* doubled */
       }
       
       .featured-books-grid.two-images {
-        max-width: 700px;
-        max-height: 450px;
+        max-width: 910px; /* +30% */
+        max-height: 585px; /* +30% */
       }
       
       .featured-books-grid.three-images {
@@ -503,9 +503,10 @@ export function generateCoverCSS(): string {
       }
       
       .featured-books-grid.four-images {
-        max-width: 520px;
-        max-height: 520px;
+        max-width: 624px; /* +20% */
+        max-height: 624px; /* +20% */
       }
+      .featured-book-image { box-shadow: none; }
       
       .cover-footer {
         padding: 6px 10px;
