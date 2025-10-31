@@ -293,11 +293,11 @@ export function create1LLayoutHandler(): LayoutHandler {
           
           <!-- Landscape-optimized internals section - 2 larger, wider images -->
           ${item.additionalImages && item.additionalImages.length > 0 ? `
-            <div class="internals-section-landscape">
+            <div class="internals-section-full">
               <div class="internals-title">Internals:</div>
-              <div class="internals-thumbnails-landscape">
+              <div class="internals-thumbnails-full">
                 ${item.additionalImages.slice(0, 2).map((img, idx) => 
-                  `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
+                  `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
                 ).join('')}
               </div>
             </div>
@@ -605,28 +605,13 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: block !important;
       }
       
-      /* Landscape-optimized internals section */
-      .internals-section-landscape {
-        margin-top: 24px;
-        padding-top: 24px;
-        border-top: 2px solid #E9ECEF;
-      }
-      
-      .internals-title {
-        font-weight: 600;
-        margin-bottom: 16px;
-        font-size: 16px;
-        color: #495057;
-      }
-      
-      .internals-thumbnails-landscape {
-        display: flex;
+      /* 1L uses same internals structure as layout 1, but with bigger landscape-optimized images */
+      .layout-1L-content .internals-thumbnails-full {
+        flex-wrap: nowrap;
         gap: 30px;
-        justify-content: center;
-        flex-wrap: wrap;
       }
       
-      .internal-thumbnail-landscape {
+      .layout-1L-content .internal-thumbnail-full {
         width: 320px;
         height: 214px;
         object-fit: cover;
@@ -635,17 +620,24 @@ export function create1LLayoutHandler(): LayoutHandler {
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       }
       
-      /* Landscape vs Portrait handling for internal images */
-      .internal-thumbnail-landscape.image-portrait {
+      /* Landscape vs Portrait handling for 1L internal images */
+      .layout-1L-content .internal-thumbnail-full.image-portrait {
         object-fit: contain;
         width: 240px;
         height: 320px;
       }
       
-      .internal-thumbnail-landscape.image-landscape {
+      .layout-1L-content .internal-thumbnail-full.image-landscape {
         object-fit: cover;
         width: 320px;
         height: 214px;
+      }
+      
+      .internals-title {
+        font-weight: 600;
+        margin-bottom: 16px;
+        font-size: 16px;
+        color: #495057;
       }
       
       .title-section {
@@ -808,7 +800,7 @@ export function create1LLayoutHandler(): LayoutHandler {
       // Detect image orientation for landscape-optimized internals
       (function() {
         function detectImageOrientation() {
-          const images = document.querySelectorAll('img.internal-thumbnail-landscape');
+          const images = document.querySelectorAll('img.internal-thumbnail-full');
           images.forEach(img => {
             if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {
               return;

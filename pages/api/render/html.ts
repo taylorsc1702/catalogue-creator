@@ -375,11 +375,11 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
             
             ${item.additionalImages && item.additionalImages.length > 0 ? `
-              <div class="internals-section-landscape">
+              <div class="internals-section-full">
                 <div class="internals-title">Internals:</div>
-                <div class="internals-thumbnails-landscape">
+                <div class="internals-thumbnails-full">
                   ${item.additionalImages.slice(0, 2).map((img, idx) => 
-                    `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
+                    `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
                   ).join('')}
                 </div>
               </div>
@@ -1039,22 +1039,40 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   
-  /* Landscape-optimized internals section for 1L layout */
-  .internals-section-landscape {
-    margin-top: auto;
-    padding-top: 24px;
-    border-top: 2px solid #e0e0e0;
+  /* 1L layout uses same internals structure as layout 1, but with bigger landscape-optimized images */
+  .layout-1L-full .internals-thumbnails-full {
+    flex-wrap: nowrap;
+    gap: 30px;
   }
   
-  .internals-thumbnails-landscape {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: nowrap;
+  .layout-1L-full .internal-thumbnail-full {
+    width: 320px;
+    height: 214px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  
+  /* Landscape vs Portrait handling for 1L internal images */
+  .layout-1L-full .internal-thumbnail-full.image-portrait {
+    object-fit: contain;
+    width: 240px;
+    height: 320px;
+    max-width: 240px;
+    max-height: 320px;
+  }
+  
+  .layout-1L-full .internal-thumbnail-full.image-landscape {
+    object-fit: cover;
+    width: 320px;
+    height: 214px;
+    max-width: 320px;
+    max-height: 214px;
   }
   
   @media print {
-    .internals-thumbnails-landscape {
+    .layout-1L-full .internals-thumbnails-full {
       flex-wrap: nowrap !important;
       display: flex !important;
     }
@@ -1066,32 +1084,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     .layout-1L-full {
       page-break-inside: avoid;
     }
-  }
-  
-  .internal-thumbnail-landscape {
-    width: 320px;
-    height: 214px;
-    object-fit: cover;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-  
-  /* Landscape vs Portrait handling for 1L internal images */
-  .internal-thumbnail-landscape.image-portrait {
-    object-fit: contain;
-    width: 240px;
-    height: 320px;
-    max-width: 240px;
-    max-height: 320px;
-  }
-  
-  .internal-thumbnail-landscape.image-landscape {
-    object-fit: cover;
-    width: 320px;
-    height: 214px;
-    max-width: 320px;
-    max-height: 214px;
   }
   
   .layout-1L-full .author-bio {
@@ -2431,7 +2423,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   // Detect image orientation and apply classes
   (function() {
     function detectImageOrientation() {
-      const images = document.querySelectorAll('img.book-cover, img.book-cover-large, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-large, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image');
       images.forEach(img => {
         // Skip if already processed
         if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {

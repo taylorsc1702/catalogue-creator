@@ -499,11 +499,11 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
       </div>
       
       ${item.additionalImages && item.additionalImages.length > 0 ? `
-        <div class="internals-section-landscape">
+        <div class="internals-section-full">
           <div class="internals-title">Internals:</div>
-          <div class="internals-thumbnails-landscape">
+          <div class="internals-thumbnails-full">
             ${item.additionalImages.slice(0, 2).map((img, idx) => 
-              `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
+              `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
             ).join('')}
           </div>
         </div>
