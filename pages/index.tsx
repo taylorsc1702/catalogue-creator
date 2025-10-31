@@ -2296,7 +2296,7 @@ function EditModal({
   item: Item; 
   editedItem?: {description?: string; authorBio?: string}; 
   editingField: 'description' | 'authorBio';
-  itemLayout: 1|2|'2-int'|3|4|8;
+  itemLayout: 1|'1L'|2|'2-int'|3|4|8;
   isMixedView: boolean;
   closeModal: () => void;
   saveContent: (text: string) => void;
