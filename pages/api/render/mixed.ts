@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView, appendInsertIndex } = req.body as {
       items: Item[]; 
-      layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
+      layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
       hyperlinkToggle?: HyperlinkToggle;
       itemBarcodeTypes?: {[key: number]: BarcodeType};
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|4|8)[], showFields: Record<string, boolean>, hyperlinkToggle: HyperlinkToggle, itemBarcodeTypes?: {[key: number]: BarcodeType}, barcodeType?: BarcodeType, bannerColor?: string, websiteName?: string, utmParams?: UtmParams, coverData?: {
+async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[], showFields: Record<string, boolean>, hyperlinkToggle: HyperlinkToggle, itemBarcodeTypes?: {[key: number]: BarcodeType}, barcodeType?: BarcodeType, bannerColor?: string, websiteName?: string, utmParams?: UtmParams, coverData?: {
   showFrontCover: boolean;
   showBackCover: boolean;
   frontCoverText1: string;
@@ -70,7 +70,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
   };
 
   // Group items by their layout requirements
-  const pages: { items: Item[]; layout: 1|2|'2-int'|3|4|8 }[] = [];
+  const pages: { items: Item[]; layout: 1|'1L'|2|'2-int'|3|4|8 }[] = [];
   let currentPage: Item[] = [];
   let currentLayout = layoutAssignments[0];
   let itemsInPage = 0;
@@ -79,7 +79,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     const assignedLayout = layoutAssignments[i];
     
     // If layout changes or page is full, start new page
-    const currentLayoutNum = currentLayout === '2-int' ? 2 : currentLayout;
+    const currentLayoutNum = currentLayout === '2-int' ? 2 : currentLayout === '1L' ? 1 : typeof currentLayout === 'number' ? currentLayout : 1;
     if (assignedLayout !== currentLayout || itemsInPage >= currentLayoutNum) {
       if (currentPage.length > 0) {
         pages.push({ items: currentPage, layout: currentLayout });
@@ -108,11 +108,11 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|2|'2-int'|3|
     };
 
     const layout = page.layout;
-    const layoutClass = layout === 1 ? "layout-1" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 8 ? "layout-8" : "";
+    const layoutClass = layout === 1 ? "layout-1" : layout === '1L' ? "layout-1L" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 8 ? "layout-8" : "";
     const cards = page.items.map((item) => createProductCard(item)).join("");
     
     // Fill empty slots for proper grid layout
-    const emptySlots = (layout === '2-int' ? 2 : layout) - page.items.length;
+    const emptySlots = (layout === '2-int' ? 2 : layout === '1L' ? 1 : typeof layout === 'number' ? layout : 1) - page.items.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">

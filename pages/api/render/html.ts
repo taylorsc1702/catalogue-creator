@@ -1050,7 +1050,22 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     display: flex;
     justify-content: center;
     gap: 30px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+  }
+  
+  @media print {
+    .internals-thumbnails-landscape {
+      flex-wrap: nowrap !important;
+      display: flex !important;
+    }
+    
+    .layout-1L-full .page-header {
+      page-break-after: avoid;
+    }
+    
+    .layout-1L-full {
+      page-break-inside: avoid;
+    }
   }
   
   .internal-thumbnail-landscape {
@@ -1083,7 +1098,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     background: #E3F2FD;
     padding: 20px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1.5;
     color: #1565C0;
     min-height: 150px;
@@ -1102,12 +1117,40 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     font-weight: 600;
     margin-bottom: 8px;
     color: #0D47A1;
-    font-size: 13px;
+    font-size: 15px;
   }
   
   .layout-1L-full .author-bio-content {
     color: #1565C0;
     white-space: pre-line;
+  }
+  
+  .layout-1L-full .product-title {
+    font-size: 26px;
+  }
+  
+  .layout-1L-full .product-subtitle {
+    font-size: 15px;
+  }
+  
+  .layout-1L-full .product-author {
+    font-size: 14px;
+  }
+  
+  .layout-1L-full .product-description {
+    font-size: 12px;
+  }
+  
+  .layout-1L-full .meta-item {
+    font-size: 11px;
+  }
+  
+  .layout-1L-full .product-price {
+    font-size: 16px;
+  }
+  
+  .layout-1L-full .internals-title {
+    font-size: 16px;
   }
   
   /* Layout 4: Special 4-up layout with larger image and reorganized content */
@@ -2169,6 +2212,15 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   @media print { 
     .page {
       page-break-after: always;
+    }
+    
+    .page-header {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    
+    .layout-1L-full {
+      page-break-inside: avoid;
     }
   }
   

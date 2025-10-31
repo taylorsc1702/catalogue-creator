@@ -583,7 +583,7 @@ export function create1LLayoutHandler(): LayoutHandler {
         background: #E3F2FD;
         padding: 20px;
         border-radius: 8px;
-        font-size: 13px;
+        font-size: 15px;
         line-height: 1.5;
         color: #1565C0;
         min-height: 150px;
@@ -593,6 +593,7 @@ export function create1LLayoutHandler(): LayoutHandler {
         font-weight: 600;
         margin-bottom: 8px;
         color: #0D47A1;
+        font-size: 15px;
       }
       
       .author-bio-content {
@@ -614,7 +615,7 @@ export function create1LLayoutHandler(): LayoutHandler {
       .internals-title {
         font-weight: 600;
         margin-bottom: 16px;
-        font-size: 14px;
+        font-size: 16px;
         color: #495057;
       }
       
@@ -652,14 +653,14 @@ export function create1LLayoutHandler(): LayoutHandler {
       }
       
       .product-title-large {
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 700;
         color: #2C3E50;
         margin: 0 0 4px 0;
       }
       
       .product-subtitle-large {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 500;
         color: #7F8C8D;
         font-style: italic;
@@ -667,14 +668,14 @@ export function create1LLayoutHandler(): LayoutHandler {
       }
       
       .product-author-large {
-        font-size: 16px;
+        font-size: 18px;
         color: #667eea;
         font-weight: 600;
         margin-bottom: 16px;
       }
       
       .product-description-large {
-        font-size: 14px;
+        font-size: 16px;
         line-height: 1.6;
         color: #495057;
         margin-bottom: 16px;
@@ -685,7 +686,7 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
-        font-size: 14px;
+        font-size: 16px;
         margin-bottom: 16px;
       }
       
@@ -728,7 +729,7 @@ export function create1LLayoutHandler(): LayoutHandler {
       
       .barcode-label,
       .handle-label {
-        font-size: 12px;
+        font-size: 14px;
         margin-bottom: 4px;
         color: #6C757D;
       }
@@ -736,7 +737,7 @@ export function create1LLayoutHandler(): LayoutHandler {
       .barcode-value,
       .handle-value {
         font-family: monospace;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 600;
         color: #495057;
       }
@@ -747,7 +748,7 @@ export function create1LLayoutHandler(): LayoutHandler {
         color: white;
         padding: 12px 20px;
         border-radius: 8px;
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
       }
       
