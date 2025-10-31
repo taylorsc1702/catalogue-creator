@@ -391,7 +391,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
       // For 2-up layout, use vertical layout with image at top
       if (layout === 2) {
-        const truncatedDesc = item.description ? (item.description.length > 1600 ? item.description.substring(0, 1597) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 2000 ? item.description.substring(0, 1997) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-2-vertical">
@@ -425,10 +425,10 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
       // For 2-int layout, use vertical layout with image at top and internal image above barcode
       if (layout === '2-int') {
-        const truncatedDesc = item.description ? (item.description.length > 1400 ? item.description.substring(0, 1397) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 1600 ? item.description.substring(0, 1597) + '...' : item.description) : '';
         
         return `
-          <div class="product-card layout-2-vertical">
+          <div class="product-card layout-2-vertical layout-2-int">
             <div class="product-image-2up">
               <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
             </div>
@@ -2022,7 +2022,18 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     flex-direction: column;
     gap: 4px;
     flex: 1;
-    overflow: hidden;
+    overflow: visible;
+    min-height: 0; /* Allow flex shrinking */
+  }
+  
+  /* Ensure internal images and barcode stay at bottom in 2-int layout */
+  .product-content-2up .internal-image-section {
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+  
+  .product-content-2up .barcode {
+    flex-shrink: 0;
   }
   
   .layout-2-vertical .product-title {
@@ -2058,8 +2069,17 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     margin: 4px 0;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
-    max-height: 60px;
-    overflow: hidden;
+  }
+  
+  /* Special handling for 2-int: limit description height to keep internal images visible */
+  .layout-2-int .product-description {
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  
+  /* Ensure internal images stay visible in 2-int layout */
+  .layout-2-int .internal-image-section ~ .barcode {
+    flex-shrink: 0;
   }
   
   .layout-2-vertical .product-specs {
