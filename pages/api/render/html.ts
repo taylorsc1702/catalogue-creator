@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
+      layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -210,7 +210,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
 
   // Chunk items into pages
   // Handle pagination based on layout type
-  const perPage = layout === '2-int' ? 2 : typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
+  const perPage = layout === '2-int' ? 2 : layout === '1L' ? 1 : typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
   const pages: Item[][] = [];
   for (let i = 0; i < items.length; i += perPage) {
     pages.push(items.slice(i, i + perPage));
@@ -319,6 +319,68 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
                 <div class="internals-thumbnails-full">
                   ${item.additionalImages.slice(0, 4).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
+                  ).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // For 1L layout, optimized for landscape photos with 3 larger, wider images
+      if (layout === '1L') {
+        const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
+        
+        // Calculate if we need to truncate author bio
+        const hasInternals = item.additionalImages && item.additionalImages.length > 0;
+        void hasInternals; // Suppress unused variable warning
+        // Truncate bio if it's longer than 752 characters (with spaces)
+        const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
+        const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
+        
+        return `
+          <div class="product-card layout-1L-full">
+            <div class="main-content">
+              <div class="left-column">
+                <div class="product-image">
+                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+                </div>
+                ${show.authorBio && displayBio ? `
+                  <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
+                    <div class="author-bio-title">Author Bio:</div>
+                    <div class="author-bio-content">${esc(displayBio)}</div>
+                  </div>
+                ` : ""}
+              </div>
+              
+              <div class="right-column">
+                <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+                ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+                ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+                ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+                ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+                <div class="product-details-row">
+                  <div class="product-meta">
+                    ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                    ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                    ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+                    ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+                    ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+                    ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+                    ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+                  </div>
+                  <div class="barcode-right">${barcodeHtml}</div>
+                </div>
+                ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+              </div>
+            </div>
+            
+            ${item.additionalImages && item.additionalImages.length > 0 ? `
+              <div class="internals-section-landscape">
+                <div class="internals-title">Internals:</div>
+                <div class="internals-thumbnails-landscape">
+                  ${item.additionalImages.slice(0, 3).map((img, idx) => 
+                    `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
                   ).join('')}
                 </div>
               </div>
@@ -607,7 +669,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
       </div>`;
     }
     
-    const layoutClass = layout === 1 ? "layout-1" : layout === 2 ? "layout-2" : layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : "layout-4";
+    const layoutClass = layout === 1 ? "layout-1" : layout === '1L' ? "layout-1L" : layout === 2 ? "layout-2" : layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : "layout-4";
     const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
     // Fill empty slots for proper grid layout
@@ -930,6 +992,109 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
     height: 120px;
     max-width: 160px;
     max-height: 120px;
+  }
+  
+  /* Layout 1L: Optimized for landscape photos with 3 larger, wider images */
+  .layout-1L-full {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+    height: 100%;
+  }
+  
+  .layout-1L-full .main-content {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex: 1;
+  }
+  
+  .layout-1L-full .left-column {
+    flex-shrink: 0;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .layout-1L-full .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  /* Landscape-optimized internals section for 1L layout */
+  .internals-section-landscape {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 2px solid #e0e0e0;
+  }
+  
+  .internals-thumbnails-landscape {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .internal-thumbnail-landscape {
+    width: 240px;
+    height: 160px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  
+  /* Landscape vs Portrait handling for 1L internal images */
+  .internal-thumbnail-landscape.image-portrait {
+    object-fit: contain;
+    width: 180px;
+    height: 240px;
+    max-width: 180px;
+    max-height: 240px;
+  }
+  
+  .internal-thumbnail-landscape.image-landscape {
+    object-fit: cover;
+    width: 240px;
+    height: 160px;
+    max-width: 240px;
+    max-height: 160px;
+  }
+  
+  .layout-1L-full .author-bio {
+    background: #E3F2FD;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1565C0;
+  }
+  
+  .layout-1L-full .author-bio.truncated {
+    max-height: 200px;
+    overflow: hidden;
+  }
+  
+  .layout-1L-full .author-bio.full {
+    max-height: none;
+  }
+  
+  .layout-1L-full .author-bio-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #0D47A1;
+    font-size: 13px;
+  }
+  
+  .layout-1L-full .author-bio-content {
+    color: #1565C0;
+    white-space: pre-line;
   }
   
   /* Layout 4: Special 4-up layout with larger image and reorganized content */
@@ -2181,7 +2346,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   // Detect image orientation and apply classes
   (function() {
     function detectImageOrientation() {
-      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image');
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
       images.forEach(img => {
         // Skip if already processed
         if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {

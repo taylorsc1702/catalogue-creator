@@ -84,14 +84,14 @@ export default function Home() {
   const [collectionId, setCollectionId] = useState("");
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
+  const [layout, setLayout] = useState<1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
-  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|2|'2-int'|3|4|8}>({});
+  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|'1L'|2|'2-int'|3|4|8}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
@@ -257,7 +257,7 @@ export default function Home() {
     setLoading(true);
     try {
       let parsedHandles: string[] = [];
-      const layoutMap: {[handle: string]: 1|2|'2-int'|3|4|8} = {};
+      const layoutMap: {[handle: string]: 1|'1L'|2|'2-int'|3|4|8} = {};
       
       if (useHandleList && handleList.trim()) {
         const lines = handleList.trim().split('\n').map(h => h.trim()).filter(Boolean);
@@ -268,8 +268,9 @@ export default function Home() {
           if (parts.length > 1) {
             const formatStr = parts[1].trim();
             // Map format number to layout type
-            // 1 = 1-up, 2 = 2-up, '2-int' = 2-int, 3 = 3-up, 4 = 4-up, 8 = 8-up
+            // 1 = 1-up, 1L = 1L, 2 = 2-up, '2-int' = 2-int, 3 = 3-up, 4 = 4-up, 8 = 8-up
             if (formatStr === '1') layoutMap[handle] = 1;
+            else if (formatStr === '1L' || formatStr === '1l') layoutMap[handle] = '1L';
             else if (formatStr === '2') layoutMap[handle] = 2;
             else if (formatStr === '2-int' || formatStr === '2int') layoutMap[handle] = '2-int';
             else if (formatStr === '3') layoutMap[handle] = 3;
@@ -299,7 +300,7 @@ export default function Home() {
       
       // Apply layout assignments from ISBN,format format
       if (Object.keys(layoutMap).length > 0) {
-        const newItemLayouts: {[key: number]: 1|2|'2-int'|3|4|8} = {};
+        const newItemLayouts: {[key: number]: 1|'1L'|2|'2-int'|3|4|8} = {};
         fetchedItems.forEach((item, index) => {
           if (layoutMap[item.handle]) {
             newItemLayouts[index] = layoutMap[item.handle];
@@ -326,7 +327,7 @@ export default function Home() {
         body: JSON.stringify({ 
           items, 
           layout, 
-          showFields: { authorBio: layout === 1 }, 
+          showFields: { authorBio: layout === 1 || layout === '1L' }, 
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
@@ -628,7 +629,7 @@ export default function Home() {
           items, 
           layout,
           title: catalogueName || `Catalogue - ${new Date().toLocaleDateString()}`,
-          showFields: { authorBio: layout === 1 },
+          showFields: { authorBio: layout === 1 || layout === '1L' },
           hyperlinkToggle,
           itemBarcodeTypes,
           barcodeType,
@@ -895,7 +896,7 @@ export default function Home() {
     setItems(newItems);
   }
 
-  function setItemLayout(index: number, layout: 1|2|'2-int'|3|4|8) {
+  function setItemLayout(index: number, layout: 1|'1L'|2|'2-int'|3|4|8) {
     setItemLayouts({...itemLayouts, [index]: layout});
   }
 
@@ -1022,16 +1023,16 @@ export default function Home() {
   }
 
   // Compute page groups based on current per-item layout assignments
-  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8}): PageGroup[] {
+  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8}): PageGroup[] {
     const groups: PageGroup[] = [];
     if (!currentItems.length) return groups;
     const layoutAssignments = currentItems.map((_, i) => currentItemLayouts[i] || layout);
     let current: number[] = [];
     let currentLayout = layoutAssignments[0];
-    let capacity = currentLayout === '2-int' ? 2 : currentLayout;
+    let capacity = currentLayout === '2-int' ? 2 : (currentLayout === '1L' ? 1 : (typeof currentLayout === 'number' ? currentLayout : 1));
     for (let i = 0; i < currentItems.length; i++) {
       const assigned = layoutAssignments[i];
-      const assignedCapacity = assigned === '2-int' ? 2 : assigned;
+      const assignedCapacity = assigned === '2-int' ? 2 : (assigned === '1L' ? 1 : (typeof assigned === 'number' ? assigned : 1));
       if (current.length === 0) {
         currentLayout = assigned;
         capacity = assignedCapacity;
@@ -1148,7 +1149,7 @@ export default function Home() {
               body: JSON.stringify({ 
                 items,
                 layout,
-                showFields: { authorBio: layout === 1 },
+                showFields: { authorBio: layout === 1 || layout === '1L' },
                 hyperlinkToggle,
                 itemBarcodeTypes,
                 barcodeType,
@@ -1557,7 +1558,7 @@ export default function Home() {
             />
           </Field>
           <div style={{ fontSize: 12, color: "#656F91", marginTop: 4 }}>
-            💡 Paste a list of ISBNs or product handles (one per line). Optionally add format: ISBN,format (e.g., 9781914961670,1). Formats: 1=1-up, 2=2-up, 2-int=2-int, 3=3-up, 4=4-up, 8=8-up
+            💡 Paste a list of ISBNs or product handles (one per line). Optionally add format: ISBN,format (e.g., 9781914961670,1). Formats: 1=1-up, 1L=1L, 2=2-up, 2-int=2-int, 3=3-up, 4=4-up, 8=8-up
           </div>
         </div>
       )}
@@ -1580,6 +1581,7 @@ export default function Home() {
         {[1,2,3,4,8].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
+        <button onClick={()=>setLayout('1L')} style={btn(layout==='1L')}>1L</button>
         <button onClick={()=>setLayout('2-int')} style={btn(layout==='2-int')}>2-int</button>
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
@@ -2127,7 +2129,7 @@ export default function Home() {
         item={items[editingItemIndex]}
         editedItem={editedContent[editingItemIndex]}
         editingField={editingField}
-        itemLayout={itemLayouts[editingItemIndex] || (typeof layout === 'number' ? layout : 4) as 1|2|'2-int'|3|4|8}
+        itemLayout={itemLayouts[editingItemIndex] || (typeof layout === 'number' ? layout : layout === '1L' ? '1L' : 4) as 1|'1L'|2|'2-int'|3|4|8}
         isMixedView={isMixedView}
         closeModal={closeEditModal}
         saveContent={saveEditedContent}
@@ -2454,7 +2456,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
-  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === '2-int' ? '2-int' : layout === 'table' ? 'table' : layout;
+  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === '1L' ? '1L' : layout === '2-int' ? '2-int' : layout === 'table' ? 'table' : layout;
   
   // Get the handler for the current layout
   const layoutHandler = layoutRegistry.getHandler(layoutType);

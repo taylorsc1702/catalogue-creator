@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layoutAssignments, title = "Mixed Layout Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView, appendInsertIndex } = req.body as {
       items: Item[]; 
-      layoutAssignments: (1|2|'2-int'|3|4|8)[]; 
+      layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       title?: string;
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: HyperlinkToggle;
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function generateMixedGoogleDocsHtml(
   items: Item[], 
-  layoutAssignments: (1|2|'2-int'|3|4|8)[], 
+  layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[], 
   title: string, 
   showFields: Record<string, boolean>,
   hyperlinkToggle: HyperlinkToggle,
@@ -100,7 +100,7 @@ async function generateMixedGoogleDocsHtml(
 
 async function renderMixedGoogleDocsHtml(
   itemsWithImages: ItemWithImages[], 
-  layoutAssignments: (1|2|'2-int'|3|4|8)[], 
+  layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[], 
   title: string,
   showFields: Record<string, boolean>,
   hyperlinkToggle: HyperlinkToggle,
@@ -131,7 +131,7 @@ async function renderMixedGoogleDocsHtml(
   };
 
   // Group items by their layout requirements
-  const pages: { items: ItemWithImages[]; layout: 1|2|'2-int'|3|4|8 }[] = [];
+  const pages: { items: ItemWithImages[]; layout: 1|'1L'|2|'2-int'|3|4|8 }[] = [];
   let currentPage: ItemWithImages[] = [];
   let currentLayout = layoutAssignments[0];
   let itemsInPage = 0;
@@ -140,7 +140,7 @@ async function renderMixedGoogleDocsHtml(
     const assignedLayout = layoutAssignments[i];
     
     // If layout changes or page is full, start new page
-    const currentLayoutNum = currentLayout === '2-int' ? 2 : currentLayout;
+    const currentLayoutNum = currentLayout === '2-int' ? 2 : (currentLayout === '1L' ? 1 : (typeof currentLayout === 'number' ? currentLayout : 1));
     if (assignedLayout !== currentLayout || itemsInPage >= currentLayoutNum) {
       if (currentPage.length > 0) {
         pages.push({ items: currentPage, layout: currentLayout });
@@ -175,11 +175,11 @@ async function renderMixedGoogleDocsHtml(
     };
 
     const layout = page.layout;
-    const layoutClass = layout === 1 ? "layout-1" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 8 ? "layout-8" : "";
+    const layoutClass = layout === 1 ? "layout-1" : layout === '1L' ? "layout-1L" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 8 ? "layout-8" : "";
     const cards = page.items.map((itemWithImages) => createProductCard(itemWithImages)).join("");
     
     // Fill empty slots for proper grid layout
-    const emptySlots = (layout === '2-int' ? 2 : layout) - page.items.length;
+    const emptySlots = (layout === '2-int' ? 2 : layout === '1L' ? 1 : (typeof layout === 'number' ? layout : 1)) - page.items.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">
@@ -1176,7 +1176,7 @@ async function renderMixedGoogleDocsHtml(
   // Detect image orientation and apply classes
   (function() {
     function detectImageOrientation() {
-      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image');
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
       images.forEach(img => {
         // Skip if already processed
         if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {

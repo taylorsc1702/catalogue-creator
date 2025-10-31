@@ -450,10 +450,75 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
   `;
 };
 
-export const renderProductCard = (item: Item, layout: 1 | 2 | '2-int' | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
+export const renderProductCard1L = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  
+  // Calculate if we need to truncate author bio
+  const hasInternals = item.additionalImages && item.additionalImages.length > 0;
+  // Truncate bio if it's longer than 752 characters (with spaces)
+  const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
+  const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
+  
+  return `
+    <div class="product-card layout-1L-full">
+      <div class="main-content">
+        <div class="left-column">
+          <div class="product-image">
+            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+          </div>
+          ${options.showFields.authorBio && displayBio ? `
+            <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
+              <div class="author-bio-title">Author Bio:</div>
+              <div class="author-bio-content">${esc(displayBio)}</div>
+            </div>
+          ` : ""}
+        </div>
+        
+        <div class="right-column">
+          <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
+          ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+          ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+          ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+          <div class="product-details-row">
+            <div class="product-meta">
+              ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+              ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+              ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+              ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+              ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+            ${item.icillus ? `<div class=\"meta-item\"><strong>ICILLUS:</strong> ${esc(item.icillus)}</div>` : ""}
+            ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
+              ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+            </div>
+            <div class="barcode-right">${barcodeHtml}</div>
+          </div>
+          ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+        </div>
+      </div>
+      
+      ${item.additionalImages && item.additionalImages.length > 0 ? `
+        <div class="internals-section-landscape">
+          <div class="internals-title">Internals:</div>
+          <div class="internals-thumbnails-landscape">
+            ${item.additionalImages.slice(0, 3).map((img, idx) => 
+              `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
+            ).join('')}
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+};
+
+export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
   switch (layout) {
     case 1:
       return renderProductCard1Up(item, globalIndex, options);
+    case '1L':
+      return renderProductCard1L(item, globalIndex, options);
     case 2:
       return renderProductCard2Up(item, globalIndex, options);
     case '2-int':
