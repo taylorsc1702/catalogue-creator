@@ -434,7 +434,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
 
       // For 4-up layout, use special layout with larger image and reorganized content
       if (layout === 4) {
-        const truncatedDesc = item.description ? (item.description.length > 950 ? item.description.substring(0, 947) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 850 ? item.description.substring(0, 847) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-4-special">
