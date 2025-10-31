@@ -461,11 +461,11 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
   const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
   
   return `
-    <div class="product-card layout-1L-full">
+    <div class="product-card layout-1-full layout-1L">
       <div class="main-content">
         <div class="left-column">
           <div class="product-image">
-            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/240x360?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-large">
+            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
           ${options.showFields.authorBio && displayBio ? `
             <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
@@ -478,7 +478,8 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
         <div class="right-column">
           <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
           ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-          ${item.author ? `<div class="product-author" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${esc(item.author)}${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span>` : ''}</div>` : (item.icauth ? `<div class="product-author"><span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span></div>` : "")}
+          ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
           ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
           <div class="product-details-row">
             <div class="product-meta">

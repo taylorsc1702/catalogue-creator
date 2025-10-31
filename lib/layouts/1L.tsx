@@ -211,7 +211,7 @@ export function create1LLayoutHandler(): LayoutHandler {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
       return `
-        <div class="product-card layout-1L-content">
+        <div class="product-card layout-1up-content layout-1L">
           <!-- Left Column -->
           <div class="left-column">
             <!-- Book Cover -->
@@ -243,7 +243,8 @@ export function create1LLayoutHandler(): LayoutHandler {
                 <a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a>
               </h1>
               ${item.subtitle ? `<h2 class="product-subtitle-large">${esc(item.subtitle)}</h2>` : ''}
-              ${item.author ? `<div class="product-author-large" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${esc(item.author)}${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span>` : ''}</div>` : (item.icauth ? `<div class="product-author-large"><span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span></div>` : '')}
+              ${item.author ? `<div class="product-author-large">${esc(item.author)}</div>` : ''}
+              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ''}
             </div>
 
             <!-- Description -->
@@ -291,7 +292,7 @@ export function create1LLayoutHandler(): LayoutHandler {
             </div>
           </div>
           
-          <!-- Landscape-optimized internals section - 2 larger, wider images -->
+          <!-- Internals section - same structure as 1-up but with 2 bigger images -->
           ${item.additionalImages && item.additionalImages.length > 0 ? `
             <div class="internals-section-full">
               <div class="internals-title">Internals:</div>
@@ -605,32 +606,51 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: block !important;
       }
       
-      /* 1L uses same internals structure as layout 1, but with bigger landscape-optimized images */
-      .layout-1L-content .internals-thumbnails-full {
+      /* 1L uses same internals structure as layout 1-up, but with 2 bigger landscape-optimized images */
+      .layout-1L .internals-thumbnails-full {
         flex-wrap: nowrap;
         gap: 30px;
       }
       
-      .layout-1L-content .internal-thumbnail-full {
+      .layout-1L .internal-thumbnail-full {
         width: 320px;
         height: 214px;
         object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #DEE2E6;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       
       /* Landscape vs Portrait handling for 1L internal images */
-      .layout-1L-content .internal-thumbnail-full.image-portrait {
+      .layout-1L .internal-thumbnail-full.image-portrait {
         object-fit: contain;
         width: 240px;
         height: 320px;
+        max-width: 240px;
+        max-height: 320px;
       }
       
-      .layout-1L-content .internal-thumbnail-full.image-landscape {
+      .layout-1L .internal-thumbnail-full.image-landscape {
         object-fit: cover;
         width: 320px;
         height: 214px;
+        max-width: 320px;
+        max-height: 214px;
+      }
+      
+      @media print {
+        .layout-1L .internals-thumbnails-full {
+          flex-wrap: nowrap !important;
+          display: flex !important;
+        }
+        
+        .layout-1L .page-header {
+          page-break-after: avoid;
+        }
+        
+        .layout-1L {
+          page-break-inside: avoid;
+        }
       }
       
       .internals-title {

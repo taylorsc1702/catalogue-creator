@@ -339,11 +339,11 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
         
         return `
-          <div class="product-card layout-1L-full">
+          <div class="product-card layout-1-full layout-1L">
             <div class="main-content">
               <div class="left-column">
                 <div class="product-image">
-                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/240x360?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-large">
+                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
                 </div>
                 ${show.authorBio && displayBio ? `
                   <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
@@ -356,7 +356,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <div class="right-column">
                 <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-                ${item.author ? `<div class="product-author" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${esc(item.author)}${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span>` : ''}</div>` : (item.icauth ? `<div class="product-author"><span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span></div>` : "")}
+                ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+                ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
                 ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
                 <div class="product-details-row">
                   <div class="product-meta">
@@ -993,69 +994,23 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     max-height: 120px;
   }
   
-  /* Layout 1L: Optimized for landscape photos with 2 larger, wider images */
-  .layout-1L-full {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 15px;
-    height: 100%;
-  }
-  
-  .layout-1L-full .main-content {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    flex: 1;
-  }
-  
-  .layout-1L-full .left-column {
-    flex-shrink: 0;
-    width: 350px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .layout-1L-full .right-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-    overflow: hidden;
-  }
-  
-  .layout-1L-full .product-image {
-    text-align: center;
-  }
-  
-  .layout-1L-full .book-cover-large {
-    width: 240px;
-    height: 360px;
-    object-fit: cover;
-    border-radius: 8px;
-    background: #F8F9FA;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  
-  /* 1L layout uses same internals structure as layout 1, but with bigger landscape-optimized images */
-  .layout-1L-full .internals-thumbnails-full {
+  /* 1L layout: Same structure as layout-1-full, but with 2 bigger landscape-optimized internals */
+  .layout-1L .internals-thumbnails-full {
     flex-wrap: nowrap;
     gap: 30px;
   }
   
-  .layout-1L-full .internal-thumbnail-full {
+  .layout-1L .internal-thumbnail-full {
     width: 320px;
     height: 214px;
     object-fit: cover;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
   /* Landscape vs Portrait handling for 1L internal images */
-  .layout-1L-full .internal-thumbnail-full.image-portrait {
+  .layout-1L .internal-thumbnail-full.image-portrait {
     object-fit: contain;
     width: 240px;
     height: 320px;
@@ -1063,7 +1018,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     max-height: 320px;
   }
   
-  .layout-1L-full .internal-thumbnail-full.image-landscape {
+  .layout-1L .internal-thumbnail-full.image-landscape {
     object-fit: cover;
     width: 320px;
     height: 214px;
@@ -1072,77 +1027,18 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   @media print {
-    .layout-1L-full .internals-thumbnails-full {
+    .layout-1L .internals-thumbnails-full {
       flex-wrap: nowrap !important;
       display: flex !important;
     }
     
-    .layout-1L-full .page-header {
+    .layout-1L .page-header {
       page-break-after: avoid;
     }
     
-    .layout-1L-full {
+    .layout-1L {
       page-break-inside: avoid;
     }
-  }
-  
-  .layout-1L-full .author-bio {
-    background: #E3F2FD;
-    padding: 20px;
-    border-radius: 8px;
-    font-size: 15px;
-    line-height: 1.5;
-    color: #1565C0;
-    min-height: 150px;
-  }
-  
-  .layout-1L-full .author-bio.truncated {
-    max-height: 200px;
-    overflow: hidden;
-  }
-  
-  .layout-1L-full .author-bio.full {
-    max-height: none;
-  }
-  
-  .layout-1L-full .author-bio-title {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #0D47A1;
-    font-size: 15px;
-  }
-  
-  .layout-1L-full .author-bio-content {
-    color: #1565C0;
-    white-space: pre-line;
-  }
-  
-  .layout-1L-full .product-title {
-    font-size: 26px;
-  }
-  
-  .layout-1L-full .product-subtitle {
-    font-size: 15px;
-  }
-  
-  .layout-1L-full .product-author {
-    font-size: 14px;
-  }
-  
-  .layout-1L-full .product-description {
-    font-size: 12px;
-  }
-  
-  .layout-1L-full .meta-item {
-    font-size: 11px;
-  }
-  
-  .layout-1L-full .product-price {
-    font-size: 16px;
-  }
-  
-  .layout-1L-full .internals-title {
-    font-size: 16px;
   }
   
   /* Layout 4: Special 4-up layout with larger image and reorganized content */
