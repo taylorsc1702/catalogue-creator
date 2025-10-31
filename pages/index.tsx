@@ -235,7 +235,11 @@ export default function Home() {
 
   const queryPreview = useMemo(() => {
     if (useHandleList && handleList.trim()) {
-      const handles = handleList.split('\n').map(h => h.trim()).filter(Boolean);
+      const lines = handleList.split('\n').map(h => h.trim()).filter(Boolean);
+      const handles = lines.map(line => {
+        const parts = line.split(',');
+        return parts[0].trim(); // Just the ISBN/handle part
+      });
       return `handle:(${handles.join(' OR ')})`;
     }
     
@@ -252,8 +256,32 @@ export default function Home() {
   async function fetchItems() {
     setLoading(true);
     try {
+      let parsedHandles: string[] = [];
+      const layoutMap: {[handle: string]: 1|2|'2-int'|3|4|8} = {};
+      
+      if (useHandleList && handleList.trim()) {
+        const lines = handleList.trim().split('\n').map(h => h.trim()).filter(Boolean);
+        parsedHandles = lines.map(line => {
+          const parts = line.split(',');
+          const handle = parts[0].trim();
+          // Check if format is specified
+          if (parts.length > 1) {
+            const formatStr = parts[1].trim();
+            // Map format number to layout type
+            // 1 = 1-up, 2 = 2-up, '2-int' = 2-int, 3 = 3-up, 4 = 4-up, 8 = 8-up
+            if (formatStr === '1') layoutMap[handle] = 1;
+            else if (formatStr === '2') layoutMap[handle] = 2;
+            else if (formatStr === '2-int' || formatStr === '2int') layoutMap[handle] = '2-int';
+            else if (formatStr === '3') layoutMap[handle] = 3;
+            else if (formatStr === '4') layoutMap[handle] = 4;
+            else if (formatStr === '8') layoutMap[handle] = 8;
+          }
+          return handle;
+        });
+      }
+      
       const requestBody = useHandleList && handleList.trim() 
-        ? { handleList: handleList.trim().split('\n').map(h => h.trim()).filter(Boolean) }
+        ? { handleList: parsedHandles }
         : { tag, vendor, collectionId, publishingStatus };
         
       const resp = await fetch("/api/products", {
@@ -265,8 +293,20 @@ export default function Home() {
       const data: ProductsResponse & { error?: string } = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed");
 
-      setItems(data.items || []);
+      const fetchedItems = data.items || [];
+      setItems(fetchedItems);
       setServerQuery(data.query || ""); // <— NEW: capture the server-side query
+      
+      // Apply layout assignments from ISBN,format format
+      if (Object.keys(layoutMap).length > 0) {
+        const newItemLayouts: {[key: number]: 1|2|'2-int'|3|4|8} = {};
+        fetchedItems.forEach((item, index) => {
+          if (layoutMap[item.handle]) {
+            newItemLayouts[index] = layoutMap[item.handle];
+          }
+        });
+        setItemLayouts(newItemLayouts);
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       alert(msg);
@@ -1503,7 +1543,7 @@ export default function Home() {
             <textarea 
               value={handleList} 
               onChange={e=>setHandleList(e.target.value)} 
-              placeholder="9781597842204&#10;9781597842181&#10;9781597842198"
+              placeholder="9781597842204&#10;9781597842181,3&#10;9781597842198,1"
               style={{ 
                 width: "100%", 
                 height: 120, 
@@ -1517,7 +1557,7 @@ export default function Home() {
             />
           </Field>
           <div style={{ fontSize: 12, color: "#656F91", marginTop: 4 }}>
-            💡 Paste a list of ISBNs or product handles (one per line). This will create a targeted catalogue with only these specific products.
+            💡 Paste a list of ISBNs or product handles (one per line). Optionally add format: ISBN,format (e.g., 9781914961670,1). Formats: 1=1-up, 2=2-up, 2-int=2-int, 3=3-up, 4=4-up, 8=8-up
           </div>
         </div>
       )}
