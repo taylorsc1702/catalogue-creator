@@ -332,7 +332,7 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
 };
 
 export const renderProductCard2Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
-  const truncatedDesc = item.description ? (item.description.length > 1200 ? item.description.substring(0, 1197) + '...' : item.description) : '';
+  const truncatedDesc = item.description ? (item.description.length > 1600 ? item.description.substring(0, 1597) + '...' : item.description) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
@@ -409,7 +409,7 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
 };
 
 export const renderProductCard2Int = (item: Item, globalIndex: number, options: RenderOptions): string => {
-  const truncatedDesc = item.description ? (item.description.length > 1200 ? item.description.substring(0, 1197) + '...' : item.description) : '';
+  const truncatedDesc = item.description ? (item.description.length > 1400 ? item.description.substring(0, 1397) + '...' : item.description) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
