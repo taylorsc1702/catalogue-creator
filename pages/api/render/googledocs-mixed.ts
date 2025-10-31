@@ -339,15 +339,15 @@ async function renderMixedGoogleDocsHtml(
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       <div class="page-content" style="display:block;">
-        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px; border:1px solid #ccc;">
+        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px; border:2px solid #666;">
           <thead class="table-header">
             <tr>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Title</th>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Author</th>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">ISBN</th>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Price</th>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">Disc</th>
-              <th style="text-align:left; padding:6px; border:1px solid #ddd; background:#f8f9fa;">QTY</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Title</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Author</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">ISBN</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Price</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Disc</th>
+              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">QTY</th>
             </tr>
           </thead>
           <tbody>
@@ -356,12 +356,12 @@ async function renderMixedGoogleDocsHtml(
               const isbnVal = idObj.isbn13 || item.sku || '';
               return `
               <tr>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.title || '')}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.author || '')}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(isbnVal)}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.price || '')}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\">${esc(item.imidis || '')}</td>
-                <td style=\"padding:6px; border:1px solid #eee;\"></td>
+                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.title || '')}</td>
+                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.author || '')}</td>
+                <td style=\"padding:6px; border:1px solid #999;\">${esc(isbnVal)}</td>
+                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.price || '')}</td>
+                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.imidis || '')}</td>
+                <td style=\"padding:6px; border:1px solid #999;\"></td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -1098,8 +1098,8 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .internal-preview-image {
-    width: 72px; /* 60px * 1.2 = 72px (20% bigger) */
-    height: 96px; /* 80px * 1.2 = 96px (20% bigger) */
+    width: 83px; /* 72px * 1.15 = 82.8px ≈ 83px (15% bigger) */
+    height: 110px; /* 96px * 1.15 = 110.4px ≈ 110px (15% bigger) */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;

@@ -2103,8 +2103,8 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
   }
   
   .internal-preview-image {
-    width: 72px; /* 60px * 1.2 = 72px (20% bigger) */
-    height: 96px; /* 80px * 1.2 = 96px (20% bigger) */
+    width: 83px; /* 72px * 1.15 = 82.8px ≈ 83px (15% bigger) */
+    height: 110px; /* 96px * 1.15 = 110.4px ≈ 110px (15% bigger) */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;

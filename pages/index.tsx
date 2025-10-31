@@ -1,7 +1,8 @@
 // pages/index.tsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
+import { getItemTruncations, type LayoutType } from '@/utils/truncation-detector';
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -125,6 +126,72 @@ export default function Home() {
   const [pageGroups, setPageGroups] = useState<PageGroup[]>([]);
   const [reorderedPageGroups, setReorderedPageGroups] = useState<PageGroup[]>([]);
   const [appendInsertIndex, setAppendInsertIndex] = useState<number | null>(null);
+
+  // Truncation detection and editing
+  const [editedContent, setEditedContent] = useState<{[key: number]: {description?: string; authorBio?: string}}>({});
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [editingField, setEditingField] = useState<'description' | 'authorBio' | null>(null);
+  const [isMixedView, setIsMixedView] = useState(false);
+
+  // Get items with edited content applied
+  const getItemsWithEdits = (): Item[] => {
+    return items.map((item, index) => {
+      const edits = editedContent[index];
+      if (!edits) return item;
+      return {
+        ...item,
+        description: edits.description !== undefined ? edits.description : item.description,
+        authorBio: edits.authorBio !== undefined ? edits.authorBio : item.authorBio
+      };
+    });
+  };
+
+  // Open edit modal for a specific item and field
+  function openEditModal(itemIndex: number, field: 'description' | 'authorBio') {
+    setEditingItemIndex(itemIndex);
+    setEditingField(field);
+    setEditModalOpen(true);
+  }
+
+  // Close edit modal
+  function closeEditModal() {
+    setEditModalOpen(false);
+    setEditingItemIndex(null);
+    setEditingField(null);
+  }
+
+  // Save edited content
+  function saveEditedContent(newText: string) {
+    if (editingItemIndex === null || editingField === null) return;
+    
+    setEditedContent(prev => ({
+      ...prev,
+      [editingItemIndex]: {
+        ...prev[editingItemIndex],
+        [editingField]: newText
+      }
+    }));
+    
+    closeEditModal();
+  }
+
+  // Revert edited content to original
+  function revertEditedContent(itemIndex: number, field: 'description' | 'authorBio') {
+    setEditedContent(prev => {
+      const updated = { ...prev };
+      if (updated[itemIndex]) {
+        const newContent = { ...updated[itemIndex] };
+        delete newContent[field];
+        if (Object.keys(newContent).length === 0) {
+          delete updated[itemIndex];
+        } else {
+          updated[itemIndex] = newContent;
+        }
+      }
+      return updated;
+    });
+  }
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -849,15 +916,18 @@ export default function Home() {
 
   async function openMixedLayout() {
     if (!items.length) { alert("Fetch products first."); return; }
+    setIsMixedView(true);
     try {
+      // Use edited items if available
+      const itemsToUse = getItemsWithEdits();
       // Create layout assignments array
-      const layoutAssignments = items.map((_, i) => itemLayouts[i] || layout);
+      const layoutAssignments = itemsToUse.map((_, i) => itemLayouts[i] || layout);
       
       const resp = await fetch("/api/render/mixed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          items,
+          items: itemsToUse,
           layoutAssignments,
           showFields: { authorBio: true },
           hyperlinkToggle,
@@ -2009,7 +2079,20 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
+      
+      {/* Edit Modal */}
+      {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
+        item={items[editingItemIndex]}
+        editedItem={editedContent[editingItemIndex]}
+        editingField={editingField}
+        itemLayout={itemLayouts[editingItemIndex] || (typeof layout === 'number' ? layout : 4) as 1|2|'2-int'|3|4|8}
+        isMixedView={isMixedView}
+        closeModal={closeEditModal}
+        saveContent={saveEditedContent}
+        revertContent={revertEditedContent}
+        itemIndex={editingItemIndex}
+      />}
       {showPreviewModal && (
         <div style={{position:'fixed',inset:0 as unknown as number,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}}>
           <div style={{background:'#fff',borderRadius:12,padding:16,width:'90vw',maxWidth:1100,maxHeight:'85vh',overflow:'auto',boxShadow:'0 12px 32px rgba(0,0,0,0.25)'}}>
@@ -2153,10 +2236,149 @@ function btn(active = false): React.CSSProperties {
     boxShadow: active ? "0 4px 12px rgba(102, 126, 234, 0.3)" : "0 2px 4px rgba(0,0,0,0.1)",
     textTransform: "uppercase",
     letterSpacing: "0.5px"
-  };
+      };
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl }: { 
+function EditModal({ 
+  item, 
+  editedItem, 
+  editingField, 
+  itemLayout, 
+  isMixedView, 
+  closeModal, 
+  saveContent, 
+  revertContent,
+  itemIndex 
+}: { 
+  item: Item; 
+  editedItem?: {description?: string; authorBio?: string}; 
+  editingField: 'description' | 'authorBio';
+  itemLayout: 1|2|'2-int'|3|4|8;
+  isMixedView: boolean;
+  closeModal: () => void;
+  saveContent: (text: string) => void;
+  revertContent: (index: number, field: 'description' | 'authorBio') => void;
+  itemIndex: number;
+}) {
+  const currentValue = editedItem?.[editingField] !== undefined 
+    ? editedItem[editingField] 
+    : item[editingField] || '';
+  const effectiveLayout: LayoutType = typeof itemLayout === 'number' ? itemLayout : itemLayout === '2-int' ? '2-int' : 4;
+  const truncations = getItemTruncations(item, effectiveLayout, isMixedView);
+  const fieldTruncation = truncations[editingField];
+  const limit = fieldTruncation?.limit || 0;
+  const [editValue, setEditValue] = useState(currentValue || '');
+  
+  // Sync editValue when currentValue changes
+  useEffect(() => {
+    setEditValue(currentValue || '');
+  }, [currentValue]);
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10000,
+      padding: 20
+    }} onClick={(e) => {
+      if (e.target === e.currentTarget) closeModal();
+    }}>
+      <div style={{
+        background: 'white',
+        borderRadius: 12,
+        padding: 24,
+        maxWidth: 800,
+        width: '100%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.25)'
+      }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: '#495057' }}>
+            Edit {editingField === 'description' ? 'Description' : 'Author Bio'} - {item.title}
+          </h3>
+          <button onClick={closeModal} style={{
+            background: '#E9ECEF',
+            border: 'none',
+            borderRadius: 6,
+            padding: '6px 12px',
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#495057'
+          }}>✕</button>
+        </div>
+        
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <label style={{ fontSize: 14, fontWeight: 600, color: '#495057' }}>
+              {editingField === 'description' ? 'Description' : 'Author Bio'}
+            </label>
+            <div style={{ fontSize: 12, color: editValue.length > limit ? '#dc3545' : '#6C757D' }}>
+              {editValue.length} / {limit} characters
+              {editValue.length > limit && (
+                <span style={{ color: '#dc3545', marginLeft: 8 }}>
+                  ({Math.round(((editValue.length - limit) / limit) * 100)}% over limit)
+                </span>
+              )}
+            </div>
+          </div>
+          <textarea
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            style={{
+              width: '100%',
+              minHeight: 200,
+              padding: 12,
+              border: '2px solid #E9ECEF',
+              borderRadius: 8,
+              fontSize: 14,
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              lineHeight: 1.5
+            }}
+            placeholder={`Enter ${editingField === 'description' ? 'description' : 'author bio'}...`}
+          />
+        </div>
+        
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button onClick={() => {
+            revertContent(itemIndex, editingField);
+            closeModal();
+          }} style={{
+            background: '#E9ECEF',
+            border: 'none',
+            borderRadius: 8,
+            padding: '10px 20px',
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#495057'
+          }}>Revert to Original</button>
+          <button onClick={() => saveContent(editValue)} style={{
+            background: editValue.length > limit ? '#ffc107' : '#28a745',
+            border: 'none',
+            borderRadius: 8,
+            padding: '10px 20px',
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'white'
+          }}>Save {editValue.length > limit ? '(Over limit)' : ''}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal }: {
   items: Item[]; 
   layout: 1|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -2174,6 +2396,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   clearItemAuthorBioToggle: (index: number) => void;
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
+  isMixedView?: boolean;
+  openEditModal?: (itemIndex: number, field: 'description' | 'authorBio') => void;
 }) {
   // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
   void hyperlinkToggle; // Explicitly mark as intentionally unused here
@@ -2210,6 +2434,97 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             marginBottom: showOrderEditor ? 16 : 0
           }}>
             {layoutHandler.createPreview(it, i, generateProductUrl)}
+            
+            {/* Truncation indicators - show when mixed view is active */}
+            {isMixedView && (() => {
+              const itemLayout = itemLayouts[i] || layout;
+              const effectiveLayout: LayoutType = typeof itemLayout === 'number' ? itemLayout : itemLayout === '2-int' ? '2-int' : 4;
+              const truncations = getItemTruncations(it, effectiveLayout, isMixedView);
+              const hasIssues = truncations.description?.isTruncated || truncations.authorBio?.isTruncated;
+              
+              if (!hasIssues) return null;
+              
+              return (
+                <div style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  display: 'flex',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                  zIndex: 10
+                }}>
+                  {truncations.description?.isTruncated && (
+                    <div
+                      onClick={() => openEditModal?.(i, 'description')}
+                      style={{
+                        background: truncations.description.severity === 'severe' ? '#dc3545' : 
+                                   truncations.description.severity === 'moderate' ? '#ffc107' : '#28a745',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: 4,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      title={`Description truncated: ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                      }}
+                    >
+                      <span>📝 Desc</span>
+                      <span style={{ fontSize: 9, opacity: 0.9 }}>
+                        {Math.round(truncations.description.percentOver)}%
+                      </span>
+                    </div>
+                  )}
+                  {truncations.authorBio?.isTruncated && (
+                    <div
+                      onClick={() => openEditModal?.(i, 'authorBio')}
+                      style={{
+                        background: truncations.authorBio.severity === 'severe' ? '#dc3545' : 
+                                   truncations.authorBio.severity === 'moderate' ? '#ffc107' : '#28a745',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: 4,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      title={`Author bio truncated: ${truncations.authorBio.originalLength} chars (limit: ${truncations.authorBio.limit}). Click to edit.`}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                      }}
+                    >
+                      <span>👤 Bio</span>
+                      <span style={{ fontSize: 9, opacity: 0.9 }}>
+                        {Math.round(truncations.authorBio.percentOver)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             
             {showOrderEditor && (
               <div style={{ 
