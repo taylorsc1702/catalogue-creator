@@ -572,8 +572,8 @@ export function create1LLayoutHandler(): LayoutHandler {
       }
       
       .book-cover-large {
-        width: 240px;
-        height: 360px;
+        width: 200px;
+        height: 300px;
         object-fit: cover;
         border-radius: 8px;
         background: #F8F9FA;
@@ -606,36 +606,34 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: block !important;
       }
       
-      /* 1L uses same internals structure as layout 1-up, but with 2 bigger landscape-optimized images */
+      /* 1L uses same internals structure as layout 1-up, but with 2 bigger landscape-optimized images spanning full width */
       .layout-1L .internals-thumbnails-full {
         flex-wrap: nowrap;
         gap: 30px;
+        width: 100%;
+        justify-content: center;
       }
       
       .layout-1L .internal-thumbnail-full {
-        width: 320px;
-        height: 214px;
+        width: calc(50% - 15px);
+        height: auto;
+        aspect-ratio: 3 / 2;
         object-fit: cover;
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: none;
       }
       
       /* Landscape vs Portrait handling for 1L internal images */
       .layout-1L .internal-thumbnail-full.image-portrait {
         object-fit: contain;
-        width: 240px;
-        height: 320px;
-        max-width: 240px;
-        max-height: 320px;
+        aspect-ratio: 2 / 3;
       }
       
       .layout-1L .internal-thumbnail-full.image-landscape {
         object-fit: cover;
-        width: 320px;
-        height: 214px;
-        max-width: 320px;
-        max-height: 214px;
+        aspect-ratio: 3 / 2;
       }
       
       @media print {
