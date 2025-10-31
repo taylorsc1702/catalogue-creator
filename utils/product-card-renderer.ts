@@ -7,6 +7,7 @@ export type Item = {
   author?: string; authorBio?: string; binding?: string; pages?: string;
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
+  icauth?: string; // Australian author metafield
   publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
@@ -231,6 +232,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
           <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
           ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
           ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
+          ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ""}
           ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
           <div class="product-details-row">
             <div class="product-meta">
@@ -277,7 +279,8 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
       <div class="product-content-3up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
         ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
         ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
       </div>
       <div class="product-details-3up">
@@ -313,6 +316,7 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
           ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
           ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
           ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
         </div>
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
@@ -345,6 +349,7 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
           ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
           ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
           ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
         </div>
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
@@ -374,6 +379,7 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
           <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
           ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
           ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
+          ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ""}
         </div>
       </div>
       <div class="description-section">
@@ -419,6 +425,7 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
           ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
           ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
           ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
         </div>
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}

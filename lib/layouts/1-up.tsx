@@ -257,6 +257,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
               </h1>
               ${item.subtitle ? `<h2 class="product-subtitle-large">${esc(item.subtitle)}</h2>` : ''}
               ${item.author ? `<div class="product-author-large">${esc(item.author)}</div>` : ''}
+              ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ''}
             </div>
 
             <!-- Description -->

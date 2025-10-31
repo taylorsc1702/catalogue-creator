@@ -186,6 +186,7 @@ export function create2UpLayoutHandler(): LayoutHandler {
               ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
               ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
               ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+              ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
             </div>
             <div class="product-meta">
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
