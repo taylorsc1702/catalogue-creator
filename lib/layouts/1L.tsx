@@ -166,7 +166,7 @@ export function create1LLayoutHandler(): LayoutHandler {
               {item.weight && <span>⚖️ {item.weight}</span>}
             </div>
             
-            {/* Internals/Additional Images - Landscape optimized, show 3 */}
+            {/* Internals/Additional Images - Landscape optimized, show 2 */}
             {item.additionalImages && item.additionalImages.length > 0 && (
               <div style={{
                 marginTop: 8,
@@ -186,7 +186,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                   gap: 4,
                   flexWrap: "wrap"
                 }}>
-                  {item.additionalImages.slice(0, 3).map((img, idx) => (
+                  {item.additionalImages.slice(0, 2).map((img, idx) => (
                     <Image
                       key={idx}
                       src={img}
@@ -243,8 +243,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                 <a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a>
               </h1>
               ${item.subtitle ? `<h2 class="product-subtitle-large">${esc(item.subtitle)}</h2>` : ''}
-              ${item.author ? `<div class="product-author-large">${esc(item.author)}</div>` : ''}
-              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ''}
+              ${item.author ? `<div class="product-author-large" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${esc(item.author)}${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span>` : ''}</div>` : (item.icauth ? `<div class="product-author-large"><span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span></div>` : '')}
             </div>
 
             <!-- Description -->
@@ -292,12 +291,12 @@ export function create1LLayoutHandler(): LayoutHandler {
             </div>
           </div>
           
-          <!-- Landscape-optimized internals section - 3 larger, wider images -->
+          <!-- Landscape-optimized internals section - 2 larger, wider images -->
           ${item.additionalImages && item.additionalImages.length > 0 ? `
             <div class="internals-section-landscape">
               <div class="internals-title">Internals:</div>
               <div class="internals-thumbnails-landscape">
-                ${item.additionalImages.slice(0, 3).map((img, idx) => 
+                ${item.additionalImages.slice(0, 2).map((img, idx) => 
                   `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
                 ).join('')}
               </div>
@@ -370,7 +369,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                     }),
                   ] : []),
                   
-                  // Internals section - 3 landscape images
+                  // Internals section - 2 landscape images
                   ...(item.additionalImages && item.additionalImages.length > 0 ? [
                     new Paragraph({
                       children: [
@@ -386,7 +385,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: `${item.additionalImages.length} internal image${item.additionalImages.length > 1 ? 's' : ''} available (showing first 3 optimized for landscape)`,
+                          text: `${item.additionalImages.length} internal image${item.additionalImages.length > 1 ? 's' : ''} available (showing first 2 optimized for landscape)`,
                           size: 12,
                           color: "6C757D",
                           italics: true,
@@ -553,10 +552,10 @@ export function create1LLayoutHandler(): LayoutHandler {
       
       .layout-1L-content .left-column {
         flex-shrink: 0;
-        width: 300px;
+        width: 350px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 20px;
       }
       
       .layout-1L-content .right-column {
@@ -572,8 +571,8 @@ export function create1LLayoutHandler(): LayoutHandler {
       }
       
       .book-cover-large {
-        width: 200px;
-        height: 300px;
+        width: 240px;
+        height: 360px;
         object-fit: cover;
         border-radius: 8px;
         background: #F8F9FA;
@@ -582,11 +581,12 @@ export function create1LLayoutHandler(): LayoutHandler {
       
       .author-bio-box {
         background: #E3F2FD;
-        padding: 16px;
+        padding: 20px;
         border-radius: 8px;
-        font-size: 12px;
-        line-height: 1.4;
+        font-size: 13px;
+        line-height: 1.5;
         color: #1565C0;
+        min-height: 150px;
       }
       
       .author-bio-title {
@@ -620,14 +620,14 @@ export function create1LLayoutHandler(): LayoutHandler {
       
       .internals-thumbnails-landscape {
         display: flex;
-        gap: 20px;
+        gap: 30px;
         justify-content: center;
         flex-wrap: wrap;
       }
       
       .internal-thumbnail-landscape {
-        width: 240px;
-        height: 160px;
+        width: 320px;
+        height: 214px;
         object-fit: cover;
         border-radius: 8px;
         border: 1px solid #DEE2E6;
@@ -637,14 +637,14 @@ export function create1LLayoutHandler(): LayoutHandler {
       /* Landscape vs Portrait handling for internal images */
       .internal-thumbnail-landscape.image-portrait {
         object-fit: contain;
-        width: 180px;
-        height: 240px;
+        width: 240px;
+        height: 320px;
       }
       
       .internal-thumbnail-landscape.image-landscape {
         object-fit: cover;
-        width: 240px;
-        height: 160px;
+        width: 320px;
+        height: 214px;
       }
       
       .title-section {

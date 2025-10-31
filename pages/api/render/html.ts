@@ -327,7 +327,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         `;
       }
 
-      // For 1L layout, optimized for landscape photos with 3 larger, wider images
+      // For 1L layout, optimized for landscape photos with 2 larger, wider images
       if (layout === '1L') {
         const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
         
@@ -343,7 +343,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             <div class="main-content">
               <div class="left-column">
                 <div class="product-image">
-                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/240x360?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-large">
                 </div>
                 ${show.authorBio && displayBio ? `
                   <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
@@ -356,8 +356,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <div class="right-column">
                 <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-                ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
-                ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+                ${item.author ? `<div class="product-author" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${esc(item.author)}${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span>` : ''}</div>` : (item.icauth ? `<div class="product-author"><span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600;">${esc(item.icauth)}</span></div>` : "")}
                 ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
                 <div class="product-details-row">
                   <div class="product-meta">
@@ -379,7 +378,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <div class="internals-section-landscape">
                 <div class="internals-title">Internals:</div>
                 <div class="internals-thumbnails-landscape">
-                  ${item.additionalImages.slice(0, 3).map((img, idx) => 
+                  ${item.additionalImages.slice(0, 2).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-landscape">`
                   ).join('')}
                 </div>
@@ -994,7 +993,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     max-height: 120px;
   }
   
-  /* Layout 1L: Optimized for landscape photos with 3 larger, wider images */
+  /* Layout 1L: Optimized for landscape photos with 2 larger, wider images */
   .layout-1L-full {
     display: flex;
     flex-direction: column;
@@ -1012,10 +1011,10 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   .layout-1L-full .left-column {
     flex-shrink: 0;
-    width: 250px;
+    width: 350px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
   
   .layout-1L-full .right-column {
@@ -1025,6 +1024,19 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     gap: 12px;
     min-width: 0;
     overflow: hidden;
+  }
+  
+  .layout-1L-full .product-image {
+    text-align: center;
+  }
+  
+  .layout-1L-full .book-cover-large {
+    width: 240px;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #F8F9FA;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   
   /* Landscape-optimized internals section for 1L layout */
@@ -1037,13 +1049,13 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .internals-thumbnails-landscape {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 30px;
     flex-wrap: wrap;
   }
   
   .internal-thumbnail-landscape {
-    width: 240px;
-    height: 160px;
+    width: 320px;
+    height: 214px;
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -1053,27 +1065,28 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   /* Landscape vs Portrait handling for 1L internal images */
   .internal-thumbnail-landscape.image-portrait {
     object-fit: contain;
-    width: 180px;
-    height: 240px;
-    max-width: 180px;
-    max-height: 240px;
+    width: 240px;
+    height: 320px;
+    max-width: 240px;
+    max-height: 320px;
   }
   
   .internal-thumbnail-landscape.image-landscape {
     object-fit: cover;
-    width: 240px;
-    height: 160px;
-    max-width: 240px;
-    max-height: 160px;
+    width: 320px;
+    height: 214px;
+    max-width: 320px;
+    max-height: 214px;
   }
   
   .layout-1L-full .author-bio {
     background: #E3F2FD;
-    padding: 12px;
+    padding: 20px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
     color: #1565C0;
+    min-height: 150px;
   }
   
   .layout-1L-full .author-bio.truncated {
@@ -2366,7 +2379,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   // Detect image orientation and apply classes
   (function() {
     function detectImageOrientation() {
-      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-large, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
       images.forEach(img => {
         // Skip if already processed
         if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {

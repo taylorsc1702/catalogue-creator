@@ -1176,7 +1176,7 @@ async function renderMixedGoogleDocsHtml(
   // Detect image orientation and apply classes
   (function() {
     function detectImageOrientation() {
-      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-large, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image, img.internal-thumbnail-landscape');
       images.forEach(img => {
         // Skip if already processed
         if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {

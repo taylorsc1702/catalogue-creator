@@ -2689,6 +2689,23 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     </button>
                   ))}
                   <button
+                    onClick={() => itemLayouts[i] === '1L' ? clearItemLayout(i) : setItemLayout(i, '1L')}
+                    style={{
+                      background: itemLayouts[i] === '1L' ? "#667eea" : "white",
+                      color: itemLayouts[i] === '1L' ? "white" : "#667eea",
+                      border: "1px solid #667eea",
+                      borderRadius: 4,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      transition: "all 0.2s ease"
+                    }}
+                    title="Set 1L layout for this item (landscape photos)"
+                  >
+                    1L
+                  </button>
+                  <button
                     onClick={() => itemLayouts[i] === '2-int' ? clearItemLayout(i) : setItemLayout(i, '2-int')}
                     style={{
                       background: itemLayouts[i] === '2-int' ? "#667eea" : "white",
