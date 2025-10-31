@@ -1078,7 +1078,7 @@ export default function Home() {
     // Rebuild items
     const newItems = flatOldIndices.map(i => items[i]);
     // Rebuild per-index maps
-    const newItemLayouts: {[key:number]: 1|2|'2-int'|3|4|8} = {};
+    const newItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8} = {};
     const newItemBarcodeTypes: {[key:number]: "EAN-13"|"QR Code"|"None"} = {};
     const newItemAuthorBioToggle: {[key:number]: boolean} = {};
     flatOldIndices.forEach((oldIdx, newIdx) => {
@@ -2423,13 +2423,13 @@ function EditModal({
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal }: {
   items: Item[]; 
-  layout: 1|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
+  layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
   moveItemToPosition: (index: number, newPosition: number) => void;
-  itemLayouts: {[key: number]: 1|2|'2-int'|3|4|8};
-  setItemLayout: (index: number, layout: 1|2|'2-int'|3|4|8) => void;
+  itemLayouts: {[key: number]: 1|'1L'|2|'2-int'|3|4|8};
+  setItemLayout: (index: number, layout: 1|'1L'|2|'2-int'|3|4|8) => void;
   clearItemLayout: (index: number) => void;
   itemBarcodeTypes: {[key: number]: "EAN-13" | "QR Code" | "None"};
   setItemBarcodeType: (index: number, barcodeType: "EAN-13" | "QR Code" | "None") => void;
