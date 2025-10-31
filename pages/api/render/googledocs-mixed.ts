@@ -1098,12 +1098,69 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .internal-preview-image {
-    width: 83px; /* 72px * 1.15 = 82.8px ≈ 83px (15% bigger) */
-    height: 110px; /* 96px * 1.15 = 110.4px ≈ 110px (15% bigger) */
+    width: 100px; /* 83px * 1.2 = 99.6px ≈ 100px (20% bigger) */
+    height: 132px; /* 110px * 1.2 = 132px (20% bigger) */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  /* Internal images orientation handling */
+  .internal-preview-image.image-portrait,
+  .internal-thumbnail-full.image-portrait {
+    object-fit: contain;
+  }
+  
+  .internal-preview-image.image-landscape {
+    object-fit: cover;
+    width: 132px;
+    height: 100px;
+    max-width: 132px;
+    max-height: 100px;
+  }
+  
+  /* Landscape vs Portrait Image Detection */
+  .book-cover.image-portrait {
+    /* Portrait images - taller than wide */
+    object-fit: contain;
+  }
+  
+  .book-cover.image-landscape {
+    /* Landscape images - wider than tall */
+    object-fit: cover;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .book-cover-2up.image-portrait,
+  .book-cover-4up.image-portrait {
+    object-fit: contain;
+  }
+  
+  .book-cover-2up.image-landscape,
+  .book-cover-4up.image-landscape {
+    object-fit: cover;
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Adjust container for landscape images */
+  .product-image-2up .image-landscape {
+    width: 100%;
+    height: auto;
+    max-height: 263px;
+  }
+  
+  .product-image-4up .image-landscape {
+    width: 100%;
+    height: auto;
+    max-height: 132px;
+  }
+  
+  .page.layout-1 .product-image .image-landscape {
+    max-height: 300px;
+    width: 100%;
   }
   
   /* Cover Styles */
@@ -1115,6 +1172,48 @@ async function renderMixedGoogleDocsHtml(
     }
   }
 </style>
+<script>
+  // Detect image orientation and apply classes
+  (function() {
+    function detectImageOrientation() {
+      const images = document.querySelectorAll('img.book-cover, img.book-cover-2up, img.book-cover-4up, img.internal-thumbnail-full, img.internal-preview-image');
+      images.forEach(img => {
+        // Skip if already processed
+        if (img.classList.contains('image-portrait') || img.classList.contains('image-landscape')) {
+          return;
+        }
+        
+        if (img.complete && img.naturalWidth && img.naturalHeight) {
+          // Image already loaded
+          if (img.naturalWidth > img.naturalHeight) {
+            img.classList.add('image-landscape');
+          } else {
+            img.classList.add('image-portrait');
+          }
+        } else {
+          // Wait for image to load
+          img.addEventListener('load', function() {
+            if (this.naturalWidth > this.naturalHeight) {
+              this.classList.add('image-landscape');
+            } else {
+              this.classList.add('image-portrait');
+            }
+          }, { once: true });
+        }
+      });
+    }
+    
+    // Run on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', detectImageOrientation);
+    } else {
+      detectImageOrientation();
+    }
+    
+    // Also run after a short delay to catch dynamically loaded images
+    setTimeout(detectImageOrientation, 100);
+  })();
+</script>
 </head>
 <body>
   ${frontCoverHtml}
