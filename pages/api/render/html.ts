@@ -295,7 +295,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
                 <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
                 ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
-                ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ""}
+                ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
                 ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
                 <div class="product-details-row">
                   <div class="product-meta">
@@ -329,7 +329,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
 
       // For 2-up layout, use vertical layout with image at top
       if (layout === 2) {
-        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 1200 ? item.description.substring(0, 1197) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-2-vertical">
@@ -352,6 +352,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
                 ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                 ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+                ${item.icillus ? `<div class="meta-item"><strong>ICILLUS:</strong> ${esc(item.icillus)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
               ${barcodeHtml}
@@ -362,7 +363,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
 
       // For 2-int layout, use vertical layout with image at top and internal image above barcode
       if (layout === '2-int') {
-        const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 1200 ? item.description.substring(0, 1197) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-2-vertical">
@@ -385,6 +386,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
                 ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                 ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
                 ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+                ${item.icillus ? `<div class="meta-item"><strong>ICILLUS:</strong> ${esc(item.icillus)}</div>` : ""}
               </div>
               ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
               ${item.additionalImages && item.additionalImages.length > 0 ? `
@@ -412,7 +414,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
               ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">${esc(formatAuthor(item.author))}</div>` : ""}
-              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
               ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
             </div>
             <div class="product-details-3up">
@@ -444,7 +446,7 @@ async function renderHtml(items: Item[], layout: 1 | 2 | '2-int' | 3 | 4 | 6 | 8
                 <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
                 ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
                 ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
-                ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ""}
+                ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
               </div>
             </div>
             <div class="description-section">

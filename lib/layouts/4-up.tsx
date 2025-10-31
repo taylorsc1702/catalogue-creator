@@ -181,7 +181,7 @@ export function create4UpLayoutHandler(): LayoutHandler {
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
             ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
-            ${item.icauth ? `<div class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</div>` : ""}
+            ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
             ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
             <div class="product-specs">
               ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
