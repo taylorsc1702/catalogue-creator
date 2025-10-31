@@ -1015,6 +1015,7 @@ export default function Home() {
     const groups = computePageGroups(items, itemLayouts);
     setPageGroups(groups);
     setReorderedPageGroups(groups);
+    setIsMixedView(true); // Enable truncation detection in preview modal
     setShowPreviewModal(true);
   }
 
@@ -2435,11 +2436,18 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           }}>
             {layoutHandler.createPreview(it, i, generateProductUrl)}
             
-            {/* Truncation indicators - show when mixed view is active */}
-            {isMixedView && (() => {
+            {/* Truncation indicators - show when items have custom layouts (mixed view) or in preview/reorder modal */}
+            {(() => {
+              // Show badges if: isMixedView is true, OR items have custom layouts assigned (indicating mixed view usage)
+              const hasCustomLayouts = Object.keys(itemLayouts).length > 0;
+              const shouldShowBadges = isMixedView || hasCustomLayouts || showOrderEditor;
+              if (!shouldShowBadges) return null;
+              
               const itemLayout = itemLayouts[i] || layout;
               const effectiveLayout: LayoutType = typeof itemLayout === 'number' ? itemLayout : itemLayout === '2-int' ? '2-int' : 4;
-              const truncations = getItemTruncations(it, effectiveLayout, isMixedView);
+              // Use true for isMixed when we have custom layouts, otherwise use the isMixedView flag
+              const isMixed = hasCustomLayouts || isMixedView;
+              const truncations = getItemTruncations(it, effectiveLayout, isMixed);
               const hasIssues = truncations.description?.isTruncated || truncations.authorBio?.isTruncated;
               
               if (!hasIssues) return null;
