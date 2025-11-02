@@ -80,10 +80,11 @@ function createMixedCatalogueDocument(data) {
     body.clear();
     
     // Set document margins (in points: 72 points = 1 inch)
-    body.setMarginTop(72);    // 1 inch
-    body.setMarginBottom(72); // 1 inch
-    body.setMarginLeft(72);   // 1 inch
-    body.setMarginRight(72);  // 1 inch
+    // Reduced margins to match HTML export
+    body.setMarginTop(56.69);    // ~20mm (was 72pt = 1 inch)
+    body.setMarginBottom(56.69); // ~20mm (was 72pt = 1 inch)
+    body.setMarginLeft(42.52);   // ~15mm (was 72pt = 1 inch)
+    body.setMarginRight(42.52);  // ~15mm (was 72pt = 1 inch)
     
     // Create cover pages if requested
     if (coverData) {
@@ -183,13 +184,14 @@ function createMixedCatalogueDocument(data) {
 function createMixedPage(body, pageItems, layout, showFields, bannerColor, websiteName, utmParams, itemBarcodeTypes, barcodeType) {
   console.log(`Creating page with layout ${layout} and ${pageItems.length} items`);
   
-  // Add banner header - REDUCED SPACING
+  // Add banner header - ZERO SPACING BEFORE, MINIMAL AFTER
   const bannerParagraph = body.appendParagraph(websiteName);
   bannerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  bannerParagraph.setSpacingAfter(2); // Reduced spacing after header (was default)
+  bannerParagraph.setSpacingBefore(0); // No space before header
+  bannerParagraph.setSpacingAfter(10); // Small spacing after header
   const bannerText = bannerParagraph.editAsText();
   if (bannerText) {
-    // ONLY set background color on banner text, not all text
+    // ONLY set background color on banner text, not all text - ensure no inheritance
     bannerText.setBackgroundColor(bannerColor).setForegroundColor('#FFFFFF').setBold(true).setFontSize(14).setFontFamily('Calibri');
   }
   
@@ -206,13 +208,17 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
     createMultiItemLayout(body, pageItems, layout, itemBarcodeTypes, barcodeType);
   }
   
-  // Add banner footer - REDUCED SPACING
-  body.appendParagraph('').setSpacingAfter(2); // Small gap before footer
+  // Add banner footer - MINIMAL SPACING BEFORE
+  const footerSpacer = body.appendParagraph('');
+  footerSpacer.setSpacingBefore(0);
+  footerSpacer.setSpacingAfter(0);
+  
   const footerParagraph = body.appendParagraph(websiteName);
   footerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  footerParagraph.setSpacingBefore(0); // No space before footer
   const footerText = footerParagraph.editAsText();
   if (footerText) {
-    // ONLY set background color on footer text, not all text
+    // ONLY set background color on footer text, not all text - ensure no inheritance
     footerText.setBackgroundColor(bannerColor).setForegroundColor('#FFFFFF').setBold(true).setFontSize(14).setFontFamily('Calibri');
   }
 }
@@ -528,7 +534,7 @@ function createMultiItemLayout(body, pageItems, layout, itemBarcodeTypes, barcod
   } else if (layout === 3) {
     rows = 3; cols = 1; // 3 ROWS vertically stacked
     cellWidth = 520; // Full width
-    cellHeight = 200; // Further reduced to ensure 3 fit on page (was 210)
+    cellHeight = 170; // Reduced further to ensure 3 fit on page properly
   } else if (layout === 4) {
     rows = 2; cols = 2;
     cellWidth = 255; // Quarter page
