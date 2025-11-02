@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { generateProductUrl, generateQRCode, generateEAN13Barcode, type HyperlinkToggle, type BarcodeType, type UtmParams } from "../../../utils/product-card-renderer";
+import { generateProductUrl, generateQRCode, generateEAN13Barcode, type HyperlinkToggle, type BarcodeType, type UtmParams, type Item } from "../../../utils/product-card-renderer";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const utmParams: UtmParams = payload.utmParams || {};
 
     // Add barcode image URLs to each item
-    const itemsWithBarcodes = items.map((item: any, index: number) => {
+    const itemsWithBarcodes = items.map((item: Item, index: number) => {
       const itemBarcodeType = itemBarcodeTypes[index] || barcodeType;
       
       if (itemBarcodeType && itemBarcodeType !== 'None') {

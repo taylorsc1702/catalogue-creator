@@ -236,18 +236,6 @@ async function renderMixedGoogleDocsHtml(
   }
 
   // Build optional appended pages
-  const renderListRows = (_compact: boolean) => itemsWithImages.map(({item}, idx) => {
-      const idObj = (item as unknown as { isbn13?: string; sku?: string });
-      const isbnVal = idObj.isbn13 || item.sku || '';
-      return `
-      <tr>
-        <td>${idx + 1}</td>
-        <td>${esc(item.title || '')}</td>
-        <td>${esc(item.author || '')}</td>
-        <td>${esc(isbnVal)}</td>
-        <td>${esc(item.price ? `AUD$ ${item.price}` : '')}</td>
-      </tr>`;
-    }).join('');
 
   // Precompute image and barcode data URLs for appended views
   const appendedImageDataUrls = itemsWithImages.map(({ imageData }) => imageData ? `data:${imageData.mimeType};base64,${imageData.base64}` : 'https://via.placeholder.com/40x60?text=No+Image');
