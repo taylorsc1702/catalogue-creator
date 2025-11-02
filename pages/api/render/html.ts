@@ -1063,7 +1063,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .layout-1L .internal-thumbnail-full {
     width: calc(50% - 15px);
     height: auto;
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -1074,12 +1074,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   /* Landscape vs Portrait handling for 1L internal images */
   .layout-1L .internal-thumbnail-full.image-portrait {
     object-fit: contain;
-    aspect-ratio: 2 / 3;
+    aspect-ratio: 2 / 3.3; /* 10% taller: 2/3 * 1.1 = 2/3.3 */
   }
   
   .layout-1L .internal-thumbnail-full.image-landscape {
     object-fit: cover;
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
   }
   
   @media print {

@@ -184,7 +184,7 @@ async function renderMixedGoogleDocsHtml(
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">
       <!-- Header Banner -->
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       
@@ -194,7 +194,7 @@ async function renderMixedGoogleDocsHtml(
       </div>
       
       <!-- Footer Banner -->
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -264,20 +264,20 @@ async function renderMixedGoogleDocsHtml(
 
   const appendedListHtml = () => `
     <div class="page layout-table" data-layout="list">
-      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:6pt 0;font-weight:600;font-size:10.5pt;">${esc(websiteName || 'www.woodslane.com.au')}</div>
       <div class="page-content" style="display:block;">
-        <table style="width:100%;border-collapse:collapse;font-size:10pt;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+        <table style="width:100%;border-collapse:collapse;font-size:7.5pt;box-shadow:0 1.5pt 6pt rgba(0,0,0,0.1)">
           <thead style="background:#667eea;color:#fff">
             <tr>
-              <th style="padding:10px 8px;text-align:left;width:40px">#</th>
-              <th style="padding:10px 8px;text-align:left;width:110px">ISBN</th>
-              <th style="padding:10px 8px;text-align:left;width:70px">Image</th>
-              <th style="padding:10px 8px;text-align:left;width:150px">Author</th>
-              <th style="padding:10px 8px;text-align:left;">Title</th>
-              <th style="padding:10px 8px;text-align:left;width:80px">Price</th>
-              <th style="padding:10px 8px;text-align:left;width:150px">Publisher</th>
-              <th style="padding:10px 8px;text-align:left;width:120px">Barcode</th>
-              <th style="padding:10px 8px;text-align:center;width:60px">Qty</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:30pt">#</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:83pt">ISBN</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:53pt">Image</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:113pt">Author</th>
+              <th style="padding:7.5pt 6pt;text-align:left;">Title</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:60pt">Price</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:113pt">Publisher</th>
+              <th style="padding:7.5pt 6pt;text-align:left;width:91pt">Barcode</th>
+              <th style="padding:7.5pt 6pt;text-align:center;width:45pt">Qty</th>
             </tr>
           </thead>
           <tbody>
@@ -285,39 +285,39 @@ async function renderMixedGoogleDocsHtml(
               const idObj = (item as unknown as { isbn13?: string; sku?: string });
               const isbnVal = idObj.isbn13 || item.sku || '';
               return `
-              <tr style=\"border-bottom:1px solid #e9ecef\">
-                <td style=\"padding:8px 6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
-                <td style=\"padding:8px 6px;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>
-                <td style=\"padding:8px 6px;text-align:center\"><img src=\"${esc(appendedImageDataUrls[idx])}\" style=\"width:40px;height:60px;object-fit:cover;border:1px solid #ddd;border-radius:4px\"/></td>
-                <td style=\"padding:8px 6px\">${esc(item.author || '-')}</td>
-                <td style=\"padding:8px 6px\">${esc(item.title)}</td>
-                <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>
-                <td style=\"padding:8px 6px;color:#666\">${esc(item.imprint || '-')}</td>
-                <td style=\"padding:8px 6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:110px;height:auto\\\"/>` : ''}</td>
-                <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
+              <tr style=\"border-bottom:0.75pt solid #e9ecef\">
+                <td style=\"padding:6pt 4.5pt;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
+                <td style=\"padding:6pt 4.5pt;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>
+                <td style=\"padding:6pt 4.5pt;text-align:center\"><img src=\"${esc(appendedImageDataUrls[idx])}\" style=\"width:30pt;height:45pt;object-fit:cover;border:0.75pt solid #ddd;border-radius:3pt\"/></td>
+                <td style=\"padding:6pt 4.5pt\">${esc(item.author || '-')}</td>
+                <td style=\"padding:6pt 4.5pt\">${esc(item.title)}</td>
+                <td style=\"padding:6pt 4.5pt;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>
+                <td style=\"padding:6pt 4.5pt;color:#666\">${esc(item.imprint || '-')}</td>
+                <td style=\"padding:6pt 4.5pt;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:83pt;height:auto\\\"/>` : ''}</td>
+                <td style=\"padding:6pt 4.5pt\"><div style=\"width:38pt;height:23pt;border:1.5pt solid #333;border-radius:3pt;margin:0 auto\"></div></td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
-      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:6pt 0;font-weight:600;font-size:10.5pt;">${esc(websiteName || 'www.woodslane.com.au')}</div>
     </div>`;
 
   const appendedCompactListHtml = () => `
     <div class="page layout-table" data-layout="compact-list">
-      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:6pt 0;font-weight:600;font-size:10.5pt;">${esc(websiteName || 'www.woodslane.com.au')}</div>
       <div class="page-content" style="display:block;">
-        <table style="width:100%;border-collapse:collapse;font-size:8pt;box-shadow:0 2px 6px rgba(0,0,0,0.1)">
+        <table style="width:100%;border-collapse:collapse;font-size:6pt;box-shadow:0 1.5pt 4.5pt rgba(0,0,0,0.1)">
           <thead style="background:#667eea;color:#fff">
             <tr>
-              <th style="padding:8px 6px;text-align:left;width:30px">#</th>
-              <th style="padding:8px 6px;text-align:left;width:100px">ISBN</th>
-              <th style="padding:8px 6px;text-align:left;width:120px">Author</th>
-              <th style="padding:8px 6px;text-align:left;width:150px">Title</th>
-              <th style="padding:8px 6px;text-align:right;width:60px">Price</th>
-              <th style="padding:8px 6px;text-align:left;width:110px">Publisher</th>
-              <th style="padding:8px 6px;text-align:center;width:100px">Barcode</th>
-              <th style="padding:8px 6px;text-align:center;width:45px">Qty</th>
+              <th style="padding:6pt 4.5pt;text-align:left;width:23pt">#</th>
+              <th style="padding:6pt 4.5pt;text-align:left;width:76pt">ISBN</th>
+              <th style="padding:6pt 4.5pt;text-align:left;width:91pt">Author</th>
+              <th style="padding:6pt 4.5pt;text-align:left;width:113pt">Title</th>
+              <th style="padding:6pt 4.5pt;text-align:right;width:45pt">Price</th>
+              <th style="padding:6pt 4.5pt;text-align:left;width:83pt">Publisher</th>
+              <th style="padding:6pt 4.5pt;text-align:center;width:76pt">Barcode</th>
+              <th style="padding:6pt 4.5pt;text-align:center;width:34pt">Qty</th>
             </tr>
           </thead>
           <tbody>
@@ -325,29 +325,38 @@ async function renderMixedGoogleDocsHtml(
               const idObj = (item as unknown as { isbn13?: string; sku?: string });
               const isbnVal = idObj.isbn13 || item.sku || '';
               return `
-              <tr style=\"border-bottom:1px solid #e9ecef\">\n                <td style=\"padding:6px;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>\n                <td style=\"padding:6px;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>\n                <td style=\"padding:6px\">${esc(item.author || '-')}</td>\n                <td style=\"padding:6px\">${esc(item.title)}</td>\n                <td style=\"padding:6px;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>\n                <td style=\"padding:6px;color:#666\">${esc(item.imprint || '-')}</td>\n                <td style=\"padding:6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:95px;height:auto\\\"/>` : ''}</td>\n                <td style=\"padding:6px;text-align:center\"><div style=\"width:40px;height:25px;border:2px solid #333;border-radius:3px;margin:0 auto\"></div></td>\n              </tr>`;
+              <tr style=\"border-bottom:0.75pt solid #e9ecef\">
+                <td style=\"padding:4.5pt;text-align:center;color:#667eea;font-weight:600\">${idx + 1}</td>
+                <td style=\"padding:4.5pt;font-family:'Courier New',monospace;color:#666\">${esc(isbnVal)}</td>
+                <td style=\"padding:4.5pt\">${esc(item.author || '-')}</td>
+                <td style=\"padding:4.5pt\">${esc(item.title)}</td>
+                <td style=\"padding:4.5pt;color:#d63384;font-weight:600;text-align:right\">${item.price ? 'AUD$ '+esc(item.price) : '-'}</td>
+                <td style=\"padding:4.5pt;color:#666\">${esc(item.imprint || '-')}</td>
+                <td style=\"padding:4.5pt;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:72pt;height:auto\\\"/>` : ''}</td>
+                <td style=\"padding:4.5pt;text-align:center\"><div style=\"width:30pt;height:19pt;border:1.5pt solid #333;border-radius:2.25pt;margin:0 auto\"></div></td>
+              </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
-      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
+      <div class="page-footer" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:6pt 0;font-weight:600;font-size:10.5pt;">${esc(websiteName || 'www.woodslane.com.au')}</div>
     </div>`;
 
   const simpleTable = () => `
     <div class="page layout-table" data-layout="table">
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       <div class="page-content" style="display:block;">
-        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 11px; border:2px solid #666;">
+        <table class="grid-table" style="width:100%; border-collapse:collapse; font-size: 8.25pt; border:1.5pt solid #666;">
           <thead class="table-header">
             <tr>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Title</th>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Author</th>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">ISBN</th>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Price</th>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">Disc</th>
-              <th style="text-align:left; padding:6px; border:2px solid #666; background:#f8f9fa;">QTY</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">Title</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">Author</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">ISBN</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">Price</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">Disc</th>
+              <th style="text-align:left; padding:4.5pt; border:1.5pt solid #666; background:#f8f9fa;">QTY</th>
             </tr>
           </thead>
           <tbody>
@@ -356,18 +365,18 @@ async function renderMixedGoogleDocsHtml(
               const isbnVal = idObj.isbn13 || item.sku || '';
               return `
               <tr>
-                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.title || '')}</td>
-                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.author || '')}</td>
-                <td style=\"padding:6px; border:1px solid #999;\">${esc(isbnVal)}</td>
-                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.price || '')}</td>
-                <td style=\"padding:6px; border:1px solid #999;\">${esc(item.imidis || '')}</td>
-                <td style=\"padding:6px; border:1px solid #999;\"></td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\">${esc(item.title || '')}</td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\">${esc(item.author || '')}</td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\">${esc(isbnVal)}</td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\">${esc(item.price || '')}</td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\">${esc(item.imidis || '')}</td>
+                <td style=\"padding:4.5pt; border:0.75pt solid #999;\"></td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -400,7 +409,7 @@ async function renderMixedGoogleDocsHtml(
 <style>
   @page { 
     size: A4 portrait; 
-    margin: 20mm 15mm 20mm 15mm; 
+    margin: 56.69pt 42.52pt 56.69pt 42.52pt; 
   }
   * { 
     box-sizing: border-box; 
@@ -412,19 +421,14 @@ async function renderMixedGoogleDocsHtml(
     color: #333;
     line-height: 1.4;
     background: white;
-    font-size: 12px;
+    font-size: 9pt;
   }
   .page { 
-    display: grid;
-    grid-template-areas: 
-      "header header"
-      "content content"
-      "footer footer";
-    grid-template-rows: auto 1fr auto;
-    gap: 10mm;
+    display: block;
     page-break-after: always; 
     padding: 0;
     min-height: 100vh;
+    margin-bottom: 28.35pt;
   }
   
   .page-header, .page-footer {
@@ -436,51 +440,73 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .page-header {
-    grid-area: header;
+    margin-bottom: 28.35pt;
   }
   
   .page-content {
-    grid-area: content;
-    display: grid;
-    gap: 15mm;
+    display: block;
     overflow: hidden;
+    margin-bottom: 28.35pt;
   }
   
-  .page-footer {
-    grid-area: footer;
-  }
-  
+  /* Use flexbox for layout compatibility with Google Docs instead of CSS Grid */
   .page.layout-1 .page-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
+    display: block;
+    width: 100%;
   }
   
   .page.layout-2 .page-content {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    gap: 20mm;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 21.26pt;
+  }
+  
+  .page.layout-2 .page-content > .product-card {
+    flex: 0 0 calc(50% - 10.63pt);
+    max-width: calc(50% - 10.63pt);
+  }
+  
+  .page.layout-1L .page-content {
+    display: block;
+    width: 100%;
   }
   
   .page.layout-3 .page-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: 8mm;
+    display: block;
+    width: 100%;
   }
   
   .page.layout-4 .page-content {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 21.26pt;
+  }
+  
+  .page.layout-4 .page-content > .product-card {
+    flex: 0 0 calc(50% - 10.63pt);
+    max-width: calc(50% - 10.63pt);
   }
   
   .page.layout-8 .page-content {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 10mm;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 14.17pt;
+  }
+  
+  .page.layout-8 .page-content > .product-card {
+    flex: 0 0 calc(25% - 10.63pt);
+    max-width: calc(25% - 10.63pt);
   }
   
   .product-card {
     display: flex;
-    gap: 8px;
+    gap: 6pt;
     margin-bottom: 0;
     page-break-inside: avoid;
     height: 100%;
@@ -493,73 +519,72 @@ async function renderMixedGoogleDocsHtml(
     visibility: hidden;
   }
   
-  /* Include all the updated layout CSS from mixed.ts */
   /* 1-up layout: Full layout with internals at bottom */
   .layout-1-full {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 15px;
+    gap: 15pt;
+    padding: 11pt;
     height: 100%;
   }
   
   .layout-1-full .main-content {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 15pt;
     flex: 1;
   }
   
   .layout-1-full .left-column {
     flex-shrink: 0;
-    width: 250px;
+    width: 189pt;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12pt;
   }
   
   .layout-1-full .right-column {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 9pt;
     min-width: 0;
     overflow: hidden;
   }
   
   .internals-section-full {
     margin-top: auto;
-    padding-top: 20px;
-    border-top: 2px solid #e0e0e0;
+    padding-top: 15pt;
+    border-top: 1.5pt solid #e0e0e0;
   }
   
   .internals-title {
-    font-size: 14px;
+    font-size: 10.5pt;
     font-weight: bold;
     color: #1565C0;
-    margin-bottom: 12px;
+    margin-bottom: 9pt;
     text-align: center;
   }
   
   .internals-thumbnails-full {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 11pt;
     flex-wrap: wrap;
   }
   
   .internal-thumbnail-full {
-    width: 120px;
-    height: 160px;
+    width: 91pt;
+    height: 121pt;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
   }
   
   .product-details-row {
     display: flex;
-    gap: 20px;
+    gap: 15pt;
     align-items: flex-start;
   }
   
@@ -573,24 +598,24 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .barcode-right .barcode img {
-    max-width: 120px;
+    max-width: 91pt;
     height: auto;
   }
   
   .layout-1-full .author-bio {
     background: #E3F2FD;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 10px;
+    padding: 7.5pt;
+    border-radius: 4.5pt;
+    font-size: 7.5pt;
     line-height: 1.3;
-    margin-top: 16px;
+    margin-top: 12pt;
     flex: 1;
     display: flex;
     flex-direction: column;
   }
   
   .layout-1-full .author-bio.truncated {
-    max-height: 200px;
+    max-height: 151pt;
     overflow: hidden;
   }
   
@@ -601,8 +626,8 @@ async function renderMixedGoogleDocsHtml(
   
   .layout-1-full .author-bio-title {
     font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 10px;
+    margin-bottom: 4.5pt;
+    font-size: 7.5pt;
     color: #1565C0;
   }
   
@@ -611,13 +636,67 @@ async function renderMixedGoogleDocsHtml(
     flex: 1;
   }
   
+  /* Page layout 1 specific styles */
+  .page.layout-1 .product-image {
+    width: 100%;
+  }
+  
+  .page.layout-1 .book-cover {
+    width: 100%;
+    height: auto;
+    max-height: 227pt;
+    object-fit: contain;
+    border-radius: 3pt;
+    border: 0.75pt solid #ddd;
+  }
+  
+  .page.layout-1 .product-title {
+    font-size: 15pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 3pt;
+  }
+  
+  .page.layout-1 .product-subtitle {
+    font-size: 10.5pt;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 3pt;
+  }
+  
+  .page.layout-1 .product-author {
+    font-size: 10.5pt;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 6pt;
+  }
+  
+  .page.layout-1 .product-description {
+    font-size: 9pt;
+    color: #444;
+    line-height: 1.4;
+    margin-bottom: 9pt;
+  }
+  
+  .page.layout-1 .product-meta {
+    font-size: 9pt;
+  }
+  
+  .page.layout-1 .product-price {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #d63384;
+    margin-bottom: 6pt;
+  }
+  
   /* 2-up vertical layout specific styles */
   .layout-2-vertical {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
+    gap: 6pt;
+    padding: 6pt;
+    border: 0.75pt solid #e0e0e0;
     background: #ffffff;
     height: 100%;
     max-height: 100%;
@@ -628,28 +707,28 @@ async function renderMixedGoogleDocsHtml(
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6pt;
   }
   
   .book-cover-2up {
-    width: 210px;
-    height: 316px;
+    width: 159pt;
+    height: 239pt;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
   }
   
   .product-content-2up {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3pt;
     flex: 1;
     overflow: hidden;
   }
   
   .layout-2-vertical .product-title {
-    font-size: 18px;
+    font-size: 13.5pt;
     font-weight: bold;
     color: #000;
     margin: 0;
@@ -658,7 +737,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-subtitle {
-    font-size: 14px;
+    font-size: 10.5pt;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -667,7 +746,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-author {
-    font-size: 14px;
+    font-size: 10.5pt;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -675,48 +754,48 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .product-description {
-    font-size: 13px;
+    font-size: 9.75pt;
     color: #333;
     line-height: 1.3;
-    margin: 4px 0;
+    margin: 3pt 0;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
-    max-height: 60px;
+    max-height: 45pt;
     overflow: hidden;
   }
   
   .layout-2-vertical .product-specs {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 3pt;
+    margin-bottom: 3pt;
   }
   
   .layout-2-vertical .spec-item {
-    font-size: 12px;
+    font-size: 9pt;
     color: #666;
     background: #f5f5f5;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 1.5pt 3pt;
+    border-radius: 2.25pt;
     font-family: 'Calibri', sans-serif;
   }
   
   .layout-2-vertical .product-meta {
-    margin-bottom: 4px;
+    margin-bottom: 3pt;
   }
   
   .layout-2-vertical .meta-item {
-    font-size: 12px;
+    font-size: 9pt;
     color: #666;
-    margin-bottom: 1px;
+    margin-bottom: 0.75pt;
     font-family: 'Calibri', sans-serif;
   }
   
   .layout-2-vertical .product-price {
-    font-size: 14px;
+    font-size: 10.5pt;
     font-weight: bold;
     color: #d63384;
-    margin-bottom: 4px;
+    margin-bottom: 3pt;
     font-family: 'Calibri', sans-serif;
   }
   
@@ -727,39 +806,93 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .layout-2-vertical .barcode img {
-    max-width: 88px; /* 80px * 1.1 = 88px (10% bigger) */
+    max-width: 67pt;
     height: auto;
   }
   
-  /* 3-up layout specific styles */
+  .page.layout-2 .product-image {
+    width: 132pt;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .page.layout-2 .book-cover {
+    width: 132pt;
+    height: 199pt;
+    object-fit: contain;
+    border-radius: 3pt;
+    border: 0.75pt solid #ddd;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
+  }
+  
+  .page.layout-2 .product-title {
+    font-size: 12pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .product-subtitle {
+    font-size: 9pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .product-author {
+    font-size: 9pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .product-description {
+    font-size: 8.25pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .meta-item {
+    font-size: 9pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .spec-item {
+    font-size: 9pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  .page.layout-2 .product-price {
+    font-size: 10.5pt;
+    font-family: 'Calibri', sans-serif;
+  }
+  
+  /* 3-up layout specific styles - use flexbox instead of grid for Google Docs compatibility */
   .layout-3-row {
-    display: grid;
-    grid-template-columns: 212px 1fr 100px;
-    gap: 10px;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: row;
+    gap: 7.5pt;
+    padding: 7.5pt;
+    border: 0.75pt solid #e0e0e0;
     background: #ffffff;
-    min-height: 180px;
+    min-height: 136pt;
     max-width: 100%;
     overflow: hidden;
   }
   
   .product-image-3up {
+    flex-shrink: 0;
+    width: 160pt;
     display: flex;
     align-items: flex-start;
     justify-content: center;
   }
   
   .product-image-3up .book-cover {
-    width: 206px;
-    height: 274px;
+    width: 156pt;
+    height: 207pt;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
   }
   
   .product-content-3up {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -767,7 +900,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-content-3up .product-title {
-    font-size: 14px;
+    font-size: 10.5pt;
     font-weight: bold;
     color: #000;
     margin: 0;
@@ -776,7 +909,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-content-3up .product-subtitle {
-    font-size: 12px;
+    font-size: 9pt;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -785,7 +918,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-content-3up .product-author {
-    font-size: 12px;
+    font-size: 9pt;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -793,34 +926,36 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-description-3up {
-    font-size: 11px;
+    font-size: 8.25pt;
     color: #333;
     line-height: 1.3;
-    margin-top: 6px;
-    padding: 6px;
-    border: 1px solid #e0e0e0;
-  background: #ffffff;
-    max-height: 120px;
+    margin-top: 4.5pt;
+    padding: 4.5pt;
+    border: 0.75pt solid #e0e0e0;
+    background: #ffffff;
+    max-height: 91pt;
     overflow: hidden;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
   }
   
   .product-details-3up {
+    flex-shrink: 0;
+    width: 76pt;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 10px;
+    gap: 1.5pt;
+    font-size: 7.5pt;
     color: #333;
-    border: 1px solid #e0e0e0;
-    padding: 6px;
+    border: 0.75pt solid #e0e0e0;
+    padding: 4.5pt;
     background: #ffffff;
     font-family: 'Calibri', sans-serif;
   }
   
   .product-details-3up .detail-value {
-    padding: 2px 4px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5pt 3pt;
+    border-bottom: 0.75pt solid #f0f0f0;
     line-height: 1.3;
   }
   
@@ -829,7 +964,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-details-3up .barcode {
-    margin-top: 8px;
+    margin-top: 6pt;
     padding: 0;
   }
   
@@ -838,22 +973,55 @@ async function renderMixedGoogleDocsHtml(
     height: auto;
   }
   
+  .page.layout-3 .product-image {
+    width: 60pt;
+  }
+  
+  .page.layout-3 .book-cover {
+    width: 156pt;
+    height: 207pt;
+    object-fit: contain;
+    border-radius: 3pt;
+    border: 0.75pt solid #ddd;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
+  }
+  
+  .page.layout-3 .product-title {
+    font-size: 10.5pt;
+  }
+  
+  .page.layout-3 .product-subtitle {
+    font-size: 8.25pt;
+  }
+  
+  .page.layout-3 .product-author {
+    font-size: 8.25pt;
+  }
+  
+  .page.layout-3 .product-description {
+    font-size: 7.5pt;
+  }
+  
+  .page.layout-3 .product-price {
+    font-size: 9.75pt;
+  }
+  
   /* Layout 4: Special 4-up layout with larger image and reorganized content */
   .layout-4-special {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 6px;
-    border: 1px solid #e0e0e0;
+    gap: 4.5pt;
+    padding: 4.5pt;
+    border: 0.75pt solid #e0e0e0;
     background: #ffffff;
-    min-height: 140px;
+    min-height: 106pt;
     max-width: 100%;
     overflow: hidden;
   }
   
   .layout-4-special .top-section {
     display: flex;
-    gap: 6px;
+    gap: 4.5pt;
     align-items: flex-start;
   }
   
@@ -865,23 +1033,23 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .book-cover-4up {
-    width: 88px;
-    height: 132px;
+    width: 67pt;
+    height: 100pt;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
   }
   
   .title-section {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1.5pt;
   }
   
   .product-title-4up {
-    font-size: 11px;
+    font-size: 10pt;
     font-weight: bold;
     color: #000;
     margin: 0;
@@ -890,7 +1058,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-subtitle-4up {
-    font-size: 12px;
+    font-size: 9pt;
     font-style: italic;
     color: #666;
     margin: 0;
@@ -899,7 +1067,7 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .product-author-4up {
-    font-size: 12px;
+    font-size: 9pt;
     color: #444;
     margin: 0;
     line-height: 1.2;
@@ -907,11 +1075,11 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .description-section {
-    margin-top: 3px;
+    margin-top: 2.25pt;
   }
   
   .product-description-4up {
-    font-size: 12px;
+    font-size: 9pt;
     color: #333;
     line-height: 1.2;
     text-align: justify;
@@ -922,138 +1090,138 @@ async function renderMixedGoogleDocsHtml(
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 3px;
+    margin-top: 2.25pt;
   }
   
   .product-details-left {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2.25pt;
   }
   
   .product-specs-4up {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
+    gap: 2.25pt;
   }
   
   .spec-item-4up {
-    font-size: 11px;
+    font-size: 8.25pt;
     color: #666;
     background: #f5f5f5;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 1.5pt 3pt;
+    border-radius: 2.25pt;
     font-family: 'Calibri', sans-serif;
   }
   
   .product-meta-4up {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0.75pt;
   }
   
   .meta-item-4up {
-    font-size: 11px;
+    font-size: 8.25pt;
     color: #666;
-    margin-bottom: 0px;
+    margin-bottom: 0pt;
     font-family: 'Calibri', sans-serif;
   }
   
   .barcode-section-right {
     flex-shrink: 0;
     text-align: center;
-    margin-left: 6px;
+    margin-left: 4.5pt;
   }
   
   .barcode-section-right .barcode img {
-    max-width: 83px;
+    max-width: 63pt;
     height: auto;
   }
   
   /* Common styles */
   .product-image {
     flex-shrink: 0;
-    width: 60px;
+    width: 45pt;
   }
   
   .book-cover {
-    width: 60px;
-    height: 90px;
+    width: 45pt;
+    height: 68pt;
     object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
   }
   
   .product-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3pt;
     justify-content: space-between;
   }
   
   .product-title {
-    font-size: 12px;
+    font-size: 9pt;
     font-weight: bold;
     color: #000;
     line-height: 1.2;
-    margin-bottom: 2px;
+    margin-bottom: 1.5pt;
   }
   
   .product-subtitle {
-    font-size: 10px;
+    font-size: 7.5pt;
     color: #666;
     font-style: italic;
-    margin-bottom: 2px;
+    margin-bottom: 1.5pt;
   }
   
   .product-author {
-    font-size: 10px;
+    font-size: 7.5pt;
     color: #000;
     font-weight: 500;
-    margin-bottom: 3px;
+    margin-bottom: 2.25pt;
   }
   
   .product-description {
-    font-size: 9px;
+    font-size: 6.75pt;
     color: #333;
     line-height: 1.3;
-    margin-bottom: 4px;
+    margin-bottom: 3pt;
     text-align: justify;
   }
   
   .product-specs {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: 6pt;
+    margin-bottom: 3pt;
   }
   
   .spec-item {
-    font-size: 8px;
+    font-size: 6pt;
     color: #666;
     background: #f5f5f5;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 1.5pt 3pt;
+    border-radius: 2.25pt;
   }
   
   .product-meta {
-    margin-bottom: 6px;
+    margin-bottom: 4.5pt;
   }
   
   .meta-item {
-    font-size: 8px;
+    font-size: 6pt;
     color: #666;
-    margin-bottom: 2px;
+    margin-bottom: 1.5pt;
   }
   
   .product-price {
-    font-size: 11px;
+    font-size: 8.25pt;
     font-weight: bold;
     color: #d63384;
-    margin-bottom: 4px;
+    margin-bottom: 3pt;
   }
   
   .barcode {
@@ -1063,47 +1231,80 @@ async function renderMixedGoogleDocsHtml(
   }
   
   .qr-code {
-    width: 30px;
-    height: 30px;
+    width: 23pt;
+    height: 23pt;
   }
   
   .ean13-barcode {
-    width: 75px;
-    height: 30px;
+    width: 57pt;
+    height: 23pt;
   }
   
   .barcode-text {
-    font-size: 8px;
+    font-size: 6pt;
     text-align: center;
-    margin-top: 2px;
+    margin-top: 1.5pt;
     color: #666;
   }
   
   .barcode-fallback {
-    font-size: 8px;
+    font-size: 6pt;
     color: #666;
     text-align: center;
-    padding: 4px;
-    border: 1px dashed #ccc;
+    padding: 3pt;
+    border: 1.5pt dashed #ccc;
     background: #f9f9f9;
-    margin-top: 4px;
+    margin-top: 3pt;
   }
   
   /* Internal image styles for 2-int layout */
   .internal-image-section {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin: 8px 0;
+    gap: 6pt;
+    margin: 6pt 0;
   }
   
   .internal-preview-image {
-    width: 100px; /* 83px * 1.2 = 99.6px ≈ 100px (20% bigger) */
-    height: 132px; /* 110px * 1.2 = 132px (20% bigger) */
+    width: 76pt;
+    height: 100pt;
     object-fit: cover;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 0.75pt 2.25pt rgba(0,0,0,0.1);
+  }
+  
+  .page.layout-4 .product-image {
+    width: 45pt;
+  }
+  
+  .page.layout-8 .product-image {
+    width: 30pt;
+  }
+  
+  .page.layout-8 .book-cover {
+    width: 30pt;
+    height: 45pt;
+  }
+  
+  .page.layout-8 .product-title {
+    font-size: 7.5pt;
+  }
+  
+  .page.layout-8 .product-subtitle {
+    font-size: 6pt;
+  }
+  
+  .page.layout-8 .product-author {
+    font-size: 6pt;
+  }
+  
+  .page.layout-8 .product-description {
+    font-size: 5.25pt;
+  }
+  
+  .page.layout-8 .product-price {
+    font-size: 6.75pt;
   }
   
   /* Internal images orientation handling */
@@ -1114,10 +1315,10 @@ async function renderMixedGoogleDocsHtml(
   
   .internal-preview-image.image-landscape {
     object-fit: cover;
-    width: 132px;
-    height: 100px;
-    max-width: 132px;
-    max-height: 100px;
+    width: 100pt;
+    height: 76pt;
+    max-width: 100pt;
+    max-height: 76pt;
   }
   
   /* Landscape vs Portrait Image Detection */
@@ -1149,17 +1350,17 @@ async function renderMixedGoogleDocsHtml(
   .product-image-2up .image-landscape {
     width: 100%;
     height: auto;
-    max-height: 263px;
+    max-height: 199pt;
   }
   
   .product-image-4up .image-landscape {
     width: 100%;
     height: auto;
-    max-height: 132px;
+    max-height: 100pt;
   }
   
   .page.layout-1 .product-image .image-landscape {
-    max-height: 300px;
+    max-height: 227pt;
     width: 100%;
   }
   
