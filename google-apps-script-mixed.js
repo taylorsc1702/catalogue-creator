@@ -59,7 +59,9 @@ function createMixedCatalogueDocument(data) {
       websiteName = 'www.woodslane.com.au',
       utmParams = {},
       coverData = null,
-      hyperlinkToggle = 'woodslane'
+      hyperlinkToggle = 'woodslane',
+      itemBarcodeTypes = {},
+      barcodeType = 'None'
     } = data;
     
     if (!items || items.length === 0) {
@@ -149,7 +151,7 @@ function createMixedCatalogueDocument(data) {
         body.appendPageBreak();
       }
       
-      createMixedPage(body, page.items, page.layout, showFields, bannerColor, websiteName, utmParams);
+      createMixedPage(body, page.items, page.layout, showFields, bannerColor, websiteName, utmParams, itemBarcodeTypes, barcodeType);
     });
     
     // Create back cover if requested
@@ -178,7 +180,7 @@ function createMixedCatalogueDocument(data) {
 }
 
 // Create a page with mixed layout
-function createMixedPage(body, pageItems, layout, showFields, bannerColor, websiteName, utmParams) {
+function createMixedPage(body, pageItems, layout, showFields, bannerColor, websiteName, utmParams, itemBarcodeTypes, barcodeType) {
   console.log(`Creating page with layout ${layout} and ${pageItems.length} items`);
   
   // Add banner header - REDUCED SPACING
@@ -187,18 +189,21 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
   bannerParagraph.setSpacingAfter(2); // Reduced spacing after header (was default)
   const bannerText = bannerParagraph.editAsText();
   if (bannerText) {
+    // ONLY set background color on banner text, not all text
     bannerText.setBackgroundColor(bannerColor).setForegroundColor('#FFFFFF').setBold(true).setFontSize(14).setFontFamily('Calibri');
   }
   
   // Add content based on layout
   if (layout === 1) {
-    createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams);
+    const itemIndex = pageItems[0].index || 0;
+    const itemBarcodeType = itemBarcodeTypes[itemIndex] || barcodeType;
+    createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams, itemBarcodeType);
     // Add internals box at bottom for 1-up
     addInternalsBoxFor1Up(body, pageItems[0].item, showFields);
   } else if (layout === '2-int') {
-    create2IntLayout(body, pageItems.map(p => p.item));
+    create2IntLayout(body, pageItems, itemBarcodeTypes, barcodeType);
   } else {
-    createMultiItemLayout(body, pageItems, layout);
+    createMultiItemLayout(body, pageItems, layout, itemBarcodeTypes, barcodeType);
   }
   
   // Add banner footer - REDUCED SPACING
@@ -207,13 +212,14 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
   footerParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   const footerText = footerParagraph.editAsText();
   if (footerText) {
+    // ONLY set background color on footer text, not all text
     footerText.setBackgroundColor(bannerColor).setForegroundColor('#FFFFFF').setBold(true).setFontSize(14).setFontFamily('Calibri');
   }
 }
 
 // Create 1-up layout (full page with internals at bottom)
 // Matches HTML: 200x300 image (not 250x375)
-function createSingleItemLayout(body, item, showFields, bannerColor, websiteName, utmParams) {
+function createSingleItemLayout(body, item, showFields, bannerColor, websiteName, utmParams, itemBarcodeType) {
   console.log('Creating 1-up layout for:', item.title);
   
   // Create main table for two-column layout
@@ -320,11 +326,12 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
   const metaCell = detailsRow.appendTableCell();
   const barcodeCell = detailsRow.appendTableCell();
   
-  // Meta information
+  // Meta information - SHOW BY DEFAULT (not conditional on showFields)
   metaCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
   metaCell.setPaddingRight(20);
   
-  if (showFields.binding && item.binding) {
+  // Show product details if they exist (don't check showFields for these)
+  if (item.binding) {
     const bindingParagraph = metaCell.appendParagraph('Binding: ' + item.binding);
     const bindingText = bindingParagraph.editAsText();
     if (bindingText) {
@@ -332,7 +339,7 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
     }
   }
   
-  if (showFields.pages && item.pages) {
+  if (item.pages) {
     const pagesParagraph = metaCell.appendParagraph('Pages: ' + item.pages);
     const pagesText = pagesParagraph.editAsText();
     if (pagesText) {
@@ -340,7 +347,7 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
     }
   }
   
-  if (showFields.dimensions && item.dimensions) {
+  if (item.dimensions) {
     const dimensionsParagraph = metaCell.appendParagraph('Dimensions: ' + item.dimensions);
     const dimensionsText = dimensionsParagraph.editAsText();
     if (dimensionsText) {
@@ -348,7 +355,7 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
     }
   }
   
-  if (showFields.releaseDate && item.releaseDate) {
+  if (item.releaseDate) {
     const releaseParagraph = metaCell.appendParagraph('Release Date: ' + item.releaseDate);
     const releaseText = releaseParagraph.editAsText();
     if (releaseText) {
@@ -356,16 +363,64 @@ function createSingleItemLayout(body, item, showFields, bannerColor, websiteName
     }
   }
   
-  // Barcode section
+  // Also show imprint if available
+  if (item.imprint) {
+    const imprintParagraph = metaCell.appendParagraph('Publisher: ' + item.imprint);
+    const imprintText = imprintParagraph.editAsText();
+    if (imprintText) {
+      imprintText.setFontSize(12).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+  }
+  
+  // Show SKU/ISBN if available
+  const idObj = item; // item might have isbn13 or sku
+  const isbn = idObj.isbn13 || item.sku;
+  if (isbn) {
+    const isbnParagraph = metaCell.appendParagraph('ISBN: ' + isbn);
+    const isbnText = isbnParagraph.editAsText();
+    if (isbnText) {
+      isbnText.setFontSize(12).setForegroundColor('#666666').setFontFamily('Calibri');
+    }
+  }
+  
+  // Barcode section - USE IMAGE URL FROM SERVER
   barcodeCell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
   barcodeCell.setPaddingLeft(20);
   
-  if (showFields.barcode && item.barcode) {
+  if (item.barcodeImageUrl && itemBarcodeType && itemBarcodeType !== 'None') {
+    try {
+      // Convert data URL to blob and insert image
+      const base64Data = item.barcodeImageUrl.split(',')[1] || item.barcodeImageUrl;
+      const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'image/png');
+      const barcodeImage = barcodeCell.appendImage(blob);
+      if (itemBarcodeType === 'QR Code') {
+        barcodeImage.setWidth(60); // QR code size
+        barcodeImage.setHeight(60);
+      } else {
+        barcodeImage.setWidth(120); // EAN-13 barcode width
+        barcodeImage.setHeight(30);
+      }
+      barcodeImage.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    } catch (error) {
+      console.log('Could not insert barcode image:', error);
+      // Fallback to text
+      if (item.barcodeCode) {
+        const barcodeParagraph = barcodeCell.appendParagraph(item.barcodeCode);
+        const barcodeText = barcodeParagraph.editAsText();
+        if (barcodeText) {
+          barcodeText.setFontSize(10).setForegroundColor('#666666').setFontFamily('Calibri');
+        }
+        barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+      }
+    }
+  } else if (showFields.barcode && item.barcode) {
+    // Legacy fallback
     const barcodeParagraph = barcodeCell.appendParagraph(item.barcode);
     const barcodeText = barcodeParagraph.editAsText();
     if (barcodeText) {
       barcodeText.setFontSize(10).setForegroundColor('#666666').setFontFamily('Calibri');
     }
+    barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   }
   
   // Price - 2 POINTS SMALLER (14 -> 12)
@@ -453,7 +508,7 @@ function addInternalsBoxFor1Up(body, item, showFields) {
 
 // Create multi-item layout (2-up, 3-up, 4-up, 8-up)
 // PRINT-OPTIMIZED: Fixed dimensions, confined boxes, proper scaling
-function createMultiItemLayout(body, pageItems, layout) {
+function createMultiItemLayout(body, pageItems, layout, itemBarcodeTypes, barcodeType) {
   console.log(`Creating ${layout}-up layout with ${pageItems.length} items`);
   
   // Create table for grid layout
@@ -473,7 +528,7 @@ function createMultiItemLayout(body, pageItems, layout) {
   } else if (layout === 3) {
     rows = 3; cols = 1; // 3 ROWS vertically stacked
     cellWidth = 520; // Full width
-    cellHeight = 210; // Reduced to fit 3 on page (was 220)
+    cellHeight = 200; // Further reduced to ensure 3 fit on page (was 210)
   } else if (layout === 4) {
     rows = 2; cols = 2;
     cellWidth = 255; // Quarter page
@@ -519,7 +574,9 @@ function createMultiItemLayout(body, pageItems, layout) {
       
       const index = row * cols + col;
       if (index < pageItems.length) {
-        createProductCard(cell, pageItems[index].item, layout, cellWidth, cellHeight);
+        const itemIndex = pageItems[index].index || 0;
+        const itemBarcodeType = itemBarcodeTypes && itemBarcodeTypes[itemIndex] !== undefined ? itemBarcodeTypes[itemIndex] : barcodeType;
+        createProductCard(cell, pageItems[index].item, layout, cellWidth, cellHeight, itemBarcodeType);
       } else {
         // Empty cell - add placeholder to maintain structure
         cell.appendParagraph('').setSpacingAfter(1);
@@ -550,8 +607,8 @@ function createMultiItemLayout(body, pageItems, layout) {
 }
 
 // Create 2-int layout (2 items per page with internal images)
-function create2IntLayout(body, items) {
-  console.log('Creating 2-int layout with', items.length, 'items');
+function create2IntLayout(body, pageItems, itemBarcodeTypes, barcodeType) {
+  console.log('Creating 2-int layout with', pageItems.length, 'items');
   
   // Create table for 2-column layout
   const table = body.appendTable();
@@ -581,15 +638,17 @@ function create2IntLayout(body, items) {
     cell.setPaddingLeft(3);  // REDUCED from 6 to 3 for better text fit
     cell.setPaddingRight(6);
     
-    if (i < items.length) {
-      createProductCardWithInternal(cell, items[i], '2-int');
+    if (i < pageItems.length) {
+      const itemIndex = pageItems[i].index || i;
+      const itemBarcodeType = itemBarcodeTypes && itemBarcodeTypes[itemIndex] !== undefined ? itemBarcodeTypes[itemIndex] : barcodeType;
+      createProductCardWithInternal(cell, pageItems[i].item, '2-int', itemBarcodeType);
     }
   });
 }
 
 // Create product card with internal images (for 2-int layout)
 // Matches HTML version: vertical layout with image at top, internal images above barcode
-function createProductCardWithInternal(cell, item, layout) {
+function createProductCardWithInternal(cell, item, layout, itemBarcodeType) {
   console.log(`Creating 2-int product card for:`, item.title);
   
   // Image at top - 75% OF ORIGINAL SIZE (175x263 -> 131x197)
@@ -723,8 +782,33 @@ function createProductCardWithInternal(cell, item, layout) {
     cell.appendParagraph('').setSpacingAfter(4); // Gap after internal images
   }
   
-  // Barcode at bottom
-  if (item.barcode) {
+  // Barcode at bottom - USE IMAGE URL FROM SERVER
+  if (item.barcodeImageUrl && itemBarcodeType && itemBarcodeType !== 'None') {
+    try {
+      const base64Data = item.barcodeImageUrl.split(',')[1] || item.barcodeImageUrl;
+      const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'image/png');
+      const barcodeImage = cell.appendImage(blob);
+      if (itemBarcodeType === 'QR Code') {
+        barcodeImage.setWidth(60);
+        barcodeImage.setHeight(60);
+      } else {
+        barcodeImage.setWidth(120);
+        barcodeImage.setHeight(30);
+      }
+      barcodeImage.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    } catch (error) {
+      console.log('Could not insert barcode image:', error);
+      if (item.barcodeCode) {
+        const barcodeParagraph = cell.appendParagraph(item.barcodeCode);
+        const barcodeText = barcodeParagraph.editAsText();
+        if (barcodeText) {
+          barcodeText.setFontSize(10).setForegroundColor('#666666').setFontFamily('Calibri');
+        }
+        barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+      }
+    }
+  } else if (item.barcode) {
+    // Legacy fallback
     const barcodeParagraph = cell.appendParagraph(item.barcode);
     const barcodeText = barcodeParagraph.editAsText();
     if (barcodeText) {
@@ -736,12 +820,12 @@ function createProductCardWithInternal(cell, item, layout) {
 
 // Create product card for multi-item layouts
 // PRINT-OPTIMIZED: Fixed dimensions, confined content, prevents overflow
-function createProductCard(cell, item, layout, cellWidth, cellHeight) {
+function createProductCard(cell, item, layout, cellWidth, cellHeight, itemBarcodeType) {
   console.log(`Creating product card for layout ${layout}:`, item.title);
   
   // 3-up uses special horizontal layout - handle separately
   if (layout === 3) {
-    createProductCard3Up(cell, item, cellWidth, cellHeight);
+    createProductCard3Up(cell, item, cellWidth, cellHeight, itemBarcodeType);
     return;
   }
   
@@ -879,19 +963,46 @@ function createProductCard(cell, item, layout, cellWidth, cellHeight) {
     }
   }
   
-  // SKU/Barcode
-  if (item.barcode) {
+  // SKU/Barcode - USE IMAGE URL FROM SERVER
+  if (item.barcodeImageUrl && itemBarcodeType && itemBarcodeType !== 'None') {
+    try {
+      const base64Data = item.barcodeImageUrl.split(',')[1] || item.barcodeImageUrl;
+      const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'image/png');
+      const barcodeImage = cell.appendImage(blob);
+      if (itemBarcodeType === 'QR Code') {
+        barcodeImage.setWidth(40);
+        barcodeImage.setHeight(40);
+      } else {
+        barcodeImage.setWidth(80);
+        barcodeImage.setHeight(20);
+      }
+      barcodeImage.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    } catch (error) {
+      console.log('Could not insert barcode image:', error);
+      if (item.barcodeCode || item.barcode) {
+        const barcodeText = item.barcodeCode || item.barcode;
+        const skuParagraph = cell.appendParagraph(barcodeText);
+        const skuText = skuParagraph.editAsText();
+        if (skuText) {
+          skuText.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
+        }
+        skuParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+      }
+    }
+  } else if (item.barcode) {
+    // Legacy fallback
     const skuParagraph = cell.appendParagraph(item.barcode);
     const skuText = skuParagraph.editAsText();
     if (skuText) {
       skuText.setFontSize(skuSizes[layout] || 7).setForegroundColor('#999999').setFontFamily('Calibri');
     }
+    skuParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   }
 }
 
 // Create 3-up product card - special horizontal 3-column layout (image | content | details)
 // PRINT-OPTIMIZED: Fixed dimensions, confined boxes, prevents overflow
-function createProductCard3Up(cell, item, cellWidth, cellHeight) {
+function createProductCard3Up(cell, item, cellWidth, cellHeight, itemBarcodeType) {
   console.log('Creating 3-up special layout for:', item.title);
   
   // Create horizontal table with 3 columns - CONFINED BOXES
@@ -1111,8 +1222,34 @@ function createProductCard3Up(cell, item, cellWidth, cellHeight) {
     detailParagraph.setSpacingAfter(4);
   }
   
-  // Barcode
-  if (item.barcode) {
+  // Barcode - USE IMAGE URL FROM SERVER
+  if (item.barcodeImageUrl && itemBarcodeType && itemBarcodeType !== 'None') {
+    try {
+      const base64Data = item.barcodeImageUrl.split(',')[1] || item.barcodeImageUrl;
+      const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'image/png');
+      const barcodeImage = detailsCell.appendImage(blob);
+      if (itemBarcodeType === 'QR Code') {
+        barcodeImage.setWidth(40);
+        barcodeImage.setHeight(40);
+      } else {
+        barcodeImage.setWidth(80);
+        barcodeImage.setHeight(20);
+      }
+      barcodeImage.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    } catch (error) {
+      console.log('Could not insert barcode image:', error);
+      if (item.barcodeCode || item.barcode) {
+        const barcodeText = item.barcodeCode || item.barcode;
+        const barcodeParagraph = detailsCell.appendParagraph(barcodeText);
+        const barcodeTextObj = barcodeParagraph.editAsText();
+        if (barcodeTextObj) {
+          barcodeTextObj.setFontSize(8).setForegroundColor('#666666').setFontFamily('Calibri');
+        }
+        barcodeParagraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+      }
+    }
+  } else if (item.barcode) {
+    // Legacy fallback
     const barcodeParagraph = detailsCell.appendParagraph(item.barcode);
     const barcodeText = barcodeParagraph.editAsText();
     if (barcodeText) {

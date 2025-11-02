@@ -1318,16 +1318,29 @@ async function renderMixedGoogleDocsHtml(
     margin-top: auto;
     text-align: center;
     flex-shrink: 0;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  .barcode img {
+    display: block !important;
+    visibility: visible !important;
+    max-width: 100%;
+    height: auto;
   }
   
   .qr-code {
     width: 23pt;
     height: 23pt;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .ean13-barcode {
     width: 57pt;
     height: 23pt;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .barcode-text {
@@ -1335,6 +1348,8 @@ async function renderMixedGoogleDocsHtml(
     text-align: center;
     margin-top: 1.5pt;
     color: #666;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .barcode-fallback {
@@ -1345,6 +1360,8 @@ async function renderMixedGoogleDocsHtml(
     border: 1.5pt dashed #ccc;
     background: #f9f9f9;
     margin-top: 3pt;
+    display: block !important;
+    visibility: visible !important;
   }
   
   /* Internal image styles for 2-int layout */
