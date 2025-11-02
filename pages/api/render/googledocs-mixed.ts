@@ -184,7 +184,7 @@ async function renderMixedGoogleDocsHtml(
     
     return `<div class="page ${layoutClass}" data-layout="${layout}">
       <!-- Header Banner -->
-      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-header" style="background-color: ${bannerColor || '#F7981D'} !important; color: #ffffff !important; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
       
@@ -194,7 +194,7 @@ async function renderMixedGoogleDocsHtml(
       </div>
       
       <!-- Footer Banner -->
-      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
+      <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'} !important; color: #ffffff !important; text-align: center; padding: 6pt 0; font-weight: 600; font-size: 10.5pt; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
         ${esc(websiteName || 'www.woodslane.com.au')}
       </div>
     </div>`;
@@ -420,15 +420,34 @@ async function renderMixedGoogleDocsHtml(
     font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     color: #333;
     line-height: 1.4;
-    background: white;
+    background: white !important;
     font-size: 9pt;
   }
+  
+  /* Ensure text colors are explicit - no background color inheritance on text elements */
+  p, div, span, h1, h2, h3, h4, h5, h6, a, li, td, th {
+    background-color: transparent !important;
+  }
+  
+  /* Product cards should have white background */
+  .product-card {
+    background-color: #ffffff !important;
+  }
+  
+  /* Ensure text in product cards has proper colors */
+  .product-card * {
+    background-color: transparent !important;
+  }
+  
   .page { 
     display: block;
     page-break-after: always; 
     padding: 0;
-    min-height: 100vh;
+    height: 740pt; /* Fixed A4 page height: 297mm - margins = ~740pt */
+    max-height: 740pt;
     margin-bottom: 28.35pt;
+    overflow: hidden;
+    background: white !important;
   }
   
   .page-header, .page-footer {
@@ -437,22 +456,32 @@ async function renderMixedGoogleDocsHtml(
     position: relative !important;
     left: 0 !important;
     right: 0 !important;
+    background-color: inherit !important;
   }
   
   .page-header {
-    margin-bottom: 28.35pt;
+    margin-bottom: 21.26pt;
+    height: auto;
+  }
+  
+  .page-footer {
+    margin-top: 21.26pt;
+    height: auto;
   }
   
   .page-content {
     display: block;
     overflow: hidden;
-    margin-bottom: 28.35pt;
+    height: calc(100% - 100pt); /* Account for header/footer */
+    max-height: calc(100% - 100pt);
   }
   
   /* Use flexbox for layout compatibility with Google Docs instead of CSS Grid */
   .page.layout-1 .page-content {
     display: block;
     width: 100%;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
   }
   
   .page.layout-2 .page-content {
@@ -461,21 +490,39 @@ async function renderMixedGoogleDocsHtml(
     flex-wrap: wrap;
     width: 100%;
     gap: 21.26pt;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
   }
   
   .page.layout-2 .page-content > .product-card {
     flex: 0 0 calc(50% - 10.63pt);
     max-width: calc(50% - 10.63pt);
+    max-height: calc(100% - 21.26pt);
+    overflow: hidden;
   }
   
   .page.layout-1L .page-content {
     display: block;
     width: 100%;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
   }
   
+  /* Layout-3: Stack 3 items vertically with proper spacing */
   .page.layout-3 .page-content {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    gap: 6pt;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
+    overflow-y: hidden;
+  }
+  
+  .page.layout-3 .page-content > .product-card {
+    flex: 0 0 auto;
+    max-height: calc((100% - 12pt) / 3);
+    overflow: hidden;
   }
   
   .page.layout-4 .page-content {
@@ -484,11 +531,16 @@ async function renderMixedGoogleDocsHtml(
     flex-wrap: wrap;
     width: 100%;
     gap: 21.26pt;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
+    overflow: hidden;
   }
   
   .page.layout-4 .page-content > .product-card {
     flex: 0 0 calc(50% - 10.63pt);
     max-width: calc(50% - 10.63pt);
+    max-height: calc((100% - 21.26pt) / 2);
+    overflow: hidden;
   }
   
   .page.layout-8 .page-content {
@@ -497,11 +549,16 @@ async function renderMixedGoogleDocsHtml(
     flex-wrap: wrap;
     width: 100%;
     gap: 14.17pt;
+    height: calc(100% - 100pt);
+    max-height: calc(100% - 100pt);
+    overflow: hidden;
   }
   
   .page.layout-8 .page-content > .product-card {
     flex: 0 0 calc(25% - 10.63pt);
     max-width: calc(25% - 10.63pt);
+    max-height: calc((100% - 14.17pt) / 2);
+    overflow: hidden;
   }
   
   .product-card {
@@ -681,6 +738,17 @@ async function renderMixedGoogleDocsHtml(
   
   .page.layout-1 .product-meta {
     font-size: 9pt;
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 6pt;
+  }
+  
+  .page.layout-1 .meta-item {
+    font-size: 9pt;
+    color: #666;
+    margin-bottom: 1.5pt;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .page.layout-1 .product-price {
@@ -782,6 +850,8 @@ async function renderMixedGoogleDocsHtml(
   
   .layout-2-vertical .product-meta {
     margin-bottom: 3pt;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .layout-2-vertical .meta-item {
@@ -789,6 +859,8 @@ async function renderMixedGoogleDocsHtml(
     color: #666;
     margin-bottom: 0.75pt;
     font-family: 'Calibri', sans-serif;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .layout-2-vertical .product-price {
@@ -846,9 +918,19 @@ async function renderMixedGoogleDocsHtml(
     font-family: 'Calibri', sans-serif;
   }
   
+  .page.layout-2 .product-meta {
+    display: block !important;
+    visibility: visible !important;
+    margin-bottom: 3pt;
+  }
+  
   .page.layout-2 .meta-item {
     font-size: 9pt;
     font-family: 'Calibri', sans-serif;
+    display: block !important;
+    visibility: visible !important;
+    color: #666;
+    margin-bottom: 0.75pt;
   }
   
   .page.layout-2 .spec-item {
@@ -869,9 +951,17 @@ async function renderMixedGoogleDocsHtml(
     padding: 7.5pt;
     border: 0.75pt solid #e0e0e0;
     background: #ffffff;
-    min-height: 136pt;
+    height: 100%;
+    max-height: 100%;
     max-width: 100%;
     overflow: hidden;
+  }
+  
+  /* Ensure layout-3 product cards fit properly */
+  .page.layout-3 .layout-3-row {
+    height: 100%;
+    max-height: calc((100% - 12pt) / 3);
+    min-height: 0;
   }
   
   .product-image-3up {
