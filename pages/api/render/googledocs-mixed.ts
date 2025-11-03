@@ -611,6 +611,27 @@ async function renderMixedGoogleDocsHtml(
     margin-bottom: 0; /* No bottom margin */
   }
   
+  /* 1L layout: Use 2x2 flexbox grid for internals like html.ts (grid not well supported in Google Docs) */
+  .layout-1L .internals-thumbnails-full {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 15pt;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .layout-1L .internal-thumbnail-full {
+    flex: 0 0 calc(50% - 7.5pt); /* 2 columns with gap */
+    width: calc(50% - 7.5pt);
+    max-width: 189pt; /* ~250px converted to pt */
+    height: auto;
+    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+    object-fit: cover;
+    border: 0.75pt solid #ddd;
+    border-radius: 3pt;
+    box-shadow: 0 1.5pt 3pt rgba(0,0,0,0.1);
+  }
+  
   .internals-title {
     font-size: 10.5pt;
     font-weight: bold;
