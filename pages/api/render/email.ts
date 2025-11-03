@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeText?: string;
       issuuUrl?: string;
       catalogueImageUrl?: string;
-      logoUrls?: string[];
+      logoUrls?: Array<{imageUrl: string; destinationUrl?: string}>;
       lineBreakText?: string;
       sectionOrder?: string[];
       theme?: {
@@ -109,7 +109,7 @@ function generateEmailHtml(
   freeText?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
-  logoUrls?: string[],
+  logoUrls?: Array<{imageUrl: string; destinationUrl?: string}>,
   lineBreakText?: string,
   sectionOrder?: string[],
   theme?: {
@@ -783,7 +783,7 @@ function generateCompleteEmailHtml(
   discountCode?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
-  logoUrls?: string[],
+  logoUrls?: Array<{imageUrl: string; destinationUrl?: string}>,
   lineBreakText?: string,
   sectionOrder?: string[],
   hyperlinkToggle?: HyperlinkToggle
@@ -895,7 +895,7 @@ function generateCompleteEmailHtml(
   
   // Logo Section (if provided - up to 4 logos)
   const logoSection = logoUrls && logoUrls.length > 0 ? (() => {
-    const validLogos = logoUrls.filter(url => url && url.trim());
+    const validLogos = logoUrls.filter(logo => logo && logo.imageUrl && logo.imageUrl.trim());
     if (validLogos.length === 0) return '';
     
     return `
@@ -908,11 +908,18 @@ function generateCompleteEmailHtml(
               <td align="center">
                 <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                   <tr>
-                    ${validLogos.map((logoUrl, index) => `
+                    ${validLogos.map((logo, index) => {
+                      const imageTag = `<img src="${esc(logo.imageUrl)}" alt="Logo ${index + 1}" style="max-width: 140px; max-height: 80px; height: auto; display: block;">`;
+                      const logoContent = logo.destinationUrl && logo.destinationUrl.trim() 
+                        ? `<a href="${esc(logo.destinationUrl)}" target="_blank" style="text-decoration: none;">${imageTag}</a>`
+                        : imageTag;
+                      
+                      return `
                       <td style="padding: ${index > 0 ? '0 0 0 20px' : '0'}; vertical-align: middle;">
-                        <img src="${esc(logoUrl)}" alt="Logo ${index + 1}" style="max-width: 140px; max-height: 80px; height: auto; display: block;">
+                        ${logoContent}
                       </td>
-                    `).join('')}
+                    `;
+                    }).join('')}
                   </tr>
                 </table>
               </td>
@@ -924,15 +931,15 @@ function generateCompleteEmailHtml(
     `;
   })() : '';
   
-  // Line Break Text Section (if provided)
+  // Line Break Text Section (if provided) - with banner color background
   const lineBreakTextSection = lineBreakText ? `
     <!-- Line Break Text -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
       <tr>
         <td align="center" style="padding: 30px 20px;">
           <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
             <tr>
-              <td style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #333333; text-align: center;">
+              <td style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #ffffff; text-align: center;">
                 ${esc(lineBreakText).replace(/\n/g, '<br>')}
               </td>
             </tr>
@@ -1144,7 +1151,7 @@ function generateCompleteEmailHtml(
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'freeText' && freeText) {
       orderedSections.push(sectionMap[sectionId] || '');
-    } else if (sectionId === 'logoSection' && logoUrls && logoUrls.filter(url => url && url.trim()).length > 0) {
+    } else if (sectionId === 'logoSection' && logoUrls && logoUrls.filter(logo => logo && logo.imageUrl && logo.imageUrl.trim()).length > 0) {
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'lineBreakText' && lineBreakText) {
       orderedSections.push(sectionMap[sectionId] || '');

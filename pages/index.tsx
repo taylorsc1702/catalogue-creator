@@ -129,8 +129,13 @@ export default function Home() {
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
-  // Logo URLs (up to 4)
-  const [emailLogoUrls, setEmailLogoUrls] = useState<string[]>(['', '', '', '']);
+  // Logo URLs (up to 4) - each has image URL and destination URL
+  const [emailLogoUrls, setEmailLogoUrls] = useState<Array<{imageUrl: string; destinationUrl: string}>>([
+    { imageUrl: '', destinationUrl: '' },
+    { imageUrl: '', destinationUrl: '' },
+    { imageUrl: '', destinationUrl: '' },
+    { imageUrl: '', destinationUrl: '' }
+  ]);
   // Line break text section
   const [emailLineBreakText, setEmailLineBreakText] = useState<string>('');
   // Email section order - default order
@@ -928,7 +933,7 @@ export default function Home() {
           freeText: emailFreeText.trim() || undefined,
           issuuUrl: emailIssuuUrl.trim() || undefined,
           catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
-          logoUrls: emailLogoUrls.filter(url => url.trim()).length > 0 ? emailLogoUrls.filter(url => url.trim()) : undefined,
+          logoUrls: emailLogoUrls.filter(logo => logo.imageUrl.trim()).length > 0 ? emailLogoUrls.filter(logo => logo.imageUrl.trim()) : undefined,
           lineBreakText: emailLineBreakText.trim() || undefined,
           sectionOrder: emailSectionOrder,
           theme: {
@@ -2470,29 +2475,49 @@ export default function Home() {
                     Logo URLs (Optional - up to 4):
                   </label>
                   {[0, 1, 2, 3].map((index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      value={emailLogoUrls[index] || ''}
-                      onChange={(e) => {
-                        const newLogoUrls = [...emailLogoUrls];
-                        newLogoUrls[index] = e.target.value;
-                        setEmailLogoUrls(newLogoUrls);
-                      }}
-                      placeholder={`Logo ${index + 1} URL (e.g., https://example.com/logo${index + 1}.png)`}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '2px solid #E9ECEF',
-                        borderRadius: 6,
-                        fontSize: 13,
-                        fontFamily: 'monospace',
-                        marginBottom: 8
-                      }}
-                    />
+                    <div key={index} style={{ marginBottom: 12, padding: 12, border: '1px solid #E9ECEF', borderRadius: 6, background: '#F8F9FA' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#495057', marginBottom: 6 }}>Logo {index + 1}:</div>
+                      <input
+                        type="text"
+                        value={emailLogoUrls[index]?.imageUrl || ''}
+                        onChange={(e) => {
+                          const newLogoUrls = [...emailLogoUrls];
+                          newLogoUrls[index] = { ...newLogoUrls[index], imageUrl: e.target.value };
+                          setEmailLogoUrls(newLogoUrls);
+                        }}
+                        placeholder={`Image URL (e.g., https://example.com/logo${index + 1}.png)`}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          border: '2px solid #E9ECEF',
+                          borderRadius: 6,
+                          fontSize: 13,
+                          fontFamily: 'monospace',
+                          marginBottom: 8
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={emailLogoUrls[index]?.destinationUrl || ''}
+                        onChange={(e) => {
+                          const newLogoUrls = [...emailLogoUrls];
+                          newLogoUrls[index] = { ...newLogoUrls[index], destinationUrl: e.target.value };
+                          setEmailLogoUrls(newLogoUrls);
+                        }}
+                        placeholder={`Destination URL (e.g., https://example.com) - Optional`}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          border: '2px solid #E9ECEF',
+                          borderRadius: 6,
+                          fontSize: 13,
+                          fontFamily: 'monospace'
+                        }}
+                      />
+                    </div>
                   ))}
                   <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
-                    Add up to 4 logo image URLs. These will be displayed horizontally in a row.
+                    Add up to 4 logos. Each logo can have an image URL and an optional destination URL (for clickable logos).
                   </div>
                 </div>
                 
@@ -2540,7 +2565,7 @@ export default function Home() {
                     const sectionEnabled: {[key: string]: boolean} = {
                       'bannerImage': !!emailBannerImageUrl.trim(),
                       'freeText': !!emailFreeText.trim(),
-                      'logoSection': emailLogoUrls.filter(url => url.trim()).length > 0,
+                      'logoSection': emailLogoUrls.filter(logo => logo.imageUrl.trim()).length > 0,
                       'lineBreakText': !!emailLineBreakText.trim(),
                       'products': items.length > 0,
                       'issuuCatalogue': !!emailIssuuUrl.trim()
