@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       bannerImageUrl,
       freeText,
       issuuUrl,
+      catalogueImageUrl,
       theme = {
         primaryColor: '#F7981D',
         textColor: '#333333',
@@ -62,6 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       bannerImageUrl?: string;
       freeText?: string;
       issuuUrl?: string;
+      catalogueImageUrl?: string;
       theme?: {
         primaryColor?: string;
         textColor?: string;
@@ -79,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -100,6 +102,7 @@ function generateEmailHtml(
   bannerImageUrl?: string,
   freeText?: string,
   issuuUrl?: string,
+  catalogueImageUrl?: string,
   theme?: {
     primaryColor?: string;
     textColor?: string;
@@ -757,7 +760,7 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, toggle);
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, toggle);
 }
 
 // Helper function to generate complete email HTML structure
@@ -770,6 +773,7 @@ function generateCompleteEmailHtml(
   freeText?: string,
   discountCode?: string,
   issuuUrl?: string,
+  catalogueImageUrl?: string,
   hyperlinkToggle?: HyperlinkToggle
 ): string {
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -793,6 +797,27 @@ function generateCompleteEmailHtml(
     woodslanepress: 'https://www.woodslanepress.com.au'
   };
   const baseUrl = baseUrls[toggle];
+  
+  // Extract ISSUU thumbnail image URL from ISSUU document URL
+  const getIssuuThumbnailUrl = (url: string): string | null => {
+    try {
+      // ISSUU URLs can be in formats like:
+      // https://issuu.com/username/docs/document_name
+      // https://issuu.com/username/docs/document_name?params
+      const issuuPattern = /issuu\.com\/([^\/]+)\/docs\/([^\/\?]+)/;
+      const match = url.match(issuuPattern);
+      if (match) {
+        const username = match[1];
+        const documentName = match[2];
+        // ISSUU provides thumbnails - try to get cover image
+        // Format: https://image.issuu.com/[width]x[height]/jpg/page_1.jpg?u=[username]&d=[document]
+        return `https://image.issuu.com/600x450/jpg/page_1.jpg?u=${username}&d=${documentName}`;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
   
   // Thin Header Banner (just website name on colored bar)
   const header = `
@@ -1014,17 +1039,33 @@ function generateCompleteEmailHtml(
             </td>
           </tr>
         </table>
-        ${issuuUrl ? `
-        <!-- ISSUU Embed -->
+        ${issuuUrl ? (() => {
+          // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
+          const thumbnailUrl = catalogueImageUrl || getIssuuThumbnailUrl(issuuUrl);
+          
+          return `
+        <!-- ISSUU Catalogue Link -->
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
           <tr>
             <td align="center" style="padding: 20px;">
-              <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <tr>
                   <td align="center" style="padding: 20px;">
                     <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #333333; margin-bottom: 15px;">View our Catalogue</div>
+                    ${thumbnailUrl ? `
+                    <!-- Catalogue thumbnail image as clickable link -->
+                    <a href="${esc(issuuUrl)}" target="_blank" style="display: block; margin-bottom: 15px; text-decoration: none;">
+                      <img 
+                        src="${esc(thumbnailUrl)}" 
+                        alt="Catalogue Preview" 
+                        width="600" 
+                        style="width: 100%; max-width: 600px; height: auto; display: block; border: 1px solid #E9ECEF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                      />
+                    </a>
+                    ` : ''}
+                    <!-- Link button (works in all email clients) -->
                     <a href="${esc(issuuUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
-                      Open Catalogue →
+                      ${thumbnailUrl ? 'View Full Catalogue →' : 'Open Catalogue →'}
                     </a>
                   </td>
                 </tr>
@@ -1032,7 +1073,8 @@ function generateCompleteEmailHtml(
             </td>
           </tr>
         </table>
-        ` : ''}
+        `;
+        })() : ''}
         ${socialMediaIcons}
         ${separatorLine}
         ${footer}

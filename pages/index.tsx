@@ -125,6 +125,7 @@ export default function Home() {
   const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
+  const [emailCatalogueImageUrl, setEmailCatalogueImageUrl] = useState<string>('');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
@@ -2428,6 +2429,29 @@ export default function Home() {
                     If provided, a link to view the catalogue will appear after the products section.
                   </div>
                 </div>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Catalogue Image URL (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    value={emailCatalogueImageUrl}
+                    onChange={(e) => setEmailCatalogueImageUrl(e.target.value)}
+                    placeholder="https://example.com/catalogue-cover.jpg"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    If provided, this image will be displayed as a clickable thumbnail linking to the catalogue. If not provided, the system will try to generate one from the ISSUU URL.
+                  </div>
+                </div>
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -2457,6 +2481,7 @@ export default function Home() {
                             bannerImageUrl: emailBannerImageUrl.trim() || undefined,
                             freeText: emailFreeText.trim() || undefined,
                             issuuUrl: emailIssuuUrl.trim() || undefined,
+                            catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
                             theme: {
                               primaryColor: getBannerColor(hyperlinkToggle),
                               buttonColor: '#007bff',
