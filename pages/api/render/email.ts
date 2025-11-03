@@ -36,6 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeText,
       issuuUrl,
       catalogueImageUrl,
+      logoUrls,
+      lineBreakText,
       sectionOrder,
       theme = {
         primaryColor: '#F7981D',
@@ -65,6 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeText?: string;
       issuuUrl?: string;
       catalogueImageUrl?: string;
+      logoUrls?: string[];
+      lineBreakText?: string;
       sectionOrder?: string[];
       theme?: {
         primaryColor?: string;
@@ -83,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, sectionOrder, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -105,6 +109,8 @@ function generateEmailHtml(
   freeText?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
+  logoUrls?: string[],
+  lineBreakText?: string,
   sectionOrder?: string[],
   theme?: {
     primaryColor?: string;
@@ -117,8 +123,8 @@ function generateEmailHtml(
 ): string {
   const toggle = hyperlinkToggle || 'woodslane';
   
-  // Get logo URLs
-  const logoUrls: Record<HyperlinkToggle, string> = {
+  // Get brand logo URLs (for the main logo in header)
+  const brandLogoUrls: Record<HyperlinkToggle, string> = {
     woodslane: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/woodslane-square-logo-transparent_a9785ae1-b798-4ab4-963d-89a4fc3f3fdb.png?v=1755213158',
     woodslanehealth: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneHealth-logo-square_50093948-c033-48aa-8274-694237479a8a.jpg?v=1761655710',
     woodslaneeducation: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneEducation-logos-square_60e40eef-f666-4f6a-a8e0-f07efca5a9dd.jpg?v=1761655806',
@@ -141,7 +147,7 @@ function generateEmailHtml(
     woodslanepress: '#1EADFF'
   };
   
-  const logoUrl = logoUrls[toggle];
+  const logoUrl = brandLogoUrls[toggle];
   const websiteName = websiteNames[toggle];
   const bannerColor = theme?.primaryColor || bannerColors[toggle];
   const primaryColor = theme?.primaryColor || bannerColors[toggle];
@@ -763,7 +769,7 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, sectionOrder, toggle);
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
 }
 
 // Helper function to generate complete email HTML structure
@@ -777,6 +783,8 @@ function generateCompleteEmailHtml(
   discountCode?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
+  logoUrls?: string[],
+  lineBreakText?: string,
   sectionOrder?: string[],
   hyperlinkToggle?: HyperlinkToggle
 ): string {
@@ -877,6 +885,55 @@ function generateCompleteEmailHtml(
             <tr>
               <td style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333333;">
                 ${esc(freeText).replace(/\n/g, '<br>')}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  ` : '';
+  
+  // Logo Section (if provided - up to 4 logos)
+  const logoSection = logoUrls && logoUrls.length > 0 ? (() => {
+    const validLogos = logoUrls.filter(url => url && url.trim());
+    if (validLogos.length === 0) return '';
+    
+    return `
+    <!-- Logo Section -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
+      <tr>
+        <td align="center" style="padding: 30px 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td align="center">
+                <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+                  <tr>
+                    ${validLogos.map((logoUrl, index) => `
+                      <td style="padding: ${index > 0 ? '0 0 0 20px' : '0'}; vertical-align: middle;">
+                        <img src="${esc(logoUrl)}" alt="Logo ${index + 1}" style="max-width: 140px; max-height: 80px; height: auto; display: block;">
+                      </td>
+                    `).join('')}
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    `;
+  })() : '';
+  
+  // Line Break Text Section (if provided)
+  const lineBreakTextSection = lineBreakText ? `
+    <!-- Line Break Text -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
+      <tr>
+        <td align="center" style="padding: 30px 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #333333; text-align: center;">
+                ${esc(lineBreakText).replace(/\n/g, '<br>')}
               </td>
             </tr>
           </table>
@@ -1070,12 +1127,14 @@ function generateCompleteEmailHtml(
   const sectionMap: {[key: string]: string} = {
     'bannerImage': bannerImage,
     'freeText': freeTextSection,
+    'logoSection': logoSection,
+    'lineBreakText': lineBreakTextSection,
     'products': productsSection,
     'issuuCatalogue': issuuCatalogueSection
   };
   
   // Use provided section order or default order
-  const defaultOrder = ['bannerImage', 'freeText', 'products', 'issuuCatalogue'];
+  const defaultOrder = ['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue'];
   const order = sectionOrder && sectionOrder.length > 0 ? sectionOrder : defaultOrder;
   
   // Build ordered sections (only include sections that have content)
@@ -1084,6 +1143,10 @@ function generateCompleteEmailHtml(
     if (sectionId === 'bannerImage' && bannerImageUrl) {
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'freeText' && freeText) {
+      orderedSections.push(sectionMap[sectionId] || '');
+    } else if (sectionId === 'logoSection' && logoUrls && logoUrls.filter(url => url && url.trim()).length > 0) {
+      orderedSections.push(sectionMap[sectionId] || '');
+    } else if (sectionId === 'lineBreakText' && lineBreakText) {
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'products') {
       orderedSections.push(sectionMap[sectionId] || '');

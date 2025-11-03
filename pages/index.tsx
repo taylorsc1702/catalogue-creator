@@ -129,8 +129,12 @@ export default function Home() {
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
+  // Logo URLs (up to 4)
+  const [emailLogoUrls, setEmailLogoUrls] = useState<string[]>(['', '', '', '']);
+  // Line break text section
+  const [emailLineBreakText, setEmailLineBreakText] = useState<string>('');
   // Email section order - default order
-  const [emailSectionOrder, setEmailSectionOrder] = useState<string[]>(['bannerImage', 'freeText', 'products', 'issuuCatalogue']);
+  const [emailSectionOrder, setEmailSectionOrder] = useState<string[]>(['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue']);
   const [draggedSection, setDraggedSection] = useState<string | null>(null);
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
@@ -924,6 +928,8 @@ export default function Home() {
           freeText: emailFreeText.trim() || undefined,
           issuuUrl: emailIssuuUrl.trim() || undefined,
           catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
+          logoUrls: emailLogoUrls.filter(url => url.trim()).length > 0 ? emailLogoUrls.filter(url => url.trim()) : undefined,
+          lineBreakText: emailLineBreakText.trim() || undefined,
           sectionOrder: emailSectionOrder,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
@@ -2457,6 +2463,62 @@ export default function Home() {
                     If provided, this image will be displayed as a clickable thumbnail linking to the catalogue. If not provided, the system will try to generate one from the ISSUU URL.
                   </div>
                 </div>
+                
+                {/* Logo URLs Section (up to 4) */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Logo URLs (Optional - up to 4):
+                  </label>
+                  {[0, 1, 2, 3].map((index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={emailLogoUrls[index] || ''}
+                      onChange={(e) => {
+                        const newLogoUrls = [...emailLogoUrls];
+                        newLogoUrls[index] = e.target.value;
+                        setEmailLogoUrls(newLogoUrls);
+                      }}
+                      placeholder={`Logo ${index + 1} URL (e.g., https://example.com/logo${index + 1}.png)`}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '2px solid #E9ECEF',
+                        borderRadius: 6,
+                        fontSize: 13,
+                        fontFamily: 'monospace',
+                        marginBottom: 8
+                      }}
+                    />
+                  ))}
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    Add up to 4 logo image URLs. These will be displayed horizontally in a row.
+                  </div>
+                </div>
+                
+                {/* Line Break Text Section */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Line Break Text (Optional):
+                  </label>
+                  <textarea
+                    value={emailLineBreakText}
+                    onChange={(e) => setEmailLineBreakText(e.target.value)}
+                    placeholder="Enter text that will appear on a line break with spacing..."
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      resize: 'vertical'
+                    }}
+                  />
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    This text will appear with line breaks and spacing above and below. Supports multiple lines.
+                  </div>
+                </div>
               </div>
               
               {/* Drag and Drop Section Order */}
@@ -2470,12 +2532,16 @@ export default function Home() {
                     const sectionLabels: {[key: string]: string} = {
                       'bannerImage': '🖼️ Banner Image',
                       'freeText': '📝 Free Text',
+                      'logoSection': '🎨 Logo Section (up to 4)',
+                      'lineBreakText': '📄 Line Break Text',
                       'products': '📦 Products',
                       'issuuCatalogue': '📚 ISSUU Catalogue'
                     };
                     const sectionEnabled: {[key: string]: boolean} = {
                       'bannerImage': !!emailBannerImageUrl.trim(),
                       'freeText': !!emailFreeText.trim(),
+                      'logoSection': emailLogoUrls.filter(url => url.trim()).length > 0,
+                      'lineBreakText': !!emailLineBreakText.trim(),
                       'products': items.length > 0,
                       'issuuCatalogue': !!emailIssuuUrl.trim()
                     };
