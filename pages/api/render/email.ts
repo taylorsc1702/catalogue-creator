@@ -110,7 +110,8 @@ function generateEmailHtml(
       woodslanepress: 'https://www.woodslanepress.com.au'
     };
     
-    const baseUrl = `${baseUrls[hyperlinkToggle]}/products/${handle}`;
+    const toggle = hyperlinkToggle || 'woodslane';
+    const baseUrl = `${baseUrls[toggle]}/products/${handle}`;
     
     if (utmParams) {
       const urlParams = new URLSearchParams();
