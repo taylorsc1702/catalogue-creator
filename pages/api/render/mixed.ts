@@ -754,6 +754,104 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     overflow: hidden;
   }
   
+  /* Book cover image for layout-1-full - same size as 1-up */
+  .layout-1-full .product-image {
+    width: 100%;
+  }
+  
+  .layout-1-full .book-cover {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Text sizes for layout-1-full - same as 1-up */
+  .layout-1-full .product-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  .layout-1-full .product-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+  }
+  
+  .layout-1-full .product-author {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .layout-1-full .product-description {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #333;
+    margin: 0;
+  }
+  
+  .layout-1-full .product-meta {
+    font-size: 12px;
+  }
+  
+  .layout-1-full .meta-item {
+    margin-bottom: 4px;
+  }
+  
+  .layout-1-full .product-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #d63384;
+  }
+  
+  .layout-1-full .author-bio {
+    background: #E3F2FD;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    margin-top: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Increase author bio max-height for 1L layout to give more room */
+  .layout-1L .author-bio.truncated {
+    max-height: 280px; /* Increased from 200px to give more room */
+    overflow: hidden;
+  }
+  
+  .layout-1-full .author-bio.truncated {
+    max-height: 200px;
+    overflow: hidden;
+  }
+  
+  .layout-1-full .author-bio.full {
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .layout-1-full .author-bio-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #1565C0;
+  }
+  
+  .layout-1-full .author-bio-content {
+    color: #333;
+    flex: 1;
+  }
+  
   .internals-section-full {
     margin-top: auto;
     padding-top: 20px;
@@ -825,6 +923,22 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .layout-1L .internal-thumbnail-full.image-landscape {
     object-fit: cover;
     aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+  }
+  
+  @media print {
+    .layout-1L .internals-thumbnails-full {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      grid-template-rows: auto auto !important;
+    }
+    
+    .layout-1L .page-header {
+      page-break-after: avoid;
+    }
+    
+    .layout-1L {
+      page-break-inside: avoid;
+    }
   }
   
   .internals-title {
