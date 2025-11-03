@@ -1040,6 +1040,10 @@ function generateCompleteEmailHtml(
           </tr>
         </table>
         ${issuuUrl ? (() => {
+          // Only show section if ISSUU URL is provided (we need a link target)
+          // If catalogueImageUrl is also provided, use it; otherwise try to generate from ISSUU URL
+          const linkUrl = issuuUrl;
+          
           // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
           const thumbnailUrl = catalogueImageUrl || getIssuuThumbnailUrl(issuuUrl);
           
@@ -1054,7 +1058,7 @@ function generateCompleteEmailHtml(
                     <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #333333; margin-bottom: 15px;">View our Catalogue</div>
                     ${thumbnailUrl ? `
                     <!-- Catalogue thumbnail image as clickable link -->
-                    <a href="${esc(issuuUrl)}" target="_blank" style="display: block; margin-bottom: 15px; text-decoration: none;">
+                    <a href="${esc(linkUrl)}" target="_blank" style="display: block; margin-bottom: 15px; text-decoration: none;">
                       <img 
                         src="${esc(thumbnailUrl)}" 
                         alt="Catalogue Preview" 
@@ -1064,7 +1068,7 @@ function generateCompleteEmailHtml(
                     </a>
                     ` : ''}
                     <!-- Link button (works in all email clients) -->
-                    <a href="${esc(issuuUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
+                    <a href="${esc(linkUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
                       ${thumbnailUrl ? 'View Full Catalogue →' : 'Open Catalogue →'}
                     </a>
                   </td>
