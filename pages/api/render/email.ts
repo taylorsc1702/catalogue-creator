@@ -151,18 +151,23 @@ function generateEmailHtml(
     const toggle = hyperlinkToggle || 'woodslane';
     const baseUrl = `${baseUrls[toggle]}/products/${handle}`;
     
+    const urlParams = new URLSearchParams();
+    
+    // Add discount code if provided
+    if (discountCode) {
+      urlParams.set('discount', discountCode);
+    }
+    
+    // Add UTM parameters if provided
     if (utmParams) {
-      const urlParams = new URLSearchParams();
       if (utmParams.utmSource) urlParams.set('utm_source', utmParams.utmSource);
       if (utmParams.utmMedium) urlParams.set('utm_medium', utmParams.utmMedium);
       if (utmParams.utmCampaign) urlParams.set('utm_campaign', utmParams.utmCampaign);
       if (utmParams.utmContent) urlParams.set('utm_content', utmParams.utmContent);
       if (utmParams.utmTerm) urlParams.set('utm_term', utmParams.utmTerm);
-      
-      return urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
     }
     
-    return baseUrl;
+    return urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
   };
 
   const truncateDescription = (desc?: string, maxLength: number = 200): string => {
@@ -681,23 +686,18 @@ function generateCompleteEmailHtml(
   };
   const baseUrl = baseUrls[toggle];
   
-  // Header with logo and website name
+  // Thin Header Banner (just website name on colored bar)
   const header = `
-    <!-- Header -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+    <!-- Thin Header Banner -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor}; border-radius: 8px 8px 0 0;">
       <tr>
-        <td align="center" style="padding: 20px;">
+        <td align="center" style="padding: 12px 20px;">
           <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
             <tr>
-              <td align="center" style="padding-bottom: 10px;">
-                <img src="${esc(logoUrl)}" alt="Logo" width="150" style="width: 150px; max-width: 100%; height: auto; display: block;">
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding-top: 10px;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: bold; color: #ffffff; font-family: Arial, sans-serif;">
+              <td align="center">
+                <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #ffffff;">
                   ${esc(websiteName)}
-                </h1>
+                </div>
               </td>
             </tr>
           </table>
@@ -706,12 +706,24 @@ function generateCompleteEmailHtml(
     </table>
   `;
   
-  // Banner Image (if provided)
+  // Logo (small, underneath banner)
+  const logo = `
+    <!-- Logo -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
+      <tr>
+        <td align="center" style="padding: 20px 20px 15px 20px;">
+          <img src="${esc(logoUrl)}" alt="Logo" width="120" style="width: 120px; max-width: 100%; height: auto; display: block;">
+        </td>
+      </tr>
+    </table>
+  `;
+  
+  // Banner Image (if provided, comes after logo)
   const bannerImage = bannerImageUrl ? `
     <!-- Banner Image -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
       <tr>
-        <td align="center" style="padding: 0;">
+        <td align="center" style="padding: 0 0 20px 0;">
           <img src="${esc(bannerImageUrl)}" alt="Banner" width="600" style="width: 600px; max-width: 100%; height: auto; display: block;">
         </td>
       </tr>
@@ -806,6 +818,7 @@ function generateCompleteEmailHtml(
     <tr>
       <td align="center" style="padding: 0;">
         ${header}
+        ${logo}
         ${bannerImage}
         ${freeTextSection}
         ${discountSeparator}
