@@ -760,13 +760,29 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     border-top: 2px solid #e0e0e0;
   }
   
-  /* 1L layout: Move internals section closer to bottom of page - match html.ts exactly */
+  /* 1L layout: Move internals section much closer to bottom of page - match html.ts exactly */
   .layout-1L .internals-section-full {
-    margin-top: 5px; /* Further reduced spacing from content above - matches html.ts */
+    margin-top: -30px; /* Negative margin to drop internals significantly down - matches html.ts */
     padding-top: 10px; /* Reduced top padding */
     padding-bottom: 0; /* No bottom padding */
     margin-bottom: 0; /* No bottom margin */
     border-top: 2px solid #e0e0e0;
+  }
+  
+  /* Ensure 1L layout fits on page and doesn't push footer off */
+  .page.layout-1L {
+    max-height: 297mm; /* A4 height constraint */
+    overflow: hidden;
+  }
+  
+  .page.layout-1L .page-content {
+    max-height: calc(297mm - 60mm); /* Minus header/footer heights */
+    overflow: hidden;
+  }
+  
+  .page.layout-1L .layout-1-full {
+    max-height: 100%;
+    overflow: hidden;
   }
   
   /* 1L layout: Use 2x2 grid for internals like html.ts */

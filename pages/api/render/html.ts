@@ -1056,13 +1056,29 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   /* 1L layout: Same structure as layout-1-full, but with 4 bigger landscape-optimized internals in 2x2 grid */
-  /* Move internals section closer to bottom of page */
+  /* Move internals section much closer to bottom of page - dropped a few cm down */
   .layout-1L .internals-section-full {
-    margin-top: 5px; /* Further reduced spacing from content above */
+    margin-top: -30px; /* Negative margin to drop internals significantly down the page */
     padding-top: 10px; /* Reduced top padding */
     padding-bottom: 0; /* No bottom padding */
     margin-bottom: 0; /* No bottom margin */
     border-top: 2px solid #e0e0e0;
+  }
+  
+  /* Ensure 1L layout fits on page and doesn't push footer off */
+  .page.layout-1L {
+    max-height: 297mm; /* A4 height constraint */
+    overflow: hidden;
+  }
+  
+  .page.layout-1L .page-content {
+    max-height: calc(297mm - 60mm); /* Minus header/footer heights */
+    overflow: hidden;
+  }
+  
+  .page.layout-1L .layout-1-full {
+    max-height: 100%;
+    overflow: hidden;
   }
   
   .layout-1L .internals-thumbnails-full {
@@ -1288,6 +1304,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     flex: 1;
     display: flex;
     flex-direction: column;
+  }
+  
+  /* Increase author bio max-height for 1L layout to give more room */
+  .layout-1L .author-bio.truncated {
+    max-height: 280px; /* Increased from 200px to give more room */
+    overflow: hidden;
   }
   
   .layout-1-full .author-bio.truncated {
