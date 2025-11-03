@@ -124,6 +124,8 @@ export default function Home() {
   const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'}>({});
   const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
   const [emailFreeText, setEmailFreeText] = useState<string>('');
+  const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
+  const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -890,11 +892,19 @@ export default function Home() {
         ? items.map((_, index) => emailTemplateAssignments[index] || 'single')
         : undefined;
       
+      // Apply edited descriptions to items
+      const itemsWithEditedDescriptions = items.map((item, index) => {
+        if (emailEditedDescriptions[index] !== undefined) {
+          return { ...item, description: emailEditedDescriptions[index] };
+        }
+        return item;
+      });
+      
       const resp = await fetch("/api/render/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          items,
+          items: itemsWithEditedDescriptions,
           template: emailTemplate,
           emailTemplateAssignments: assignments,
           hyperlinkToggle,
@@ -2625,6 +2635,227 @@ export default function Home() {
                 </button>
               </div>
             )}
+            
+            {/* Description Editing Section */}
+            <div style={{ marginTop: 20, padding: 16, border: '2px solid #E9ECEF', borderRadius: 8 }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#495057' }}>Edit Product Descriptions:</h4>
+              <div style={{ fontSize: 12, color: '#6c757d', marginBottom: 12 }}>
+                You can edit descriptions for each product. Leave empty to delete all, revise, or leave full description.
+              </div>
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {items.map((item, index) => {
+                  const editedDesc = emailEditedDescriptions[index];
+                  const currentDesc = editedDesc !== undefined ? editedDesc : (item.description || '');
+                  const isEditing = editingEmailDescIndex === index;
+                  
+                  return (
+                    <div key={index} style={{ 
+                      marginBottom: 12,
+                      padding: 12,
+                      background: isEditing ? '#FFF3CD' : '#F8F9FA',
+                      borderRadius: 8,
+                      border: isEditing ? '2px solid #FFC107' : '1px solid #E9ECEF'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <div style={{ flex: 1, fontSize: 14, color: '#495057', fontWeight: 600 }}>
+                          <strong>{index + 1}.</strong> {item.title.length > 60 ? item.title.substring(0, 60) + '...' : item.title}
+                        </div>
+                        {editedDesc !== undefined && (
+                          <button
+                            onClick={() => {
+                              const newEdits = { ...emailEditedDescriptions };
+                              delete newEdits[index];
+                              setEmailEditedDescriptions(newEdits);
+                            }}
+                            style={{
+                              background: '#DC3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 4,
+                              padding: '4px 8px',
+                              fontSize: 11,
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              marginLeft: 8
+                            }}
+                            title="Revert to original"
+                          >
+                            Revert
+                          </button>
+                        )}
+                      </div>
+                      
+                      {isEditing ? (
+                        <div>
+                          <textarea
+                            value={currentDesc}
+                            onChange={(e) => {
+                              const newValue = e.target.value;
+                              if (newValue === item.description) {
+                                // If same as original, remove edit
+                                const newEdits = { ...emailEditedDescriptions };
+                                delete newEdits[index];
+                                setEmailEditedDescriptions(newEdits);
+                              } else {
+                                setEmailEditedDescriptions({ ...emailEditedDescriptions, [index]: newValue });
+                              }
+                            }}
+                            onBlur={() => setEditingEmailDescIndex(null)}
+                            autoFocus
+                            style={{
+                              width: '100%',
+                              minHeight: 100,
+                              padding: 8,
+                              border: '2px solid #FFC107',
+                              borderRadius: 6,
+                              fontSize: 13,
+                              fontFamily: 'inherit',
+                              resize: 'vertical',
+                              lineHeight: 1.5
+                            }}
+                            placeholder="Enter description (leave empty to delete all)..."
+                          />
+                          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                            <button
+                              onClick={() => {
+                                setEmailEditedDescriptions({ ...emailEditedDescriptions, [index]: '' });
+                                setEditingEmailDescIndex(null);
+                              }}
+                              style={{
+                                background: '#DC3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '6px 12px',
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                fontWeight: 600
+                              }}
+                            >
+                              Clear All
+                            </button>
+                            <button
+                              onClick={() => {
+                                // Restore original
+                                const newEdits = { ...emailEditedDescriptions };
+                                delete newEdits[index];
+                                setEmailEditedDescriptions(newEdits);
+                                setEditingEmailDescIndex(null);
+                              }}
+                              style={{
+                                background: '#6C757D',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '6px 12px',
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                fontWeight: 600
+                              }}
+                            >
+                              Use Original
+                            </button>
+                            <button
+                              onClick={() => {
+                                // Set to full description
+                                setEmailEditedDescriptions({ ...emailEditedDescriptions, [index]: item.description || '' });
+                                setEditingEmailDescIndex(null);
+                              }}
+                              style={{
+                                background: '#28A745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '6px 12px',
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                fontWeight: 600
+                              }}
+                            >
+                              Use Full
+                            </button>
+                            <button
+                              onClick={() => setEditingEmailDescIndex(null)}
+                              style={{
+                                background: '#E9ECEF',
+                                color: '#495057',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '6px 12px',
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                fontWeight: 600
+                              }}
+                            >
+                              Done
+                            </button>
+                          </div>
+                          <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                            Characters: {currentDesc.length} {item.description && `(Original: ${item.description.length})`}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ 
+                            fontSize: 12, 
+                            color: '#6c757d', 
+                            padding: 8,
+                            background: 'white',
+                            borderRadius: 4,
+                            border: '1px solid #E9ECEF',
+                            marginBottom: 8,
+                            maxHeight: 80,
+                            overflow: 'auto',
+                            whiteSpace: 'pre-wrap',
+                            lineHeight: 1.4
+                          }}>
+                            {currentDesc || <em style={{ color: '#adb5bd' }}>(No description - will be removed)</em>}
+                          </div>
+                          <button
+                            onClick={() => setEditingEmailDescIndex(index)}
+                            style={{
+                              background: '#007BFF',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 6,
+                              padding: '6px 12px',
+                              fontSize: 12,
+                              cursor: 'pointer',
+                              fontWeight: 600
+                            }}
+                          >
+                            ✏️ Edit Description
+                          </button>
+                          {editedDesc !== undefined && (
+                            <span style={{ fontSize: 11, color: '#28a745', marginLeft: 8, fontWeight: 600 }}>
+                              ✓ Edited
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={openEmailHTML}
+                style={{
+                  marginTop: 12,
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 20px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+                disabled={emailGenerating}
+              >
+                {emailGenerating ? '⏳ Regenerating...' : '🔄 Regenerate with Edited Descriptions'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -190,7 +190,8 @@ function generateEmailHtml(
 
   const renderSingleProduct = (item: Item): string => {
     const productUrl = generateProductUrl(item.handle);
-    const truncatedDesc = truncateDescription(item.description, 250);
+    // Use full description if provided, otherwise truncate
+    const truncatedDesc = item.description ? (item.description.length <= 250 ? item.description : truncateDescription(item.description, 250)) : '';
     
     return `
       <!-- Single Product Template -->
@@ -293,7 +294,8 @@ function generateEmailHtml(
 
   const renderGridProduct = (item: Item, width: number = 280): string => {
     const productUrl = generateProductUrl(item.handle);
-    const truncatedDesc = truncateDescription(item.description, 120);
+    // Use full description if provided, otherwise truncate
+    const truncatedDesc = item.description ? (item.description.length <= 120 ? item.description : truncateDescription(item.description, 120)) : '';
     
     return `
       <td width="${width}" valign="top" style="padding: 10px;">
@@ -339,7 +341,8 @@ function generateEmailHtml(
 
   const renderSpotlight = (item: Item): string => {
     const productUrl = generateProductUrl(item.handle);
-    const truncatedDesc = truncateDescription(item.description, 300);
+    // Use full description if provided, otherwise truncate
+    const truncatedDesc = item.description ? (item.description.length <= 300 ? item.description : truncateDescription(item.description, 300)) : '';
     
     return `
       <!-- Spotlight Template -->
@@ -621,7 +624,7 @@ function generateEmailHtml(
                 ` : ''}
                 ${item.description && showFields?.description ? `
                   <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
-                    ${esc(truncateDescription(item.description, 150))}
+                    ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
                   </p>
                 ` : ''}
                 ${item.price && showFields?.price ? `
