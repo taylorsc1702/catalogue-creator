@@ -760,9 +760,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     border-top: 2px solid #e0e0e0;
   }
   
-  /* 1L layout: Move internals section much closer to bottom of page - match html.ts exactly */
+  /* 1L layout: Move internals section down to avoid overlap with author bio - match html.ts exactly */
   .layout-1L .internals-section-full {
-    margin-top: -60px; /* More aggressive negative margin to drop internals much further down - matches html.ts */
+    margin-top: 15px; /* Small positive margin to ensure it doesn't overlap with author bio above - matches html.ts */
     padding-top: 5px; /* Minimal top padding */
     padding-bottom: 0; /* No bottom padding */
     margin-bottom: 0; /* No bottom margin */
@@ -771,7 +771,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   
   /* Reduce gap in layout-1-full for 1L to minimize space above internals */
   .layout-1L.layout-1-full {
-    gap: 0; /* Remove gap between main-content and internals-section */
+    gap: 5px; /* Small gap between main-content and internals-section to prevent overlap */
   }
   
   /* Reduce margin below internals title for 1L */

@@ -1056,9 +1056,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   /* 1L layout: Same structure as layout-1-full, but with 4 bigger landscape-optimized internals in 2x2 grid */
-  /* Move internals section much closer to bottom of page - dropped significantly down */
+  /* Push internals section down to avoid overlap with author bio, but keep it close to footer */
   .layout-1L .internals-section-full {
-    margin-top: -60px; /* More aggressive negative margin to drop internals much further down */
+    margin-top: 15px; /* Small positive margin to ensure it doesn't overlap with author bio above */
     padding-top: 5px; /* Minimal top padding */
     padding-bottom: 0; /* No bottom padding */
     margin-bottom: 0; /* No bottom margin */
@@ -1067,7 +1067,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   /* Reduce gap in layout-1-full for 1L to minimize space above internals */
   .layout-1L.layout-1-full {
-    gap: 0; /* Remove gap between main-content and internals-section */
+    gap: 5px; /* Small gap between main-content and internals-section to prevent overlap */
   }
   
   /* Reduce margin below internals title for 1L */
