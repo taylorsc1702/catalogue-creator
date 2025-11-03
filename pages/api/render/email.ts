@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       discountCode,
       bannerImageUrl,
       freeText,
+      issuuUrl,
       theme = {
         primaryColor: '#F7981D',
         textColor: '#333333',
@@ -60,6 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       discountCode?: string;
       bannerImageUrl?: string;
       freeText?: string;
+      issuuUrl?: string;
       theme?: {
         primaryColor?: string;
         textColor?: string;
@@ -77,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -97,6 +99,7 @@ function generateEmailHtml(
   discountCode?: string,
   bannerImageUrl?: string,
   freeText?: string,
+  issuuUrl?: string,
   theme?: {
     primaryColor?: string;
     textColor?: string;
@@ -754,7 +757,7 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, toggle);
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, toggle);
 }
 
 // Helper function to generate complete email HTML structure
@@ -766,6 +769,7 @@ function generateCompleteEmailHtml(
   bannerImageUrl?: string,
   freeText?: string,
   discountCode?: string,
+  issuuUrl?: string,
   hyperlinkToggle?: HyperlinkToggle
 ): string {
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -877,23 +881,99 @@ function generateCompleteEmailHtml(
     </table>
   `;
   
+  // Social media URLs (placeholder - will be updated tomorrow based on domain)
+  const socialMediaUrls: Record<HyperlinkToggle, { facebook?: string; website?: string; instagram?: string }> = {
+    woodslane: { facebook: '#', website: baseUrl, instagram: '#' },
+    woodslanehealth: { facebook: '#', website: baseUrl, instagram: '#' },
+    woodslaneeducation: { facebook: '#', website: baseUrl, instagram: '#' },
+    woodslanepress: { facebook: '#', website: baseUrl, instagram: '#' }
+  };
+  const socialUrls = socialMediaUrls[toggle];
+  
+  // Social Media Icons
+  const socialMediaIcons = `
+    <!-- Social Media Icons -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 20px 20px 15px 20px;">
+          <table border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              ${socialUrls.facebook ? `
+              <td style="padding: 0 8px;">
+                <a href="${esc(socialUrls.facebook)}" style="display: inline-block; width: 40px; height: 40px; background-color: #3b5998; border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none;">
+                  <span style="color: #ffffff; font-size: 18px; font-weight: bold; font-family: Arial, sans-serif;">f</span>
+                </a>
+              </td>
+              ` : ''}
+              ${socialUrls.website ? `
+              <td style="padding: 0 8px;">
+                <a href="${esc(socialUrls.website)}" style="display: inline-block; width: 40px; height: 40px; background-color: #20c997; border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none;">
+                  <span style="color: #ffffff; font-size: 18px; font-weight: bold; font-family: Arial, sans-serif;">🔗</span>
+                </a>
+              </td>
+              ` : ''}
+              ${socialUrls.instagram ? `
+              <td style="padding: 0 8px;">
+                <a href="${esc(socialUrls.instagram)}" style="display: inline-block; width: 40px; height: 40px; background-color: #e4405f; border-radius: 50%; text-align: center; line-height: 40px; text-decoration: none;">
+                  <span style="color: #ffffff; font-size: 18px; font-weight: bold; font-family: Arial, sans-serif;">📷</span>
+                </a>
+              </td>
+              ` : ''}
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+  
+  // Horizontal Separator Line
+  const separatorLine = `
+    <!-- Separator Line -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 0 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td style="height: 1px; line-height: 1px; background-color: rgba(255, 255, 255, 0.3); font-size: 1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+  
   // Footer with contact information
   const footer = `
     <!-- Footer -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
       <tr>
-        <td align="center" style="padding: 30px 20px;">
+        <td align="center" style="padding: 20px 20px 30px 20px;">
           <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
             <tr>
-              <td align="center" style="font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; line-height: 1.8;">
-                <p style="margin: 0 0 10px 0;">
-                  <a href="mailto:info@woodslane.com.au" style="color: #ffffff; text-decoration: underline;">info@woodslane.com.au</a>
+              <td align="center" style="font-family: Arial, sans-serif; font-size: 12px; color: #ffffff; line-height: 1.8;">
+                <p style="margin: 0 0 12px 0;">
+                  *Discount code is not to be used in conjunction with any other discount or offer. Price and availability are subject to change without notice.
                 </p>
-                <p style="margin: 0 0 10px 0;">
-                  ${esc(abn)}
+                <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">
+                  Copyright © 2025 Woodslane Pty Ltd, all rights reserved
                 </p>
-                <p style="margin: 0 0 10px 0;">
-                  <a href="${esc(baseUrl)}/account/unsubscribe" style="color: #ffffff; text-decoration: underline;">Unsubscribe</a>
+                <p style="margin: 0 0 8px 0;">
+                  Our mailing address is:
+                </p>
+                <p style="margin: 0 0 8px 0;">
+                  10 Apollo Street, Warriewood, NSW, 2102
+                </p>
+                <p style="margin: 0 0 8px 0;">
+                  Email us at <a href="mailto:info@woodslane.com.au" style="color: #ffffff; text-decoration: underline;">info@woodslane.com.au</a>
+                </p>
+                <p style="margin: 0 0 12px 0;">
+                  (02) 8445 2300
+                </p>
+                <p style="margin: 0 0 4px 0;">
+                  Want to change how you receive these emails?
+                </p>
+                <p style="margin: 0;">
+                  <a href="${esc(baseUrl)}/account/unsubscribe" style="color: #ffffff; text-decoration: underline;">You can update your preferences or unsubscribe from this list</a>
                 </p>
               </td>
             </tr>
@@ -934,6 +1014,27 @@ function generateCompleteEmailHtml(
             </td>
           </tr>
         </table>
+        ${issuuUrl ? `
+        <!-- ISSUU Embed -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 20px;">
+              <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                <tr>
+                  <td align="center" style="padding: 20px;">
+                    <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #333333; margin-bottom: 15px;">View our Catalogue</div>
+                    <a href="${esc(issuuUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
+                      Open Catalogue →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        ` : ''}
+        ${socialMediaIcons}
+        ${separatorLine}
         ${footer}
       </td>
     </tr>

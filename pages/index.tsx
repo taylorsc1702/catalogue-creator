@@ -124,6 +124,7 @@ export default function Home() {
   const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'}>({});
   const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
   const [emailFreeText, setEmailFreeText] = useState<string>('');
+  const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
@@ -917,6 +918,7 @@ export default function Home() {
           discountCode: discountCode || undefined,
           bannerImageUrl: emailBannerImageUrl.trim() || undefined,
           freeText: emailFreeText.trim() || undefined,
+          issuuUrl: emailIssuuUrl.trim() || undefined,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
             buttonColor: '#007bff',
@@ -2403,6 +2405,29 @@ export default function Home() {
                     If populated, a discount message will appear in the separator above products. Otherwise, just a colored separator bar.
                   </div>
                 </div>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    ISSUU Catalogue URL (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    value={emailIssuuUrl}
+                    onChange={(e) => setEmailIssuuUrl(e.target.value)}
+                    placeholder="https://issuu.com/woodslane/docs/catalogue..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    If provided, a link to view the catalogue will appear after the products section.
+                  </div>
+                </div>
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -2431,6 +2456,7 @@ export default function Home() {
                             discountCode: discountCode || undefined,
                             bannerImageUrl: emailBannerImageUrl.trim() || undefined,
                             freeText: emailFreeText.trim() || undefined,
+                            issuuUrl: emailIssuuUrl.trim() || undefined,
                             theme: {
                               primaryColor: getBannerColor(hyperlinkToggle),
                               buttonColor: '#007bff',
