@@ -36,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeText,
       issuuUrl,
       catalogueImageUrl,
+      sectionOrder,
       theme = {
         primaryColor: '#F7981D',
         textColor: '#333333',
@@ -64,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeText?: string;
       issuuUrl?: string;
       catalogueImageUrl?: string;
+      sectionOrder?: string[];
       theme?: {
         primaryColor?: string;
         textColor?: string;
@@ -81,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, sectionOrder, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -103,6 +105,7 @@ function generateEmailHtml(
   freeText?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
+  sectionOrder?: string[],
   theme?: {
     primaryColor?: string;
     textColor?: string;
@@ -760,7 +763,7 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, toggle);
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, sectionOrder, toggle);
 }
 
 // Helper function to generate complete email HTML structure
@@ -774,6 +777,7 @@ function generateCompleteEmailHtml(
   discountCode?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
+  sectionOrder?: string[],
   hyperlinkToggle?: HyperlinkToggle
 ): string {
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -1008,6 +1012,86 @@ function generateCompleteEmailHtml(
     </table>
   `;
   
+  // Products section HTML wrapper
+  const productsSection = `
+    <!-- Products -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+      <tr>
+        <td align="center" style="padding: 20px 0;">
+          ${content}
+        </td>
+      </tr>
+    </table>
+  `;
+  
+  // ISSUU Catalogue section HTML
+  const issuuCatalogueSection = issuuUrl ? (() => {
+    // Only show section if ISSUU URL is provided (we need a link target)
+    // If catalogueImageUrl is also provided, use it; otherwise try to generate from ISSUU URL
+    const linkUrl = issuuUrl;
+    
+    // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
+    const thumbnailUrl = catalogueImageUrl || getIssuuThumbnailUrl(issuuUrl);
+    
+    return `
+    <!-- ISSUU Catalogue Link -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+      <tr>
+        <td align="center" style="padding: 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <tr>
+              <td align="center" style="padding: 20px;">
+                <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #333333; margin-bottom: 15px;">View our Catalogue</div>
+                ${thumbnailUrl ? `
+                <!-- Catalogue thumbnail image as clickable link -->
+                <a href="${esc(linkUrl)}" target="_blank" style="display: block; margin-bottom: 15px; text-decoration: none;">
+                  <img 
+                    src="${esc(thumbnailUrl)}" 
+                    alt="Catalogue Preview" 
+                    width="600" 
+                    style="width: 100%; max-width: 600px; height: auto; display: block; border: 1px solid #E9ECEF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                  />
+                </a>
+                ` : ''}
+                <!-- Link button (works in all email clients) -->
+                <a href="${esc(linkUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
+                  ${thumbnailUrl ? 'View Full Catalogue →' : 'Open Catalogue →'}
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    `;
+  })() : '';
+  
+  // Map section IDs to their HTML
+  const sectionMap: {[key: string]: string} = {
+    'bannerImage': bannerImage,
+    'freeText': freeTextSection,
+    'products': productsSection,
+    'issuuCatalogue': issuuCatalogueSection
+  };
+  
+  // Use provided section order or default order
+  const defaultOrder = ['bannerImage', 'freeText', 'products', 'issuuCatalogue'];
+  const order = sectionOrder && sectionOrder.length > 0 ? sectionOrder : defaultOrder;
+  
+  // Build ordered sections (only include sections that have content)
+  const orderedSections: string[] = [];
+  for (const sectionId of order) {
+    if (sectionId === 'bannerImage' && bannerImageUrl) {
+      orderedSections.push(sectionMap[sectionId] || '');
+    } else if (sectionId === 'freeText' && freeText) {
+      orderedSections.push(sectionMap[sectionId] || '');
+    } else if (sectionId === 'products') {
+      orderedSections.push(sectionMap[sectionId] || '');
+    } else if (sectionId === 'issuuCatalogue' && issuuUrl) {
+      orderedSections.push(sectionMap[sectionId] || '');
+    }
+  }
+  
   // Complete email HTML with Mailchimp-compatible structure
   return `<!DOCTYPE html>
 <html>
@@ -1028,57 +1112,8 @@ function generateCompleteEmailHtml(
       <td align="center" style="padding: 0;">
         ${header}
         ${logo}
-        ${bannerImage}
-        ${freeTextSection}
         ${discountSeparator}
-        <!-- Products -->
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
-          <tr>
-            <td align="center" style="padding: 20px 0;">
-              ${content}
-            </td>
-          </tr>
-        </table>
-        ${issuuUrl ? (() => {
-          // Only show section if ISSUU URL is provided (we need a link target)
-          // If catalogueImageUrl is also provided, use it; otherwise try to generate from ISSUU URL
-          const linkUrl = issuuUrl;
-          
-          // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
-          const thumbnailUrl = catalogueImageUrl || getIssuuThumbnailUrl(issuuUrl);
-          
-          return `
-        <!-- ISSUU Catalogue Link -->
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
-          <tr>
-            <td align="center" style="padding: 20px;">
-              <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <tr>
-                  <td align="center" style="padding: 20px;">
-                    <div style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; color: #333333; margin-bottom: 15px;">View our Catalogue</div>
-                    ${thumbnailUrl ? `
-                    <!-- Catalogue thumbnail image as clickable link -->
-                    <a href="${esc(linkUrl)}" target="_blank" style="display: block; margin-bottom: 15px; text-decoration: none;">
-                      <img 
-                        src="${esc(thumbnailUrl)}" 
-                        alt="Catalogue Preview" 
-                        width="600" 
-                        style="width: 100%; max-width: 600px; height: auto; display: block; border: 1px solid #E9ECEF; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-                      />
-                    </a>
-                    ` : ''}
-                    <!-- Link button (works in all email clients) -->
-                    <a href="${esc(linkUrl)}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: ${bannerColor}; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">
-                      ${thumbnailUrl ? 'View Full Catalogue →' : 'Open Catalogue →'}
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-        `;
-        })() : ''}
+        ${orderedSections.join('')}
         ${socialMediaIcons}
         ${separatorLine}
         ${footer}

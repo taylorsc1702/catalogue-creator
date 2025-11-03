@@ -129,6 +129,9 @@ export default function Home() {
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
+  // Email section order - default order
+  const [emailSectionOrder, setEmailSectionOrder] = useState<string[]>(['bannerImage', 'freeText', 'products', 'issuuCatalogue']);
+  const [draggedSection, setDraggedSection] = useState<string | null>(null);
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -920,6 +923,8 @@ export default function Home() {
           bannerImageUrl: emailBannerImageUrl.trim() || undefined,
           freeText: emailFreeText.trim() || undefined,
           issuuUrl: emailIssuuUrl.trim() || undefined,
+          catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
+          sectionOrder: emailSectionOrder,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
             buttonColor: '#007bff',
@@ -2454,6 +2459,81 @@ export default function Home() {
                 </div>
               </div>
               
+              {/* Drag and Drop Section Order */}
+              <div style={{ marginBottom: 16, padding: 16, background: '#F8F9FA', borderRadius: 8, border: '2px solid #E9ECEF' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#495057' }}>📋 Section Order (Drag to Reorder):</h4>
+                <div style={{ fontSize: 11, color: '#6c757d', marginBottom: 12 }}>
+                  Drag sections to reorder them in the email. Only sections with content will appear.
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {emailSectionOrder.map((sectionId, index) => {
+                    const sectionLabels: {[key: string]: string} = {
+                      'bannerImage': '🖼️ Banner Image',
+                      'freeText': '📝 Free Text',
+                      'products': '📦 Products',
+                      'issuuCatalogue': '📚 ISSUU Catalogue'
+                    };
+                    const sectionEnabled: {[key: string]: boolean} = {
+                      'bannerImage': !!emailBannerImageUrl.trim(),
+                      'freeText': !!emailFreeText.trim(),
+                      'products': items.length > 0,
+                      'issuuCatalogue': !!emailIssuuUrl.trim()
+                    };
+                    const label = sectionLabels[sectionId] || sectionId;
+                    const enabled = sectionEnabled[sectionId];
+                    
+                    return (
+                      <div
+                        key={sectionId}
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedSection(sectionId);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (!draggedSection || draggedSection === sectionId) return;
+                          const newOrder = [...emailSectionOrder];
+                          const draggedIndex = newOrder.indexOf(draggedSection);
+                          const targetIndex = newOrder.indexOf(sectionId);
+                          newOrder.splice(draggedIndex, 1);
+                          newOrder.splice(targetIndex, 0, draggedSection);
+                          setEmailSectionOrder(newOrder);
+                          setDraggedSection(null);
+                        }}
+                        onDragEnd={() => setDraggedSection(null)}
+                        style={{
+                          padding: '12px 16px',
+                          background: enabled ? (draggedSection === sectionId ? '#E3F2FD' : 'white') : '#F5F5F5',
+                          border: `2px solid ${draggedSection === sectionId ? '#2196F3' : '#E9ECEF'}`,
+                          borderRadius: 6,
+                          cursor: 'move',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          opacity: enabled ? 1 : 0.5,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <span style={{ fontSize: 18, cursor: 'grab' }}>⋮⋮</span>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: enabled ? '#495057' : '#6c757d' }}>
+                          {index + 1}. {label}
+                        </span>
+                        {!enabled && (
+                          <span style={{ fontSize: 11, color: '#dc3545', fontStyle: 'italic' }}>
+                            (Not configured)
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
                 <select
                   value={emailTemplate}
@@ -2482,6 +2562,7 @@ export default function Home() {
                             freeText: emailFreeText.trim() || undefined,
                             issuuUrl: emailIssuuUrl.trim() || undefined,
                             catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
+                            sectionOrder: emailSectionOrder,
                             theme: {
                               primaryColor: getBannerColor(hyperlinkToggle),
                               buttonColor: '#007bff',
