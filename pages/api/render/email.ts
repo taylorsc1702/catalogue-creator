@@ -11,7 +11,7 @@ type Item = {
   handle: string; vendor?: string; tags?: string[];
 };
 
-type EmailTemplate = 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured';
+type EmailTemplate = 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured' | 'mixed';
 
 type HyperlinkToggle = 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
 
@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { 
       items, 
       template = 'single',
+      emailTemplateAssignments,
       hyperlinkToggle = 'woodslane',
       utmParams,
       theme = {
@@ -48,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.body as {
       items: Item[];
       template?: EmailTemplate;
+      emailTemplateAssignments?: EmailTemplate[];
       hyperlinkToggle?: HyperlinkToggle;
       utmParams?: UtmParams;
       theme?: {
@@ -61,8 +63,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     if (!items?.length) throw new Error("No items provided");
+    
+    // Validate emailTemplateAssignments if provided
+    if (emailTemplateAssignments && emailTemplateAssignments.length !== items.length) {
+      throw new Error("emailTemplateAssignments must be same length as items");
+    }
 
-    const html = generateEmailHtml(items, template, hyperlinkToggle, utmParams, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, hyperlinkToggle, utmParams, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -75,7 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 function generateEmailHtml(
   items: Item[],
   template: EmailTemplate,
-  hyperlinkToggle: HyperlinkToggle,
+  emailTemplateAssignments?: EmailTemplate[],
+  hyperlinkToggle?: HyperlinkToggle,
   utmParams?: UtmParams,
   theme?: {
     primaryColor?: string;
@@ -171,7 +179,7 @@ function generateEmailHtml(
                   
                   ${item.author && showFields?.author ? `
                     <p style="margin: 0 0 15px 0; font-size: 16px; color: ${textColor}; font-weight: 600;">
-                      By ${esc(item.author)}
+                      ${esc(item.author)}
                     </p>
                   ` : ''}
                   
@@ -261,7 +269,7 @@ function generateEmailHtml(
               </h3>
               ${item.author && showFields?.author ? `
                 <p style="margin: 0 0 8px 0; font-size: 14px; color: ${textColor};">
-                  By ${esc(item.author)}
+                  ${esc(item.author)}
                 </p>
               ` : ''}
               ${truncatedDesc && showFields?.description ? `
@@ -322,7 +330,7 @@ function generateEmailHtml(
                   ` : ''}
                   ${item.author && showFields?.author ? `
                     <p style="margin: 0 0 20px 0; font-size: 18px; color: ${textColor}; font-weight: 600; text-align: center;">
-                      By ${esc(item.author)}
+                      ${esc(item.author)}
                     </p>
                   ` : ''}
                   ${truncatedDesc && showFields?.description ? `
@@ -356,6 +364,165 @@ function generateEmailHtml(
 
   // Generate HTML based on template
   let content = '';
+  
+  // Handle mixed format - use emailTemplateAssignments if provided
+  if (emailTemplateAssignments && emailTemplateAssignments.length > 0) {
+    // Render each item with its assigned template
+    content = items.map((item, index) => {
+      const assignedTemplate = emailTemplateAssignments[index] || template;
+      
+      switch (assignedTemplate) {
+        case 'single':
+        case 'featured':
+          return renderSingleProduct(item);
+          
+        case 'spotlight':
+          return renderSpotlight(item);
+          
+        case 'list':
+          const productUrl = generateProductUrl(item.handle);
+          return `
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+              <tr>
+                <td width="150" valign="top" style="padding: 15px;">
+                  <img src="${esc(item.imageUrl || 'https://via.placeholder.com/150x200?text=No+Image')}" 
+                       alt="${esc(item.title)}" 
+                       width="150" 
+                       style="width: 150px; max-width: 100%; height: auto; display: block;">
+                </td>
+                <td valign="top" style="padding: 15px; font-family: Arial, sans-serif;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: ${textColor};">
+                    <a href="${esc(productUrl)}" style="color: ${textColor}; text-decoration: none;">
+                      ${esc(item.title)}
+                    </a>
+                  </h3>
+                  ${item.author && showFields?.author ? `
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
+                      ${esc(item.author)}
+                    </p>
+                  ` : ''}
+                  ${item.description && showFields?.description ? `
+                    <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
+                      ${esc(truncateDescription(item.description, 150))}
+                    </p>
+                  ` : ''}
+                  ${item.price && showFields?.price ? `
+                    <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; color: ${primaryColor};">
+                      AUD$ ${esc(item.price)}
+                    </p>
+                  ` : ''}
+                  <a href="${esc(productUrl)}" 
+                     style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                    View Product →
+                  </a>
+                </td>
+              </tr>
+            </table>
+          `;
+          
+        case 'grid-2':
+          // For grid-2, we need to render pairs
+          if (index % 2 === 0 && index + 1 < items.length) {
+            const nextItem = items[index + 1];
+            const nextTemplate = emailTemplateAssignments[index + 1];
+            if (nextTemplate === 'grid-2') {
+              return `
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                  <tr>
+                    ${renderGridProduct(item, 280)}
+                    ${renderGridProduct(nextItem, 280)}
+                  </tr>
+                </table>
+              `;
+            }
+          }
+          // If not paired, render as single
+          return renderSingleProduct(item);
+          
+        case 'grid-3':
+          // For grid-3, we need to render triplets
+          if (index % 3 === 0 && index + 2 < items.length) {
+            const nextItem = items[index + 1];
+            const nextNextItem = items[index + 2];
+            const nextTemplate = emailTemplateAssignments[index + 1];
+            const nextNextTemplate = emailTemplateAssignments[index + 2];
+            if (nextTemplate === 'grid-3' && nextNextTemplate === 'grid-3') {
+              return `
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                  <tr>
+                    ${renderGridProduct(item, 180)}
+                    ${renderGridProduct(nextItem, 180)}
+                    ${renderGridProduct(nextNextItem, 180)}
+                  </tr>
+                </table>
+              `;
+            }
+          }
+          // If not in a triplet, render as single
+          return renderSingleProduct(item);
+          
+        case 'grid-4':
+          // For grid-4, we need to render quadruplets
+          if (index % 4 === 0 && index + 3 < items.length) {
+            const nextItem = items[index + 1];
+            const nextNextItem = items[index + 2];
+            const nextNextNextItem = items[index + 3];
+            const nextTemplate = emailTemplateAssignments[index + 1];
+            const nextNextTemplate = emailTemplateAssignments[index + 2];
+            const nextNextNextTemplate = emailTemplateAssignments[index + 3];
+            if (nextTemplate === 'grid-4' && nextNextTemplate === 'grid-4' && nextNextNextTemplate === 'grid-4') {
+              return `
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                  <tr>
+                    ${renderGridProduct(item, 135)}
+                    ${renderGridProduct(nextItem, 135)}
+                    ${renderGridProduct(nextNextItem, 135)}
+                    ${renderGridProduct(nextNextNextItem, 135)}
+                  </tr>
+                </table>
+              `;
+            }
+          }
+          // If not in a quadruplet, render as single
+          return renderSingleProduct(item);
+          
+        default:
+          return renderSingleProduct(item);
+      }
+    }).filter((html, index) => {
+      // Filter out duplicates for grid layouts
+      const assignedTemplate = emailTemplateAssignments[index];
+      if (assignedTemplate === 'grid-2' && index % 2 !== 0) return false;
+      if (assignedTemplate === 'grid-3' && index % 3 !== 0) return false;
+      if (assignedTemplate === 'grid-4' && index % 4 !== 0) return false;
+      return true;
+    }).join('');
+    
+    // Exit early for mixed format
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Product Email</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Arial, sans-serif !important;}
+  </style>
+  <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        ${content}
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
   
   switch (template) {
     case 'single':
@@ -427,7 +594,7 @@ function generateEmailHtml(
                 </h3>
                 ${item.author && showFields?.author ? `
                   <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
-                    By ${esc(item.author)}
+                    ${esc(item.author)}
                   </p>
                 ` : ''}
                 ${item.description && showFields?.description ? `

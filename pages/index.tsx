@@ -120,7 +120,8 @@ export default function Home() {
   const [emailGenerating, setEmailGenerating] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailHtml, setEmailHtml] = useState<string>('');
-  const [emailTemplate, setEmailTemplate] = useState<'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'>('single');
+  const [emailTemplate, setEmailTemplate] = useState<'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured' | 'mixed'>('single');
+  const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'}>({});
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -881,12 +882,19 @@ export default function Home() {
     if (!items.length) { alert("Fetch products first."); return; }
     try {
       setEmailGenerating(true);
+      
+      // Prepare emailTemplateAssignments if template is 'mixed'
+      const assignments = emailTemplate === 'mixed' 
+        ? items.map((_, index) => emailTemplateAssignments[index] || 'single')
+        : undefined;
+      
       const resp = await fetch("/api/render/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items,
           template: emailTemplate,
+          emailTemplateAssignments: assignments,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           theme: {
@@ -919,6 +927,16 @@ export default function Home() {
     } finally {
       setEmailGenerating(false);
     }
+  }
+  
+  function setItemEmailTemplate(itemIndex: number, template: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured') {
+    setEmailTemplateAssignments({...emailTemplateAssignments, [itemIndex]: template});
+  }
+  
+  function clearItemEmailTemplate(itemIndex: number) {
+    const newAssignments = {...emailTemplateAssignments};
+    delete newAssignments[itemIndex];
+    setEmailTemplateAssignments(newAssignments);
   }
 
   function copyEmailHtml() {
@@ -2309,12 +2327,17 @@ export default function Home() {
                     if (items.length) {
                       setEmailGenerating(true);
                       try {
+                        const assignments = newTemplate === 'mixed' 
+                          ? items.map((_, index) => emailTemplateAssignments[index] || 'single')
+                          : undefined;
+                        
                         const resp = await fetch("/api/render/email", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ 
                             items,
                             template: newTemplate,
+                            emailTemplateAssignments: assignments,
                             hyperlinkToggle,
                             utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
                             theme: {
@@ -2359,6 +2382,7 @@ export default function Home() {
                   <option value="list">List</option>
                   <option value="spotlight">Spotlight</option>
                   <option value="featured">Featured</option>
+                  <option value="mixed">Mixed Format</option>
                 </select>
               </div>
               <button onClick={() => setShowEmailModal(false)} style={{
@@ -2433,6 +2457,86 @@ export default function Home() {
                 }}
               />
             </div>
+            
+            {/* Mixed Format Template Assignments */}
+            {emailTemplate === 'mixed' && (
+              <div style={{ marginTop: 20, padding: 16, border: '2px solid #E9ECEF', borderRadius: 8 }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#495057' }}>Assign Templates to Products:</h4>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {items.map((item, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 12, 
+                      marginBottom: 12,
+                      padding: 12,
+                      background: '#F8F9FA',
+                      borderRadius: 8
+                    }}>
+                      <div style={{ flex: 1, fontSize: 14, color: '#495057' }}>
+                        <strong>{index + 1}.</strong> {item.title.length > 50 ? item.title.substring(0, 50) + '...' : item.title}
+                      </div>
+                      <select
+                        value={emailTemplateAssignments[index] || 'single'}
+                        onChange={(e) => {
+                          const newTemplate = e.target.value as 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured';
+                          setItemEmailTemplate(index, newTemplate);
+                        }}
+                        style={{
+                          border: '2px solid #E9ECEF',
+                          borderRadius: 6,
+                          padding: '6px 10px',
+                          fontSize: 13,
+                          background: 'white',
+                          cursor: 'pointer',
+                          minWidth: 150
+                        }}
+                      >
+                        <option value="single">Single</option>
+                        <option value="grid-2">Grid 2</option>
+                        <option value="grid-3">Grid 3</option>
+                        <option value="grid-4">Grid 4</option>
+                        <option value="list">List</option>
+                        <option value="spotlight">Spotlight</option>
+                        <option value="featured">Featured</option>
+                      </select>
+                      <button
+                        onClick={() => clearItemEmailTemplate(index)}
+                        style={{
+                          background: '#E9ECEF',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '6px 12px',
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          color: '#495057'
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={openEmailHTML}
+                  style={{
+                    marginTop: 12,
+                    background: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 20px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                  disabled={emailGenerating}
+                >
+                  {emailGenerating ? '⏳ Regenerating...' : '🔄 Regenerate with Templates'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
