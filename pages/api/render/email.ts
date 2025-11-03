@@ -47,7 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description: true,
         price: true,
         imprint: true,
-        releaseDate: true
+        releaseDate: true,
+        internals: false
       }
     } = req.body as {
       items: Item[];
@@ -234,6 +235,22 @@ function generateEmailHtml(
                     </p>
                   ` : ''}
                   
+                  ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                    <!-- Internal Pages -->
+                    <div style="margin: 15px 0; padding: 15px; background-color: #f5f5f5; border-radius: 8px;">
+                      <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: ${textColor};">
+                        Internal Pages
+                      </h4>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${item.additionalImages.slice(0, 4).map(imgUrl => `
+                          <img src="${esc(imgUrl)}" 
+                               alt="Internal page" 
+                               style="width: 80px; height: auto; border-radius: 4px; border: 1px solid #ddd;" />
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                  
                   <!-- Product Meta -->
                   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 15px 0;">
                     ${item.imprint && showFields?.imprint ? `
@@ -323,6 +340,20 @@ function generateEmailHtml(
                   ${esc(truncatedDesc)}
                 </p>
               ` : ''}
+              ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                <div style="margin: 8px 0; padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
+                  <div style="font-size: 10px; font-weight: 600; color: ${textColor}; margin-bottom: 6px;">
+                    Internals:
+                  </div>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    ${item.additionalImages.slice(0, 2).map(imgUrl => `
+                      <img src="${esc(imgUrl)}" 
+                           alt="Internal" 
+                           style="width: 40px; height: auto; border-radius: 2px; border: 1px solid #ddd;" />
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
               ${item.price && showFields?.price ? `
                 <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; color: ${primaryColor};">
                   AUD$ ${esc(item.price)}
@@ -384,6 +415,21 @@ function generateEmailHtml(
                     <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.7; color: ${textColor}; text-align: left;">
                       ${esc(truncatedDesc)}
                     </p>
+                  ` : ''}
+                  ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                    <!-- Internal Pages -->
+                    <div style="margin: 20px 0; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+                      <h4 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: ${textColor}; text-align: center;">
+                        Internal Pages
+                      </h4>
+                      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                        ${item.additionalImages.slice(0, 4).map(imgUrl => `
+                          <img src="${esc(imgUrl)}" 
+                               alt="Internal page" 
+                               style="width: 120px; height: auto; border-radius: 6px; border: 2px solid #ddd;" />
+                        `).join('')}
+                      </div>
+                    </div>
                   ` : ''}
                   ${item.price && showFields?.price ? `
                     <p style="margin: 0 0 25px 0; font-size: 24px; font-weight: bold; color: ${primaryColor}; text-align: center;">
@@ -626,6 +672,20 @@ function generateEmailHtml(
                   <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
                     ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
                   </p>
+                ` : ''}
+                ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                  <div style="margin: 10px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
+                    <div style="font-size: 11px; font-weight: 600; color: ${textColor}; margin-bottom: 6px;">
+                      Internals:
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                      ${item.additionalImages.slice(0, 2).map(imgUrl => `
+                        <img src="${esc(imgUrl)}" 
+                             alt="Internal" 
+                             style="width: 50px; height: auto; border-radius: 2px; border: 1px solid #ddd;" />
+                      `).join('')}
+                    </div>
+                  </div>
                 ` : ''}
                 ${item.price && showFields?.price ? `
                   <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; color: ${primaryColor};">

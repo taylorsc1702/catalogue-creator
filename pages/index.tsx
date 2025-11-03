@@ -126,6 +126,7 @@ export default function Home() {
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
+  const [emailShowInternals, setEmailShowInternals] = useState<boolean>(false);
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -923,7 +924,8 @@ export default function Home() {
             description: true,
             price: true,
             imprint: true,
-            releaseDate: true
+            releaseDate: true,
+            internals: emailShowInternals
           }
         })
       });
@@ -2337,6 +2339,21 @@ export default function Home() {
               <div style={{ marginBottom: 16, padding: 16, background: '#F8F9FA', borderRadius: 8 }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#495057' }}>Email Configuration:</h4>
                 
+                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#495057', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={emailShowInternals}
+                      onChange={(e) => setEmailShowInternals(e.target.checked)}
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                    />
+                    <span>Show internal pages (if available)</span>
+                  </label>
+                  <div style={{ fontSize: 11, color: '#6c757d' }}>
+                    Displays internal page images for products that have them
+                  </div>
+                </div>
+                
                 <div style={{ marginBottom: 12 }}>
                   <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
                     Banner Image URL (Optional):
@@ -2437,7 +2454,8 @@ export default function Home() {
                               description: true,
                               price: true,
                               imprint: true,
-                              releaseDate: true
+                              releaseDate: true,
+                              internals: false
                             }
                           })
                         });
