@@ -332,8 +332,8 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
 };
 
 export const renderProductCard2Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
-  // Increased character limit from 2000 to 3000 to allow more description text
-  const truncatedDesc = item.description ? (item.description.length > 3000 ? item.description.substring(0, 2997) + '...' : item.description) : '';
+  // Character limit set to 1500 (with spaces) - anything over won't fit on the page
+  const truncatedDesc = item.description ? (item.description.length > 1500 ? item.description.substring(0, 1497) + '...' : item.description) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
