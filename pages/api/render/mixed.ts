@@ -760,6 +760,46 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     border-top: 2px solid #e0e0e0;
   }
   
+  /* 1L layout: Move internals section closer to bottom of page */
+  .layout-1L .internals-section-full {
+    margin-top: 10px; /* Reduced spacing from content above */
+    padding-top: 10px; /* Reduced top padding */
+    padding-bottom: 0; /* No bottom padding */
+    margin-bottom: 0; /* No bottom margin */
+  }
+  
+  /* 1L layout: Use 2x2 grid for internals like html.ts */
+  .layout-1L .internals-thumbnails-full {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr; /* 2 columns */
+    grid-template-rows: auto auto; /* 2 rows */
+    gap: 20px;
+    width: 100%;
+    justify-items: center;
+  }
+  
+  .layout-1L .internal-thumbnail-full {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Landscape vs Portrait handling for 1L internal images */
+  .layout-1L .internal-thumbnail-full.image-portrait {
+    object-fit: contain;
+    aspect-ratio: 2 / 3.3; /* 10% taller: 2/3 * 1.1 = 2/3.3 */
+  }
+  
+  .layout-1L .internal-thumbnail-full.image-landscape {
+    object-fit: cover;
+    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+  }
+  
   .internals-title {
     font-size: 14px;
     font-weight: bold;
