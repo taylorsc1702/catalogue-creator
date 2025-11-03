@@ -376,10 +376,10 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
             
             ${item.additionalImages && item.additionalImages.length > 0 ? `
-              <div class="internals-section-full">
+              <div class="internals-section-full internals-section-1L">
                 <div class="internals-title">Internals:</div>
-                <div class="internals-thumbnails-full">
-                  ${item.additionalImages.slice(0, 2).map((img, idx) => 
+                <div class="internals-thumbnails-full internals-thumbnails-1L">
+                  ${item.additionalImages.slice(0, 4).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
                   ).join('')}
                 </div>
@@ -574,7 +574,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         void localIndex;
         
         if (layout === 'list') {
-          // List view: Image, Title, Discount, Author, AURRP, Barcode, Quantity
+          // List view: Image, Title, Discount, Author, AURRP, Release Date, Barcode, Quantity
           return `
             <div class="product-card layout-list">
               <div class="product-image">
@@ -586,6 +586,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                   <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
                   <span class="detail-item">Author: ${esc(item.author || '')}</span>
                   <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  ${item.releaseDate ? `<span class="detail-item">Release Date: ${esc(formatDate(item.releaseDate))}</span>` : ''}
                   <span class="detail-item">Barcode: ${esc(item.sku || '')}</span>
                   <span class="detail-item">Quantity: </span>
                 </div>
@@ -593,7 +594,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
           `;
         } else {
-          // Compact list view: Title, Discount, Author, AURRP, Barcode, Quantity (no image)
+          // Compact list view: Title, Discount, Author, AURRP, Release Date, Barcode, Quantity (no image)
           return `
             <div class="product-card layout-compact-list">
               <div class="product-content">
@@ -602,6 +603,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                   <span class="detail-item">Discount: ${esc(item.imidis || '')}</span>
                   <span class="detail-item">Author: ${esc(item.author || '')}</span>
                   <span class="detail-item">AURRP: ${esc(item.price || '')}</span>
+                  ${item.releaseDate ? `<span class="detail-item">Release Date: ${esc(formatDate(item.releaseDate))}</span>` : ''}
                   <span class="detail-item">Barcode: ${esc(item.sku || '')}</span>
                   <span class="detail-item">Quantity: </span>
                 </div>
@@ -1052,23 +1054,32 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     max-height: 120px;
   }
   
-  /* 1L layout: Same structure as layout-1-full, but with 2 bigger landscape-optimized internals */
+  /* 1L layout: Same structure as layout-1-full, but with 4 bigger landscape-optimized internals in 2x2 grid */
+  /* Move internals section further down on the page */
+  .layout-1L .internals-section-full {
+    margin-top: 40px; /* Move internals section further down */
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+  }
+  
   .layout-1L .internals-thumbnails-full {
-    flex-wrap: nowrap;
-    gap: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 columns */
+    grid-template-rows: auto auto; /* 2 rows */
+    gap: 20px;
     width: 100%;
-    justify-content: center;
+    justify-items: center;
   }
   
   .layout-1L .internal-thumbnail-full {
-    width: calc(50% - 15px);
+    width: 100%;
+    max-width: 250px;
     height: auto;
     aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    max-width: none;
   }
   
   /* Landscape vs Portrait handling for 1L internal images */
@@ -1084,8 +1095,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   @media print {
     .layout-1L .internals-thumbnails-full {
-      flex-wrap: nowrap !important;
-      display: flex !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      grid-template-rows: auto auto !important;
     }
     
     .layout-1L .page-header {

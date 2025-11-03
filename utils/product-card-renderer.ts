@@ -500,10 +500,10 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
       </div>
       
       ${item.additionalImages && item.additionalImages.length > 0 ? `
-        <div class="internals-section-full">
+        <div class="internals-section-full internals-section-1L">
           <div class="internals-title">Internals:</div>
-          <div class="internals-thumbnails-full">
-            ${item.additionalImages.slice(0, 2).map((img, idx) => 
+          <div class="internals-thumbnails-full internals-thumbnails-1L">
+            ${item.additionalImages.slice(0, 4).map((img, idx) => 
               `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
             ).join('')}
           </div>

@@ -202,6 +202,12 @@ function createMixedPage(body, pageItems, layout, showFields, bannerColor, websi
     createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams, itemBarcodeType);
     // Add internals box at bottom for 1-up
     addInternalsBoxFor1Up(body, pageItems[0].item, showFields);
+  } else if (layout === '1L') {
+    const itemIndex = pageItems[0].index || 0;
+    const itemBarcodeType = itemBarcodeTypes[itemIndex] || barcodeType;
+    createSingleItemLayout(body, pageItems[0].item, showFields, bannerColor, websiteName, utmParams, itemBarcodeType);
+    // Add internals box at bottom for 1L - double stacked with 4 images
+    addInternalsBoxFor1L(body, pageItems[0].item, showFields);
   } else if (layout === '2-int') {
     create2IntLayout(body, pageItems, itemBarcodeTypes, barcodeType);
   } else {
@@ -506,6 +512,95 @@ function addInternalsBoxFor1Up(body, item, showFields) {
           internalsTable.setColumnWidth(i, colWidth);
         }
       }
+    } catch (e) {
+      console.log('setColumnWidth not supported:', e);
+    }
+  }
+}
+
+// Add internals box at bottom for 1L layout - double stacked with 4 images (2 rows of 2)
+function addInternalsBoxFor1L(body, item, showFields) {
+  if (showFields.internals && item.additionalImages && item.additionalImages.length > 0) {
+    // Add MORE spacing before internals box (move it further down)
+    body.appendParagraph('').setSpacingAfter(12);
+    
+    // Create bordered box for internals
+    const internalsTable = body.appendTable();
+    internalsTable.setBorderWidth(1); // Visible border to create box
+    
+    const numImages = Math.min(item.additionalImages.length, 4);
+    
+    // Create header row that spans all columns
+    const headerRow = internalsTable.appendTableRow();
+    const headerCell = headerRow.appendTableCell();
+    // Make header span all 2 columns
+    try {
+      headerCell.merge().setNumColumns(2);
+    } catch (e) {
+      console.log('merge not supported:', e);
+    }
+    headerCell.setPaddingTop(4);
+    headerCell.setPaddingBottom(4);
+    headerCell.setPaddingLeft(4);
+    headerCell.setPaddingRight(4);
+    
+    const internalsTitle = headerCell.appendParagraph('Internals:');
+    const internalsTitleText = internalsTitle.editAsText();
+    if (internalsTitleText) {
+      internalsTitleText.setFontSize(12).setBold(true).setForegroundColor('#1565C0').setFontFamily('Calibri');
+    }
+    
+    // Create FIRST ROW for images (first 2 images)
+    const imagesRow1 = internalsTable.appendTableRow();
+    item.additionalImages.slice(0, 2).forEach((imageUrl, index) => {
+      const cell = imagesRow1.appendTableCell();
+      cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+      cell.setPaddingTop(4);
+      cell.setPaddingBottom(4);
+      cell.setPaddingLeft(4);
+      cell.setPaddingRight(4);
+      
+      try {
+        const imageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
+        const image = cell.appendImage(imageBlob);
+        // Larger images for 1L layout - optimized for landscape photos
+        image.setWidth(240);  // Larger width for landscape optimization
+        image.setHeight(176); // Maintain aspect ratio (approximately 3:2.2)
+      } catch (error) {
+        console.log('Could not load internal image:', error);
+        cell.appendParagraph('Img N/A').setFontSize(8);
+      }
+    });
+    
+    // Create SECOND ROW for images (next 2 images)
+    if (numImages > 2) {
+      const imagesRow2 = internalsTable.appendTableRow();
+      item.additionalImages.slice(2, 4).forEach((imageUrl, index) => {
+        const cell = imagesRow2.appendTableCell();
+        cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+        cell.setPaddingTop(4);
+        cell.setPaddingBottom(4);
+        cell.setPaddingLeft(4);
+        cell.setPaddingRight(4);
+        
+        try {
+          const imageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
+          const image = cell.appendImage(imageBlob);
+          // Larger images for 1L layout - optimized for landscape photos
+          image.setWidth(240);  // Larger width for landscape optimization
+          image.setHeight(176); // Maintain aspect ratio (approximately 3:2.2)
+        } catch (error) {
+          console.log('Could not load internal image:', error);
+          cell.appendParagraph('Img N/A').setFontSize(8);
+        }
+      });
+    }
+    
+    // Set column widths after cells exist (2 columns)
+    try {
+      const colWidth = 520 / 2; // Divide full width by 2 columns
+      internalsTable.setColumnWidth(0, colWidth);
+      internalsTable.setColumnWidth(1, colWidth);
     } catch (e) {
       console.log('setColumnWidth not supported:', e);
     }
