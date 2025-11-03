@@ -118,6 +118,9 @@ export default function Home() {
 
   // Email state
   const [emailGenerating, setEmailGenerating] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailHtml, setEmailHtml] = useState<string>('');
+  const [emailTemplate, setEmailTemplate] = useState<'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'>('single');
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -872,6 +875,71 @@ export default function Home() {
     } catch (error) {
       alert("Error generating table view: " + (error instanceof Error ? error.message : "Unknown error"));
     }
+  }
+
+  async function openEmailHTML() {
+    if (!items.length) { alert("Fetch products first."); return; }
+    try {
+      setEmailGenerating(true);
+      const resp = await fetch("/api/render/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          items,
+          template: emailTemplate,
+          hyperlinkToggle,
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          theme: {
+            primaryColor: getBannerColor(hyperlinkToggle),
+            buttonColor: '#007bff',
+            buttonTextColor: '#ffffff'
+          },
+          showFields: {
+            subtitle: true,
+            author: true,
+            description: true,
+            price: true,
+            imprint: true,
+            releaseDate: true
+          }
+        })
+      });
+      
+      if (!resp.ok) {
+        const error = await resp.text();
+        alert(`Error generating email HTML: ${error}`);
+        return;
+      }
+      
+      const html = await resp.text();
+      setEmailHtml(html);
+      setShowEmailModal(true);
+    } catch (error) {
+      alert("Error generating email HTML: " + (error instanceof Error ? error.message : "Unknown error"));
+    } finally {
+      setEmailGenerating(false);
+    }
+  }
+
+  function copyEmailHtml() {
+    navigator.clipboard.writeText(emailHtml).then(() => {
+      alert('Email HTML copied to clipboard! You can now paste it into Mailchimp.');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = emailHtml;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Email HTML copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy. Please select and copy manually.');
+      }
+      document.body.removeChild(textArea);
+    });
   }
 
   function moveItemUp(index: number) {
@@ -2064,6 +2132,9 @@ export default function Home() {
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
             <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
+            <button onClick={openEmailHTML} disabled={!items.length || emailGenerating} style={btn()}>
+              {emailGenerating ? '⏳ Generating...' : '📧 Email HTML'}
+            </button>
             <button onClick={() => openEmailWithOutlook('single')} disabled={!items.length || emailGenerating} style={btn()}>
               {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - PDF'}
             </button>
@@ -2195,6 +2266,172 @@ export default function Home() {
                   This preview lists the items per page. After applying, all exports will use the new order.
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Email HTML Modal */}
+      {showEmailModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: 20
+        }} onClick={(e) => {
+          if (e.target === e.currentTarget) setShowEmailModal(false);
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: 12,
+            padding: 24,
+            width: '90vw',
+            maxWidth: 1200,
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.25)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#495057' }}>
+                  📧 Email HTML - Ready for Mailchimp
+                </h3>
+                <select
+                  value={emailTemplate}
+                  onChange={async (e) => {
+                    const newTemplate = e.target.value as typeof emailTemplate;
+                    setEmailTemplate(newTemplate);
+                    // Re-generate with new template
+                    if (items.length) {
+                      setEmailGenerating(true);
+                      try {
+                        const resp = await fetch("/api/render/email", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ 
+                            items,
+                            template: newTemplate,
+                            hyperlinkToggle,
+                            utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                            theme: {
+                              primaryColor: getBannerColor(hyperlinkToggle),
+                              buttonColor: '#007bff',
+                              buttonTextColor: '#ffffff'
+                            },
+                            showFields: {
+                              subtitle: true,
+                              author: true,
+                              description: true,
+                              price: true,
+                              imprint: true,
+                              releaseDate: true
+                            }
+                          })
+                        });
+                        if (resp.ok) {
+                          const html = await resp.text();
+                          setEmailHtml(html);
+                        }
+                      } catch (error) {
+                        alert("Error generating email HTML: " + (error instanceof Error ? error.message : "Unknown error"));
+                      } finally {
+                        setEmailGenerating(false);
+                      }
+                    }
+                  }}
+                  style={{
+                    border: '2px solid #E9ECEF',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    fontSize: 14,
+                    background: '#FAFBFC',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="single">Single Product</option>
+                  <option value="grid-2">Grid (2 products)</option>
+                  <option value="grid-3">Grid (3 products)</option>
+                  <option value="grid-4">Grid (4 products)</option>
+                  <option value="list">List</option>
+                  <option value="spotlight">Spotlight</option>
+                  <option value="featured">Featured</option>
+                </select>
+              </div>
+              <button onClick={() => setShowEmailModal(false)} style={{
+                background: '#E9ECEF',
+                border: 'none',
+                borderRadius: 6,
+                padding: '8px 16px',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#495057'
+              }}>✕ Close</button>
+            </div>
+            
+            <div style={{ marginBottom: 16 }}>
+              <button onClick={copyEmailHtml} style={{
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 24px',
+                fontSize: 16,
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 16
+              }}>
+                📋 Copy HTML to Clipboard
+              </button>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#495057' }}>Preview:</h4>
+              <div style={{
+                border: '1px solid #E9ECEF',
+                borderRadius: 8,
+                padding: 16,
+                background: '#f5f5f5',
+                maxHeight: '400px',
+                overflow: 'auto'
+              }}>
+                <iframe
+                  srcDoc={emailHtml}
+                  style={{
+                    width: '100%',
+                    minHeight: '400px',
+                    border: 'none',
+                    background: 'white'
+                  }}
+                  title="Email Preview"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#495057' }}>HTML Code:</h4>
+              <textarea
+                value={emailHtml}
+                readOnly
+                style={{
+                  width: '100%',
+                  minHeight: '300px',
+                  padding: 12,
+                  border: '2px solid #E9ECEF',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  background: '#f8f9fa',
+                  resize: 'vertical'
+                }}
+              />
             </div>
           </div>
         </div>
