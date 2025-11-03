@@ -14,7 +14,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, appendView, appendInsertIndex } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -23,6 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       barcodeType?: BarcodeType;
       bannerColor?: string;
       websiteName?: string;
+      pageHeaders?: string[]; // Optional array of custom header text for each page (by page index)
       utmParams?: UtmParams;
       coverData?: {
         showFrontCover: boolean;
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, utmParams, coverData, appendView, appendInsertIndex);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -51,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[], showFields: Record<string, boolean>, hyperlinkToggle: HyperlinkToggle, itemBarcodeTypes?: {[key: number]: BarcodeType}, barcodeType?: BarcodeType, bannerColor?: string, websiteName?: string, utmParams?: UtmParams, coverData?: {
+async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[], showFields: Record<string, boolean>, hyperlinkToggle: HyperlinkToggle, itemBarcodeTypes?: {[key: number]: BarcodeType}, barcodeType?: BarcodeType, bannerColor?: string, websiteName?: string, pageHeaders?: string[], utmParams?: UtmParams, coverData?: {
   showFrontCover: boolean;
   showBackCover: boolean;
   frontCoverText1: string;
@@ -98,7 +99,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     pages.push({ items: currentPage, layout: currentLayout });
   }
 
-  const pageHtmlArray = pages.map((page) => {
+  const pageHtmlArray = pages.map((page, pageIndex) => {
     const createProductCard = (it: Item) => {
       // Find the global index of this item
       const globalIndex = items.findIndex(item => item.handle === it.handle);
@@ -115,10 +116,15 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     const emptySlots = (layout === '2-int' ? 2 : layout === '1L' ? 1 : typeof layout === 'number' ? layout : 1) - page.items.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
     
+    // Use custom header for this page if provided, otherwise use default websiteName
+    const pageHeaderText = (pageHeaders && pageHeaders[pageIndex] !== undefined && pageHeaders[pageIndex] !== null && pageHeaders[pageIndex] !== '') 
+      ? pageHeaders[pageIndex] 
+      : (websiteName || 'www.woodslane.com.au');
+    
     return `<div class="page ${layoutClass}" data-layout="${layout}">
       <!-- Header Banner -->
       <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
+        ${esc(pageHeaderText)}
       </div>
       
       <!-- Content Area -->
@@ -128,7 +134,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
       
       <!-- Footer Banner -->
       <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; width: 100%; margin: 0; position: relative; left: 0; right: 0;">
-        ${esc(websiteName || 'www.woodslane.com.au')}
+        ${esc(pageHeaderText)}
       </div>
     </div>`;
   });
