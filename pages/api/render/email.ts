@@ -47,13 +47,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description: true,
         price: true,
         imprint: true,
-        releaseDate: true,
-        internals: false
-      }
+        releaseDate: true
+      },
+      emailInternalsToggle
     } = req.body as {
       items: Item[];
       template?: EmailTemplate;
       emailTemplateAssignments?: EmailTemplate[];
+      emailInternalsToggle?: boolean[];
       hyperlinkToggle?: HyperlinkToggle;
       utmParams?: UtmParams;
       discountCode?: string;
@@ -76,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -90,6 +91,7 @@ function generateEmailHtml(
   items: Item[],
   template: EmailTemplate,
   emailTemplateAssignments?: EmailTemplate[],
+  emailInternalsToggle?: boolean[],
   hyperlinkToggle?: HyperlinkToggle,
   utmParams?: UtmParams,
   discountCode?: string,
@@ -189,7 +191,7 @@ function generateEmailHtml(
     }
   };
 
-  const renderSingleProduct = (item: Item): string => {
+  const renderSingleProduct = (item: Item, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
     // Use full description if provided, otherwise truncate
     const truncatedDesc = item.description ? (item.description.length <= 250 ? item.description : truncateDescription(item.description, 250)) : '';
@@ -235,7 +237,7 @@ function generateEmailHtml(
                     </p>
                   ` : ''}
                   
-                  ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                  ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
                     <!-- Internal Pages -->
                     <div style="margin: 15px 0; padding: 15px; background-color: #f5f5f5; border-radius: 8px;">
                       <h4 style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: ${textColor};">
@@ -309,7 +311,7 @@ function generateEmailHtml(
     `;
   };
 
-  const renderGridProduct = (item: Item, width: number = 280): string => {
+  const renderGridProduct = (item: Item, width: number = 280, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
     // Use full description if provided, otherwise truncate
     const truncatedDesc = item.description ? (item.description.length <= 120 ? item.description : truncateDescription(item.description, 120)) : '';
@@ -340,7 +342,7 @@ function generateEmailHtml(
                   ${esc(truncatedDesc)}
                 </p>
               ` : ''}
-              ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+              ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
                 <div style="margin: 8px 0; padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
                   <div style="font-size: 10px; font-weight: 600; color: ${textColor}; margin-bottom: 6px;">
                     Internals:
@@ -370,7 +372,7 @@ function generateEmailHtml(
     `;
   };
 
-  const renderSpotlight = (item: Item): string => {
+  const renderSpotlight = (item: Item, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
     // Use full description if provided, otherwise truncate
     const truncatedDesc = item.description ? (item.description.length <= 300 ? item.description : truncateDescription(item.description, 300)) : '';
@@ -416,7 +418,7 @@ function generateEmailHtml(
                       ${esc(truncatedDesc)}
                     </p>
                   ` : ''}
-                  ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                  ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
                     <!-- Internal Pages -->
                     <div style="margin: 20px 0; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
                       <h4 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: ${textColor}; text-align: center;">
@@ -463,14 +465,15 @@ function generateEmailHtml(
     // Render each item with its assigned template
     content = items.map((item, index) => {
       const assignedTemplate = emailTemplateAssignments[index] || template;
+      const showInternals = emailInternalsToggle && emailInternalsToggle[index];
       
       switch (assignedTemplate) {
         case 'single':
         case 'featured':
-          return renderSingleProduct(item);
+          return renderSingleProduct(item, showInternals);
           
         case 'spotlight':
-          return renderSpotlight(item);
+          return renderSpotlight(item, showInternals);
           
         case 'list':
           const productUrl = generateProductUrl(item.handle);
@@ -496,8 +499,22 @@ function generateEmailHtml(
                   ` : ''}
                   ${item.description && showFields?.description ? `
                     <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
-                      ${esc(truncateDescription(item.description, 150))}
+                      ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
                     </p>
+                  ` : ''}
+                  ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
+                    <div style="margin: 10px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
+                      <div style="font-size: 11px; font-weight: 600; color: ${textColor}; margin-bottom: 6px;">
+                        Internals:
+                      </div>
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        ${item.additionalImages.slice(0, 2).map(imgUrl => `
+                          <img src="${esc(imgUrl)}" 
+                               alt="Internal" 
+                               style="width: 50px; height: auto; border-radius: 2px; border: 1px solid #ddd;" />
+                        `).join('')}
+                      </div>
+                    </div>
                   ` : ''}
                   ${item.price && showFields?.price ? `
                     <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; color: ${primaryColor};">
@@ -518,19 +535,20 @@ function generateEmailHtml(
           if (index % 2 === 0 && index + 1 < items.length) {
             const nextItem = items[index + 1];
             const nextTemplate = emailTemplateAssignments[index + 1];
+            const nextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 1];
             if (nextTemplate === 'grid-2') {
               return `
                 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                   <tr>
-                    ${renderGridProduct(item, 280)}
-                    ${renderGridProduct(nextItem, 280)}
+                    ${renderGridProduct(item, 280, showInternals)}
+                    ${renderGridProduct(nextItem, 280, nextShowInternals)}
                   </tr>
                 </table>
               `;
             }
           }
           // If not paired, render as single
-          return renderSingleProduct(item);
+          return renderSingleProduct(item, showInternals);
           
         case 'grid-3':
           // For grid-3, we need to render triplets
@@ -539,20 +557,22 @@ function generateEmailHtml(
             const nextNextItem = items[index + 2];
             const nextTemplate = emailTemplateAssignments[index + 1];
             const nextNextTemplate = emailTemplateAssignments[index + 2];
+            const nextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 1];
+            const nextNextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 2];
             if (nextTemplate === 'grid-3' && nextNextTemplate === 'grid-3') {
               return `
                 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                   <tr>
-                    ${renderGridProduct(item, 180)}
-                    ${renderGridProduct(nextItem, 180)}
-                    ${renderGridProduct(nextNextItem, 180)}
+                    ${renderGridProduct(item, 180, showInternals)}
+                    ${renderGridProduct(nextItem, 180, nextShowInternals)}
+                    ${renderGridProduct(nextNextItem, 180, nextNextShowInternals)}
                   </tr>
                 </table>
               `;
             }
           }
           // If not in a triplet, render as single
-          return renderSingleProduct(item);
+          return renderSingleProduct(item, showInternals);
           
         case 'grid-4':
           // For grid-4, we need to render quadruplets
@@ -563,24 +583,27 @@ function generateEmailHtml(
             const nextTemplate = emailTemplateAssignments[index + 1];
             const nextNextTemplate = emailTemplateAssignments[index + 2];
             const nextNextNextTemplate = emailTemplateAssignments[index + 3];
+            const nextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 1];
+            const nextNextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 2];
+            const nextNextNextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 3];
             if (nextTemplate === 'grid-4' && nextNextTemplate === 'grid-4' && nextNextNextTemplate === 'grid-4') {
               return `
                 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                   <tr>
-                    ${renderGridProduct(item, 135)}
-                    ${renderGridProduct(nextItem, 135)}
-                    ${renderGridProduct(nextNextItem, 135)}
-                    ${renderGridProduct(nextNextNextItem, 135)}
+                    ${renderGridProduct(item, 135, showInternals)}
+                    ${renderGridProduct(nextItem, 135, nextShowInternals)}
+                    ${renderGridProduct(nextNextItem, 135, nextNextShowInternals)}
+                    ${renderGridProduct(nextNextNextItem, 135, nextNextNextShowInternals)}
                   </tr>
                 </table>
               `;
             }
           }
           // If not in a quadruplet, render as single
-          return renderSingleProduct(item);
+          return renderSingleProduct(item, showInternals);
           
         default:
-          return renderSingleProduct(item);
+          return renderSingleProduct(item, showInternals);
       }
     }).filter((html, index) => {
       // Filter out duplicates for grid layouts
@@ -597,7 +620,10 @@ function generateEmailHtml(
   
   switch (template) {
     case 'single':
-      content = items.map(item => renderSingleProduct(item)).join('');
+      content = items.map((item, index) => {
+        const showInternals = emailInternalsToggle && emailInternalsToggle[index];
+        return renderSingleProduct(item, showInternals);
+      }).join('');
       break;
       
     case 'grid-2':
@@ -605,10 +631,14 @@ function generateEmailHtml(
       for (let i = 0; i < items.length; i += 2) {
         chunks2.push(items.slice(i, i + 2));
       }
-      content = chunks2.map(chunk => `
+      content = chunks2.map((chunk, chunkIndex) => `
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
           <tr>
-            ${chunk.map(item => renderGridProduct(item, 280)).join('')}
+            ${chunk.map((item, itemIndex) => {
+              const globalIndex = chunkIndex * 2 + itemIndex;
+              const showInternals = emailInternalsToggle && emailInternalsToggle[globalIndex];
+              return renderGridProduct(item, 280, showInternals);
+            }).join('')}
             ${Array(2 - chunk.length).fill('<td width="280" style="padding: 10px;"></td>').join('')}
           </tr>
         </table>
@@ -620,10 +650,14 @@ function generateEmailHtml(
       for (let i = 0; i < items.length; i += 3) {
         chunks3.push(items.slice(i, i + 3));
       }
-      content = chunks3.map(chunk => `
+      content = chunks3.map((chunk, chunkIndex) => `
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
           <tr>
-            ${chunk.map(item => renderGridProduct(item, 180)).join('')}
+            ${chunk.map((item, itemIndex) => {
+              const globalIndex = chunkIndex * 3 + itemIndex;
+              const showInternals = emailInternalsToggle && emailInternalsToggle[globalIndex];
+              return renderGridProduct(item, 180, showInternals);
+            }).join('')}
             ${Array(3 - chunk.length).fill('<td width="180" style="padding: 10px;"></td>').join('')}
           </tr>
         </table>
@@ -635,10 +669,14 @@ function generateEmailHtml(
       for (let i = 0; i < items.length; i += 4) {
         chunks4.push(items.slice(i, i + 4));
       }
-      content = chunks4.map(chunk => `
+      content = chunks4.map((chunk, chunkIndex) => `
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
           <tr>
-            ${chunk.map(item => renderGridProduct(item, 135)).join('')}
+            ${chunk.map((item, itemIndex) => {
+              const globalIndex = chunkIndex * 4 + itemIndex;
+              const showInternals = emailInternalsToggle && emailInternalsToggle[globalIndex];
+              return renderGridProduct(item, 135, showInternals);
+            }).join('')}
             ${Array(4 - chunk.length).fill('<td width="135" style="padding: 10px;"></td>').join('')}
           </tr>
         </table>
@@ -646,8 +684,9 @@ function generateEmailHtml(
       break;
       
     case 'list':
-      content = items.map(item => {
+      content = items.map((item, index) => {
         const productUrl = generateProductUrl(item.handle);
+        const showInternals = emailInternalsToggle && emailInternalsToggle[index];
         return `
           <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
             <tr>
@@ -673,7 +712,7 @@ function generateEmailHtml(
                     ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
                   </p>
                 ` : ''}
-                ${item.additionalImages && item.additionalImages.length > 0 && showFields?.internals ? `
+                ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
                   <div style="margin: 10px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
                     <div style="font-size: 11px; font-weight: 600; color: ${textColor}; margin-bottom: 6px;">
                       Internals:
@@ -704,11 +743,13 @@ function generateEmailHtml(
       break;
       
     case 'spotlight':
-      content = renderSpotlight(items[0]);
+      const spotlightShowInternals = emailInternalsToggle && emailInternalsToggle[0];
+      content = renderSpotlight(items[0], spotlightShowInternals);
       break;
       
     case 'featured':
-      content = renderSingleProduct(items[0]);
+      const featuredShowInternals = emailInternalsToggle && emailInternalsToggle[0];
+      content = renderSingleProduct(items[0], featuredShowInternals);
       break;
   }
 

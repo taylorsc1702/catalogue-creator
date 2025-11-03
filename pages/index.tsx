@@ -126,7 +126,7 @@ export default function Home() {
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
-  const [emailShowInternals, setEmailShowInternals] = useState<boolean>(false);
+  const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -893,6 +893,9 @@ export default function Home() {
         ? items.map((_, index) => emailTemplateAssignments[index] || 'single')
         : undefined;
       
+      // Prepare emailInternalsToggle array
+      const internalsToggle = items.map((_, index) => emailInternalsToggle[index] || false);
+      
       // Apply edited descriptions to items
       const itemsWithEditedDescriptions = items.map((item, index) => {
         if (emailEditedDescriptions[index] !== undefined) {
@@ -908,6 +911,7 @@ export default function Home() {
           items: itemsWithEditedDescriptions,
           template: emailTemplate,
           emailTemplateAssignments: assignments,
+          emailInternalsToggle: internalsToggle,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           discountCode: discountCode || undefined,
@@ -924,8 +928,7 @@ export default function Home() {
             description: true,
             price: true,
             imprint: true,
-            releaseDate: true,
-            internals: emailShowInternals
+            releaseDate: true
           }
         })
       });
@@ -2339,21 +2342,6 @@ export default function Home() {
               <div style={{ marginBottom: 16, padding: 16, background: '#F8F9FA', borderRadius: 8 }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#495057' }}>Email Configuration:</h4>
                 
-                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#495057', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={emailShowInternals}
-                      onChange={(e) => setEmailShowInternals(e.target.checked)}
-                      style={{ width: 18, height: 18, cursor: 'pointer' }}
-                    />
-                    <span>Show internal pages (if available)</span>
-                  </label>
-                  <div style={{ fontSize: 11, color: '#6c757d' }}>
-                    Displays internal page images for products that have them
-                  </div>
-                </div>
-                
                 <div style={{ marginBottom: 12 }}>
                   <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
                     Banner Image URL (Optional):
@@ -2454,9 +2442,9 @@ export default function Home() {
                               description: true,
                               price: true,
                               imprint: true,
-                              releaseDate: true,
-                              internals: false
-                            }
+                              releaseDate: true
+                            },
+                            emailInternalsToggle: items.map((_, idx) => emailInternalsToggle[idx] || false)
                           })
                         });
                         if (resp.ok) {
@@ -2616,6 +2604,19 @@ export default function Home() {
                         <option value="spotlight">Spotlight</option>
                         <option value="featured">Featured</option>
                       </select>
+                      {item.additionalImages && item.additionalImages.length > 0 && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#495057', cursor: 'pointer', marginLeft: 8 }}>
+                          <input
+                            type="checkbox"
+                            checked={emailInternalsToggle[index] || false}
+                            onChange={(e) => {
+                              setEmailInternalsToggle({...emailInternalsToggle, [index]: e.target.checked});
+                            }}
+                            style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          />
+                          <span>Show Internals ({item.additionalImages.length})</span>
+                        </label>
+                      )}
                       <button
                         onClick={() => clearItemEmailTemplate(index)}
                         style={{
