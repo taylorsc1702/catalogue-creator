@@ -660,8 +660,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     margin: 4px 0;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
-    max-height: 60px;
-    overflow: hidden;
+    /* Removed max-height constraint to allow full description to display */
   }
   
   .layout-2-vertical .product-specs {

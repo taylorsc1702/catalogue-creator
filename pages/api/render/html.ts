@@ -392,7 +392,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
       // For 2-up layout, use vertical layout with image at top
       if (layout === 2) {
-        const truncatedDesc = item.description ? (item.description.length > 2000 ? item.description.substring(0, 1997) + '...' : item.description) : '';
+        // Increased character limit from 2000 to 3000 to allow more description text
+        const truncatedDesc = item.description ? (item.description.length > 3000 ? item.description.substring(0, 2997) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-2-vertical">
