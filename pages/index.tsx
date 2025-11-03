@@ -122,6 +122,8 @@ export default function Home() {
   const [emailHtml, setEmailHtml] = useState<string>('');
   const [emailTemplate, setEmailTemplate] = useState<'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured' | 'mixed'>('single');
   const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'}>({});
+  const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
+  const [emailFreeText, setEmailFreeText] = useState<string>('');
   // Append view for mixed exports
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
@@ -897,6 +899,9 @@ export default function Home() {
           emailTemplateAssignments: assignments,
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          discountCode: discountCode || undefined,
+          bannerImageUrl: emailBannerImageUrl.trim() || undefined,
+          freeText: emailFreeText.trim() || undefined,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
             buttonColor: '#007bff',
@@ -2313,11 +2318,79 @@ export default function Home() {
             overflow: 'auto',
             boxShadow: '0 12px 32px rgba(0,0,0,0.25)'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#495057' }}>
-                  📧 Email HTML - Ready for Mailchimp
-                </h3>
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ margin: '0 0 20px 0', fontSize: 20, fontWeight: 600, color: '#495057' }}>
+                📧 Email HTML - Ready for Mailchimp
+              </h3>
+              
+              {/* Email Configuration Fields */}
+              <div style={{ marginBottom: 16, padding: 16, background: '#F8F9FA', borderRadius: 8 }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600, color: '#495057' }}>Email Configuration:</h4>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Banner Image URL (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    value={emailBannerImageUrl}
+                    onChange={(e) => setEmailBannerImageUrl(e.target.value)}
+                    placeholder="https://example.com/banner-image.jpg"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                </div>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Free Text (Optional):
+                  </label>
+                  <textarea
+                    value={emailFreeText}
+                    onChange={(e) => setEmailFreeText(e.target.value)}
+                    placeholder="Enter any additional text you'd like to appear in the email..."
+                    rows={4}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Discount Code: {discountCode ? <span style={{ color: '#28a745', fontWeight: 600 }}>(Active: {discountCode})</span> : <span style={{ color: '#6c757d' }}>(None - separator will be plain)</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={discountCode || ''}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    placeholder="Enter discount code (e.g., SAVE20)"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13
+                    }}
+                  />
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    If populated, a discount message will appear in the separator above products. Otherwise, just a colored separator bar.
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
                 <select
                   value={emailTemplate}
                   onChange={async (e) => {
@@ -2340,6 +2413,9 @@ export default function Home() {
                             emailTemplateAssignments: assignments,
                             hyperlinkToggle,
                             utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                            discountCode: discountCode || undefined,
+                            bannerImageUrl: emailBannerImageUrl.trim() || undefined,
+                            freeText: emailFreeText.trim() || undefined,
                             theme: {
                               primaryColor: getBannerColor(hyperlinkToggle),
                               buttonColor: '#007bff',
@@ -2384,6 +2460,18 @@ export default function Home() {
                   <option value="featured">Featured</option>
                   <option value="mixed">Mixed Format</option>
                 </select>
+                <button onClick={openEmailHTML} disabled={emailGenerating} style={{
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '8px 16px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}>
+                  {emailGenerating ? '⏳ Generating...' : '🔄 Regenerate'}
+                </button>
               </div>
               <button onClick={() => setShowEmailModal(false)} style={{
                 background: '#E9ECEF',

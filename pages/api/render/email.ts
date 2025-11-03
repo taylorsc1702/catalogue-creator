@@ -31,6 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       emailTemplateAssignments,
       hyperlinkToggle = 'woodslane',
       utmParams,
+      discountCode,
+      bannerImageUrl,
+      freeText,
       theme = {
         primaryColor: '#F7981D',
         textColor: '#333333',
@@ -52,6 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       emailTemplateAssignments?: EmailTemplate[];
       hyperlinkToggle?: HyperlinkToggle;
       utmParams?: UtmParams;
+      discountCode?: string;
+      bannerImageUrl?: string;
+      freeText?: string;
       theme?: {
         primaryColor?: string;
         textColor?: string;
@@ -69,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, hyperlinkToggle, utmParams, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -85,6 +91,9 @@ function generateEmailHtml(
   emailTemplateAssignments?: EmailTemplate[],
   hyperlinkToggle?: HyperlinkToggle,
   utmParams?: UtmParams,
+  discountCode?: string,
+  bannerImageUrl?: string,
+  freeText?: string,
   theme?: {
     primaryColor?: string;
     textColor?: string;
@@ -94,7 +103,36 @@ function generateEmailHtml(
   },
   showFields?: Record<string, boolean>
 ): string {
-  const primaryColor = theme?.primaryColor || '#F7981D';
+  const toggle = hyperlinkToggle || 'woodslane';
+  
+  // Get logo URLs
+  const logoUrls: Record<HyperlinkToggle, string> = {
+    woodslane: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/woodslane-square-logo-transparent_a9785ae1-b798-4ab4-963d-89a4fc3f3fdb.png?v=1755213158',
+    woodslanehealth: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneHealth-logo-square_50093948-c033-48aa-8274-694237479a8a.jpg?v=1761655710',
+    woodslaneeducation: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/WoodslaneEducation-logos-square_60e40eef-f666-4f6a-a8e0-f07efca5a9dd.jpg?v=1761655806',
+    woodslanepress: 'https://cdn.shopify.com/s/files/1/0651/9390/2132/files/woodslane_PRESS_logo_duo_1.jpg?v=1718778690'
+  };
+  
+  // Get website names
+  const websiteNames: Record<HyperlinkToggle, string> = {
+    woodslane: 'www.woodslane.com.au',
+    woodslanehealth: 'www.woodslanehealth.com.au',
+    woodslaneeducation: 'www.woodslaneeducation.com.au',
+    woodslanepress: 'www.woodslanepress.com.au'
+  };
+  
+  // Get banner colors
+  const bannerColors: Record<HyperlinkToggle, string> = {
+    woodslane: '#F7981D',
+    woodslanehealth: '#192C6B',
+    woodslaneeducation: '#E4506E',
+    woodslanepress: '#1EADFF'
+  };
+  
+  const logoUrl = logoUrls[toggle];
+  const websiteName = websiteNames[toggle];
+  const bannerColor = theme?.primaryColor || bannerColors[toggle];
+  const primaryColor = theme?.primaryColor || bannerColors[toggle];
   const textColor = theme?.textColor || '#333333';
   const bgColor = theme?.backgroundColor || '#ffffff';
   const buttonColor = theme?.buttonColor || '#007bff';
@@ -499,30 +537,8 @@ function generateEmailHtml(
       return true;
     }).join('');
     
-    // Exit early for mixed format
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Product Email</title>
-  <!--[if mso]>
-  <style type="text/css">
-    body, table, td {font-family: Arial, sans-serif !important;}
-  </style>
-  <![endif]-->
-</head>
-<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
-    <tr>
-      <td align="center" style="padding: 20px 0;">
-        ${content}
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+    // Generate complete email with header, banner, free text, separator, and footer
+    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, toggle);
   }
   
   switch (template) {
@@ -628,6 +644,149 @@ function generateEmailHtml(
       break;
   }
 
+  // Generate complete email with header, banner, free text, separator, and footer
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, toggle);
+}
+
+// Helper function to generate complete email HTML structure
+function generateCompleteEmailHtml(
+  content: string,
+  logoUrl: string,
+  websiteName: string,
+  bannerColor: string,
+  bannerImageUrl?: string,
+  freeText?: string,
+  discountCode?: string,
+  hyperlinkToggle?: HyperlinkToggle
+): string {
+  const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  
+  // ABN numbers
+  const abnNumbers: Record<HyperlinkToggle, string> = {
+    woodslane: 'ABN: 76 003 677 549',
+    woodslanehealth: 'ABN: 76 003 677 549',
+    woodslaneeducation: 'ABN: 76 003 677 549',
+    woodslanepress: 'ABN: 76 054 568 688'
+  };
+  
+  const abn = abnNumbers[hyperlinkToggle || 'woodslane'];
+  const toggle = hyperlinkToggle || 'woodslane';
+  
+  // Get base URL for unsubscribe link
+  const baseUrls = {
+    woodslane: 'https://woodslane.com.au',
+    woodslanehealth: 'https://www.woodslanehealth.com.au',
+    woodslaneeducation: 'https://www.woodslaneeducation.com.au',
+    woodslanepress: 'https://www.woodslanepress.com.au'
+  };
+  const baseUrl = baseUrls[toggle];
+  
+  // Header with logo and website name
+  const header = `
+    <!-- Header -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td align="center" style="padding-bottom: 10px;">
+                <img src="${esc(logoUrl)}" alt="Logo" width="150" style="width: 150px; max-width: 100%; height: auto; display: block;">
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top: 10px;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: bold; color: #ffffff; font-family: Arial, sans-serif;">
+                  ${esc(websiteName)}
+                </h1>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+  
+  // Banner Image (if provided)
+  const bannerImage = bannerImageUrl ? `
+    <!-- Banner Image -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td align="center" style="padding: 0;">
+          <img src="${esc(bannerImageUrl)}" alt="Banner" width="600" style="width: 600px; max-width: 100%; height: auto; display: block;">
+        </td>
+      </tr>
+    </table>
+  ` : '';
+  
+  // Free Text (if provided)
+  const freeTextSection = freeText ? `
+    <!-- Free Text -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff;">
+      <tr>
+        <td align="center" style="padding: 30px 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333333;">
+                ${esc(freeText).replace(/\n/g, '<br>')}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  ` : '';
+  
+  // Discount Separator (if discount code exists)
+  const discountSeparator = discountCode ? `
+    <!-- Discount Separator -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td align="center" style="font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; color: #ffffff;">
+                Don't forget to use the code <strong style="font-size: 20px;">${esc(discountCode)}</strong> at the checkout to save 15% off your order*.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  ` : `
+    <!-- Separator (Banner Color) -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td style="height: 10px; line-height: 10px; font-size: 10px;">&nbsp;</td>
+      </tr>
+    </table>
+  `;
+  
+  // Footer with contact information
+  const footer = `
+    <!-- Footer -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 30px 20px;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+            <tr>
+              <td align="center" style="font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; line-height: 1.8;">
+                <p style="margin: 0 0 10px 0;">
+                  <a href="mailto:info@woodslane.com.au" style="color: #ffffff; text-decoration: underline;">info@woodslane.com.au</a>
+                </p>
+                <p style="margin: 0 0 10px 0;">
+                  ${esc(abn)}
+                </p>
+                <p style="margin: 0 0 10px 0;">
+                  <a href="${esc(baseUrl)}/account/unsubscribe" style="color: #ffffff; text-decoration: underline;">Unsubscribe</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+  
   // Complete email HTML with Mailchimp-compatible structure
   return `<!DOCTYPE html>
 <html>
@@ -645,8 +804,20 @@ function generateEmailHtml(
 <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        ${content}
+      <td align="center" style="padding: 0;">
+        ${header}
+        ${bannerImage}
+        ${freeTextSection}
+        ${discountSeparator}
+        <!-- Products -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 20px 0;">
+              ${content}
+            </td>
+          </tr>
+        </table>
+        ${footer}
       </td>
     </tr>
   </table>
