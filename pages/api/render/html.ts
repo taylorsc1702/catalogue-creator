@@ -1056,10 +1056,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   /* 1L layout: Same structure as layout-1-full, but with 4 bigger landscape-optimized internals in 2x2 grid */
-  /* Move internals section further down on the page */
+  /* Move internals section closer to bottom of page */
   .layout-1L .internals-section-full {
-    margin-top: 40px; /* Move internals section further down */
-    padding-top: 20px;
+    margin-top: 10px; /* Reduced spacing from content above */
+    padding-top: 10px; /* Reduced top padding */
+    padding-bottom: 0; /* No bottom padding */
+    margin-bottom: 0; /* No bottom margin */
     border-top: 2px solid #e0e0e0;
   }
   

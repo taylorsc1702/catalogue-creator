@@ -521,8 +521,8 @@ function addInternalsBoxFor1Up(body, item, showFields) {
 // Add internals box at bottom for 1L layout - double stacked with 4 images (2 rows of 2)
 function addInternalsBoxFor1L(body, item, showFields) {
   if (showFields.internals && item.additionalImages && item.additionalImages.length > 0) {
-    // Add MORE spacing before internals box (move it further down)
-    body.appendParagraph('').setSpacingAfter(12);
+    // Reduced spacing before internals box to move it closer to bottom of page
+    body.appendParagraph('').setSpacingAfter(3);
     
     // Create bordered box for internals
     const internalsTable = body.appendTable();

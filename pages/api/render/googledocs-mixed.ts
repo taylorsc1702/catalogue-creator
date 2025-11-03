@@ -603,6 +603,14 @@ async function renderMixedGoogleDocsHtml(
     border-top: 1.5pt solid #e0e0e0;
   }
   
+  /* 1L layout: Move internals section closer to bottom of page */
+  .layout-1L .internals-section-full {
+    margin-top: 7.1pt; /* Reduced spacing from content above (~10px) */
+    padding-top: 7.1pt; /* Reduced top padding (~10px) */
+    padding-bottom: 0; /* No bottom padding */
+    margin-bottom: 0; /* No bottom margin */
+  }
+  
   .internals-title {
     font-size: 10.5pt;
     font-weight: bold;
