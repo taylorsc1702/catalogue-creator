@@ -762,11 +762,21 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   
   /* 1L layout: Move internals section much closer to bottom of page - match html.ts exactly */
   .layout-1L .internals-section-full {
-    margin-top: -30px; /* Negative margin to drop internals significantly down - matches html.ts */
-    padding-top: 10px; /* Reduced top padding */
+    margin-top: -60px; /* More aggressive negative margin to drop internals much further down - matches html.ts */
+    padding-top: 5px; /* Minimal top padding */
     padding-bottom: 0; /* No bottom padding */
     margin-bottom: 0; /* No bottom margin */
     border-top: 2px solid #e0e0e0;
+  }
+  
+  /* Reduce gap in layout-1-full for 1L to minimize space above internals */
+  .layout-1L.layout-1-full {
+    gap: 0; /* Remove gap between main-content and internals-section */
+  }
+  
+  /* Reduce margin below internals title for 1L */
+  .layout-1L .internals-title {
+    margin-bottom: 6px; /* Reduced from 12px */
   }
   
   /* Ensure 1L layout fits on page and doesn't push footer off */
@@ -790,7 +800,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     display: grid !important;
     grid-template-columns: 1fr 1fr; /* 2 columns */
     grid-template-rows: auto auto; /* 2 rows */
-    gap: 20px;
+    gap: 12px; /* Reduced from 20px to minimize padding */
     width: 100%;
     justify-items: center;
   }
