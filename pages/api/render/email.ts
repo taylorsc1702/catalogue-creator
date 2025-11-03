@@ -199,8 +199,8 @@ function generateEmailHtml(
 
   const renderSingleProduct = (item: Item, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
-    // Use full description if provided, otherwise truncate
-    const truncatedDesc = item.description ? (item.description.length <= 250 ? item.description : truncateDescription(item.description, 250)) : '';
+    // Use full description (no truncation - users can edit if needed)
+    const description = item.description || '';
     
     return `
       <!-- Single Product Template -->
@@ -237,9 +237,9 @@ function generateEmailHtml(
                     </p>
                   ` : ''}
                   
-                  ${truncatedDesc && showFields?.description ? `
+                  ${description && showFields?.description ? `
                     <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; color: ${textColor};">
-                      ${esc(truncatedDesc)}
+                      ${esc(description)}
                     </p>
                   ` : ''}
                   
@@ -319,8 +319,8 @@ function generateEmailHtml(
 
   const renderGridProduct = (item: Item, width: number = 280, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
-    // Use full description if provided, otherwise truncate
-    const truncatedDesc = item.description ? (item.description.length <= 120 ? item.description : truncateDescription(item.description, 120)) : '';
+    // Use full description (no truncation - users can edit if needed)
+    const description = item.description || '';
     
     return `
       <td width="${width}" valign="top" style="padding: 10px;">
@@ -343,9 +343,9 @@ function generateEmailHtml(
                   ${esc(item.author)}
                 </p>
               ` : ''}
-              ${truncatedDesc && showFields?.description ? `
+              ${description && showFields?.description ? `
                 <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5; color: ${textColor};">
-                  ${esc(truncatedDesc)}
+                  ${esc(description)}
                 </p>
               ` : ''}
               ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
@@ -380,8 +380,8 @@ function generateEmailHtml(
 
   const renderSpotlight = (item: Item, showInternals?: boolean): string => {
     const productUrl = generateProductUrl(item.handle);
-    // Use full description if provided, otherwise truncate
-    const truncatedDesc = item.description ? (item.description.length <= 300 ? item.description : truncateDescription(item.description, 300)) : '';
+    // Use full description (no truncation - users can edit if needed)
+    const description = item.description || '';
     
     return `
       <!-- Spotlight Template -->
@@ -419,9 +419,9 @@ function generateEmailHtml(
                       ${esc(item.author)}
                     </p>
                   ` : ''}
-                  ${truncatedDesc && showFields?.description ? `
+                  ${description && showFields?.description ? `
                     <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.7; color: ${textColor}; text-align: left;">
-                      ${esc(truncatedDesc)}
+                      ${esc(description)}
                     </p>
                   ` : ''}
                   ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
@@ -505,7 +505,7 @@ function generateEmailHtml(
                   ` : ''}
                   ${item.description && showFields?.description ? `
                     <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
-                      ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
+                      ${esc(item.description)}
                     </p>
                   ` : ''}
                   ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
@@ -715,7 +715,7 @@ function generateEmailHtml(
                 ` : ''}
                 ${item.description && showFields?.description ? `
                   <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: ${textColor};">
-                    ${esc(item.description.length <= 150 ? item.description : truncateDescription(item.description, 150))}
+                    ${esc(item.description)}
                   </p>
                 ` : ''}
                 ${item.additionalImages && item.additionalImages.length > 0 && showInternals ? `
