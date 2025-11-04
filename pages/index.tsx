@@ -998,7 +998,7 @@ export default function Home() {
       try {
         document.execCommand('copy');
         alert('Email HTML copied to clipboard!');
-      } catch (err) {
+      } catch {
         alert('Failed to copy. Please select and copy manually.');
       }
       document.body.removeChild(textArea);
@@ -1037,7 +1037,7 @@ export default function Home() {
     setItemLayouts(newLayouts);
   }
 
-  function setItemInternalsCount1L(index: number, count: number) {
+  function setItemInternalsCount1LValue(index: number, count: number) {
     setItemInternalsCount1L({...itemInternalsCount1L, [index]: count});
   }
 
@@ -2405,7 +2405,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1L} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
