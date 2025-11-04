@@ -16,7 +16,7 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, internalsCount1L } = req.body as {
       items: Item[]; 
       layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
