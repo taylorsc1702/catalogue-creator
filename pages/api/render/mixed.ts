@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
       appendView?: 'none' | 'list' | 'compact-list' | 'table';
       appendInsertIndex?: number | null;
-      urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>;
+      urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>;
     };
     
     if (!items?.length) throw new Error("No items provided");
@@ -64,7 +64,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>) {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>) {
   const options: RenderOptions & { itemInternalsCount1L?: {[key: number]: number}; internalsCount1L?: number } = {
     showFields,
     hyperlinkToggle,
@@ -204,6 +204,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
 
   // Generate URL page HTML
   const generateUrlPageHtml = (urlPage: {url: string; title?: string}) => {
+    // Check if URL is an image by file extension
+    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i.test(urlPage.url);
+    
     let pageTitle = urlPage.title || '';
     try {
       if (!pageTitle) {
@@ -215,6 +218,42 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     }
     const qrCodeUrl = generateQRCode(urlPage.url);
     
+    if (isImage) {
+      // Display image directly in A4 format
+      return `
+        <div class="page url-page" style="page-break-after: always;">
+          <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+            ${esc(websiteName || 'www.woodslane.com.au')}
+          </div>
+          <div class="page-content" style="padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(297mm - 100px - 80px); text-align: center; overflow: hidden;">
+            <img 
+              src="${esc(urlPage.url)}" 
+              alt="${esc(pageTitle)}" 
+              style="width: 100%; height: auto; max-height: calc(297mm - 100px - 80px); object-fit: contain; display: block;"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div style="display: none; padding: 40px 15mm; text-align: center;">
+              <p style="font-size: 16px; color: #dc3545; margin-bottom: 20px;">Failed to load image</p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 20px; word-break: break-all;">
+                <a href="${esc(urlPage.url)}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">
+                  ${esc(urlPage.url)}
+                </a>
+              </p>
+              ${qrCodeUrl ? `
+                <div style="margin-bottom: 20px;">
+                  <img src="${qrCodeUrl}" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; background: white;" />
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+            ${esc(websiteName || 'www.woodslane.com.au')}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Non-image URL: show QR code and link
     return `
       <div class="page url-page" style="page-break-after: always;">
         <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
@@ -362,21 +401,58 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
         ? simpleTable()
         : '';
 
-  // Generate URL pages if requested
-  const urlPagesBefore = (urlPages || []).filter(p => p.position === 'before').map(p => generateUrlPageHtml(p)).join('');
-  const urlPagesAfter = (urlPages || []).filter(p => p.position === 'after' || !p.position).map(p => generateUrlPageHtml(p)).join('');
+  // Generate URL pages if requested - sorted by pageIndex
+  const urlPagesSorted = (urlPages || [])
+    .map((p, idx) => ({ ...p, originalIndex: idx }))
+    .filter(p => p.url.trim() && p.pageIndex !== null && p.pageIndex !== undefined)
+    .sort((a, b) => (a.pageIndex || 0) - (b.pageIndex || 0));
+  
+  // Insert URL pages into pageHtmlArray at their specified indices
+  const pagesWithUrlPages: (string | {type: 'URL_PAGE'; url: string; title?: string})[] = [];
+  let urlPageIndex = 0;
+  
+  for (let i = 0; i < pageHtmlArray.length; i++) {
+    // Check if any URL page should be inserted before this page
+    while (urlPageIndex < urlPagesSorted.length && urlPagesSorted[urlPageIndex].pageIndex === i) {
+      pagesWithUrlPages.push({
+        type: 'URL_PAGE',
+        url: urlPagesSorted[urlPageIndex].url,
+        title: urlPagesSorted[urlPageIndex].title
+      });
+      urlPageIndex++;
+    }
+    pagesWithUrlPages.push(pageHtmlArray[i]);
+  }
+  
+  // Add any remaining URL pages at the end
+  while (urlPageIndex < urlPagesSorted.length) {
+    pagesWithUrlPages.push({
+      type: 'URL_PAGE',
+      url: urlPagesSorted[urlPageIndex].url,
+      title: urlPagesSorted[urlPageIndex].title
+    });
+    urlPageIndex++;
+  }
+  
+  // Convert URL page objects to HTML
+  const pagesWithUrlPagesHtml = pagesWithUrlPages.map(p => {
+    if (typeof p === 'object' && 'type' in p && p.type === 'URL_PAGE') {
+      return generateUrlPageHtml(p);
+    }
+    return p as string;
+  });
 
   // Merge pages with optional appended view at desired index
   let mergedPagesHtml = '';
   if (appendedPagesHtml) {
-    const insertAt = typeof appendInsertIndex === 'number' && appendInsertIndex >= 0 && appendInsertIndex <= pageHtmlArray.length
+    const insertAt = typeof appendInsertIndex === 'number' && appendInsertIndex >= 0 && appendInsertIndex <= pagesWithUrlPagesHtml.length
       ? appendInsertIndex
-      : pageHtmlArray.length; // default to end
-    const before = pageHtmlArray.slice(0, insertAt).join("");
-    const after = pageHtmlArray.slice(insertAt).join("");
+      : pagesWithUrlPagesHtml.length; // default to end
+    const before = pagesWithUrlPagesHtml.slice(0, insertAt).join("");
+    const after = pagesWithUrlPagesHtml.slice(insertAt).join("");
     mergedPagesHtml = `${before}${appendedPagesHtml}${after}`;
   } else {
-    mergedPagesHtml = pageHtmlArray.join("");
+    mergedPagesHtml = pagesWithUrlPagesHtml.join("");
   }
 
   return `<!doctype html>
@@ -1565,9 +1641,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
 </head>
 <body>
   ${frontCoverHtml}
-  ${urlPagesBefore}
   ${mergedPagesHtml}
-  ${urlPagesAfter}
   ${backCoverHtml}
 </body>
 </html>`;

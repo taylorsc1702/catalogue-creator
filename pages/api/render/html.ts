@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         coverImageUrls: string[]; // New: Direct image URLs
         catalogueName: string;
       };
-      urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>;
+      urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>;
     };
     if (!items?.length) throw new Error("No items provided");
     const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData, itemInternalsCount1L, internalsCount1L, urlPages);
@@ -71,7 +71,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>) {
+}, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>) {
   
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -133,6 +133,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
   // Generate URL page HTML
   const generateUrlPageHtml = (urlPage: {url: string; title?: string}) => {
+    // Check if URL is an image by file extension
+    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i.test(urlPage.url);
+    
     let pageTitle = urlPage.title || '';
     try {
       if (!pageTitle) {
@@ -144,6 +147,42 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     }
     const qrCodeUrl = generateQRCode(urlPage.url);
     
+    if (isImage) {
+      // Display image directly in A4 format
+      return `
+        <div class="page url-page" style="page-break-after: always;">
+          <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+            ${esc(websiteName || 'www.woodslane.com.au')}
+          </div>
+          <div class="page-content" style="padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(297mm - 100px - 80px); text-align: center; overflow: hidden;">
+            <img 
+              src="${esc(urlPage.url)}" 
+              alt="${esc(pageTitle)}" 
+              style="width: 100%; height: auto; max-height: calc(297mm - 100px - 80px); object-fit: contain; display: block;"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div style="display: none; padding: 40px 15mm; text-align: center;">
+              <p style="font-size: 16px; color: #dc3545; margin-bottom: 20px;">Failed to load image</p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 20px; word-break: break-all;">
+                <a href="${esc(urlPage.url)}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">
+                  ${esc(urlPage.url)}
+                </a>
+              </p>
+              ${qrCodeUrl ? `
+                <div style="margin-bottom: 20px;">
+                  <img src="${qrCodeUrl}" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; background: white;" />
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+            ${esc(websiteName || 'www.woodslane.com.au')}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Non-image URL: show QR code and link
     return `
       <div class="page url-page" style="page-break-after: always;">
         <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
@@ -164,10 +203,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
           <p style="font-size: 14px; color: #999; margin-top: 20px;">
             Scan the QR code or click the link above to visit this page
           </p>
-          <!-- Web preview iframe (won't print) -->
-          <div style="margin-top: 30px; width: 100%; max-width: 800px; height: 400px; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; display: none; /* Hidden by default, can be shown with @media screen */" class="url-preview">
-            <iframe src="${esc(urlPage.url)}" style="width: 100%; height: 100%; border: none;" title="Page Preview"></iframe>
-          </div>
         </div>
         <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
           ${esc(websiteName || 'www.woodslane.com.au')}
@@ -256,6 +291,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     return text;
   };
 
+  // Generate URL pages if requested - sorted by pageIndex
+  const urlPagesSorted = (urlPages || [])
+    .map((p, idx) => ({ ...p, originalIndex: idx }))
+    .filter(p => p.url.trim() && p.pageIndex !== null && p.pageIndex !== undefined)
+    .sort((a, b) => (a.pageIndex || 0) - (b.pageIndex || 0));
+
   // Chunk items into pages
   // Handle pagination based on layout type
   const perPage = layout === '2-int' ? 2 : layout === '1L' ? 1 : typeof layout === 'number' ? layout : 50; // Use 50 for string layouts
@@ -264,9 +305,52 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     pages.push(items.slice(i, i + perPage));
   }
 
-  const pagesHtml = pages.map((page, pageIndex) => {
+  // Insert URL pages into pages array at their specified indices
+  const pagesWithUrlPages: (Item[] | {type: 'URL_PAGE'; url: string; title?: string})[] = [];
+  let urlPageIndex = 0;
+  
+  for (let i = 0; i < pages.length; i++) {
+    // Check if any URL page should be inserted before this page
+    while (urlPageIndex < urlPagesSorted.length && urlPagesSorted[urlPageIndex].pageIndex === i) {
+      pagesWithUrlPages.push({
+        type: 'URL_PAGE',
+        url: urlPagesSorted[urlPageIndex].url,
+        title: urlPagesSorted[urlPageIndex].title
+      });
+      urlPageIndex++;
+    }
+    pagesWithUrlPages.push(pages[i]);
+  }
+  
+  // Add any remaining URL pages at the end
+  while (urlPageIndex < urlPagesSorted.length) {
+    pagesWithUrlPages.push({
+      type: 'URL_PAGE',
+      url: urlPagesSorted[urlPageIndex].url,
+      title: urlPagesSorted[urlPageIndex].title
+    });
+    urlPageIndex++;
+  }
+  
+  const pagesHtml = pagesWithUrlPages.map((pageOrUrl, pageIndex) => {
+    // If this is a URL page, render it
+    if (typeof pageOrUrl === 'object' && 'type' in pageOrUrl && pageOrUrl.type === 'URL_PAGE') {
+      return generateUrlPageHtml(pageOrUrl);
+    }
+    
+    // Otherwise, render the product page
+    const page = pageOrUrl as Item[];
+    // Calculate the original page index in the pages array (before URL pages were inserted)
+    let originalPageIndex = pageIndex;
+    for (let i = 0; i < pageIndex; i++) {
+      const pageOrUrl = pagesWithUrlPages[i];
+      if (typeof pageOrUrl === 'object' && 'type' in pageOrUrl && pageOrUrl.type === 'URL_PAGE') {
+        originalPageIndex--;
+      }
+    }
+    
     const createProductCard = (item: Item, localIndex: number) => {
-      const globalIndex = pageIndex * perPage + localIndex;
+      const globalIndex = originalPageIndex * perPage + localIndex;
       const itemBarcodeType = itemBarcodeTypes?.[globalIndex] || barcodeType;
       
       // Generate barcode if needed
@@ -745,10 +829,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       </div>
     </div>`;
   }).join("");
-
-  // Generate URL pages if requested
-  const urlPagesBefore = (urlPages || []).filter(p => p.position === 'before').map(p => generateUrlPageHtml(p)).join('');
-  const urlPagesAfter = (urlPages || []).filter(p => p.position === 'after' || !p.position).map(p => generateUrlPageHtml(p)).join('');
 
   // Generate covers if requested
   let frontCoverHtml = '';
@@ -2529,9 +2609,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 </head>
 <body>
   ${frontCoverHtml}
-  ${urlPagesBefore}
   ${pagesHtml}
-  ${urlPagesAfter}
   ${backCoverHtml}
 </body>
 </html>`;

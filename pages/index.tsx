@@ -118,8 +118,8 @@ export default function Home() {
   const [coverImageUrls, setCoverImageUrls] = useState<string[]>(["", "", "", ""]);
   const [coverCatalogueName, setCoverCatalogueName] = useState("");
 
-  // URL pages state (up to 4 URLs)
-  const [urlPages, setUrlPages] = useState<Array<{url: string; title?: string; position?: 'before' | 'after'}>>(Array(4).fill(null).map(() => ({ url: '', position: 'after' as const })));
+  // URL pages state (up to 4 URLs) - now using page index for positioning
+  const [urlPages, setUrlPages] = useState<Array<{url: string; title?: string; pageIndex?: number | null}>>(Array(4).fill(null).map(() => ({ url: '', pageIndex: null })));
 
   // Email state
   const [emailGenerating, setEmailGenerating] = useState(false);
@@ -150,7 +150,7 @@ export default function Home() {
   const [appendView, setAppendView] = useState<'none'|'list'|'compact-list'|'table'>('none');
   // Preview & page reordering modal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  type PageGroup = number[] | 'APPEND';
+  type PageGroup = number[] | 'APPEND' | {type: 'URL_PAGE'; index: number; url: string; title?: string};
   const [pageGroups, setPageGroups] = useState<PageGroup[]>([]);
   const [reorderedPageGroups, setReorderedPageGroups] = useState<PageGroup[]>([]);
   const [appendInsertIndex, setAppendInsertIndex] = useState<number | null>(null);
@@ -372,7 +372,7 @@ export default function Home() {
             coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           },
-          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
+          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, pageIndex: p.pageIndex }))
         })
       });
       
@@ -1132,7 +1132,7 @@ export default function Home() {
             coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
           },
-          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
+          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, pageIndex: p.pageIndex }))
         })
       });
       
@@ -1191,6 +1191,25 @@ export default function Home() {
       }
     }
     if (current.length) groups.push(current);
+    
+    // Add URL pages at their specified indices
+    const urlPagesWithIndices = urlPages
+      .map((urlPage, idx) => ({ ...urlPage, originalIndex: idx }))
+      .filter(p => p.url.trim() && p.pageIndex !== null && p.pageIndex !== undefined);
+    
+    // Insert URL pages at their specified indices
+    urlPagesWithIndices.forEach(urlPage => {
+      const insertIndex = urlPage.pageIndex!;
+      if (insertIndex >= 0 && insertIndex <= groups.length) {
+        groups.splice(insertIndex, 0, {
+          type: 'URL_PAGE',
+          index: urlPage.originalIndex,
+          url: urlPage.url,
+          title: urlPage.title
+        });
+      }
+    });
+    
     // If an appended view is selected, add a synthetic APPEND page at the end
     if (appendView !== 'none') groups.push('APPEND');
     return groups;
@@ -1209,7 +1228,11 @@ export default function Home() {
       const idx = upIndex;
       const to = idx + direction;
       if (to < 0 || to >= prev.length) return prev;
-      const copy = prev.map(pg => (pg === 'APPEND' ? 'APPEND' : [...pg] as PageGroup));
+      const copy = prev.map(pg => {
+        if (pg === 'APPEND') return 'APPEND';
+        if (typeof pg === 'object' && 'type' in pg) return pg;
+        return [...pg] as PageGroup;
+      });
       const [moved] = copy.splice(idx, 1);
       copy.splice(to, 0, moved);
       return copy;
@@ -1217,8 +1240,29 @@ export default function Home() {
   }
 
   function applyPageOrder() {
-    // Flatten new order to a list of old indices
-    const flatOldIndices = reorderedPageGroups.filter(g => g !== 'APPEND').flat() as number[];
+    // Extract URL pages and their new positions
+    const urlPagePositions: {[key: number]: number} = {};
+    reorderedPageGroups.forEach((group, newIndex) => {
+      if (typeof group === 'object' && 'type' in group && group.type === 'URL_PAGE') {
+        urlPagePositions[group.index] = newIndex;
+      }
+    });
+    
+    // Update URL pages with their new positions
+    const newUrlPages = [...urlPages];
+    Object.keys(urlPagePositions).forEach(originalIndex => {
+      const idx = parseInt(originalIndex);
+      if (newUrlPages[idx]) {
+        newUrlPages[idx] = { ...newUrlPages[idx], pageIndex: urlPagePositions[idx] };
+      }
+    });
+    setUrlPages(newUrlPages);
+    
+    // Flatten new order to a list of old indices (excluding URL pages and APPEND)
+    const flatOldIndices = reorderedPageGroups
+      .filter(g => g !== 'APPEND' && (typeof g !== 'object' || !('type' in g && g.type === 'URL_PAGE')))
+      .flat() as number[];
+    
     // Rebuild items
     const newItems = flatOldIndices.map(i => items[i]);
     // Rebuild per-index maps
@@ -1283,7 +1327,7 @@ export default function Home() {
                   coverImageUrls,
                   catalogueName: coverCatalogueName || catalogueName
                 },
-                urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
+                urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, pageIndex: p.pageIndex }))
               })
             });
             const html = await resp.text();
@@ -2259,7 +2303,7 @@ export default function Home() {
                     newPages[index] = { 
                       url: e.target.value.trim(), 
                       title: newPages[index]?.title || '', 
-                      position: newPages[index]?.position || 'after' 
+                      pageIndex: newPages[index]?.pageIndex || null 
                     };
                     setUrlPages(newPages);
                   }} 
@@ -2273,19 +2317,23 @@ export default function Home() {
                   }}
                 />
               </div>
-              <div style={{ width: 120 }}>
+              <div style={{ width: 140 }}>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#495057", marginBottom: 4 }}>
-                  Position:
+                  Page Index:
                 </label>
-                <select
-                  value={urlPages[index]?.position || 'after'}
+                <input
+                  type="number"
+                  min="0"
+                  value={urlPages[index]?.pageIndex ?? ''}
                   onChange={e => {
                     const newPages = [...urlPages];
                     if (urlPages[index]?.url) {
-                      newPages[index] = { ...newPages[index], position: e.target.value as 'before' | 'after' };
+                      const pageIndex = e.target.value === '' ? null : parseInt(e.target.value);
+                      newPages[index] = { ...newPages[index], pageIndex: pageIndex };
                       setUrlPages(newPages);
                     }
                   }}
+                  placeholder="Page #"
                   disabled={!urlPages[index]?.url}
                   style={{ 
                     width: "100%",
@@ -2295,10 +2343,10 @@ export default function Home() {
                     borderRadius: 6,
                     background: urlPages[index]?.url ? "white" : "#F5F5F5"
                   }}
-                >
-                  <option value="before">Before Products</option>
-                  <option value="after">After Products</option>
-                </select>
+                />
+                <div style={{ fontSize: 10, color: "#6C757D", marginTop: 2 }}>
+                  Use reorder modal to set
+                </div>
               </div>
             </div>
             {urlPages[index]?.url && (
@@ -2331,8 +2379,8 @@ export default function Home() {
           </div>
         ))}
         
-        <div style={{ fontSize: 12, color: "#6C757D", marginTop: 8 }}>
-          💡 Each URL will create a full A4 page with a QR code and link. Pages will be inserted at the specified position in the catalogue.
+                <div style={{ fontSize: 12, color: "#6C757D", marginTop: 8 }}>
+          💡 Each URL will create a full A4 page. Use the &quot;Preview &amp; Reorder Pages&quot; button to set page positions and reorder. Images will be displayed directly in A4 format.
         </div>
       </div>
 
@@ -2443,6 +2491,39 @@ export default function Home() {
                         </div>
                       </div>
                     );
+                  }
+                  // Check if this is a URL page
+                  if (typeof group === 'object' && 'type' in group && group.type === 'URL_PAGE') {
+                    const urlPage = group;
+                    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i.test(urlPage.url);
+                    return (
+                      <div key={`url-page-${urlPage.index}`} style={{border:'2px solid #667eea',borderRadius:10,padding:10,background:'#f0f4ff'}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                          <strong>Page {i+1}</strong>
+                          <span style={{fontSize:12,color:'#667eea',fontWeight:600}}>🔗 URL Page {isImage ? '(Image)' : ''}</span>
+                        </div>
+                        <div style={{fontSize:12,color:'#495057',marginBottom:8,wordBreak:'break-all'}}>
+                          {urlPage.title || urlPage.url}
+                        </div>
+                        <div style={{fontSize:11,color:'#6c757d',marginBottom:8}}>
+                          {isImage ? 'Will display as image' : 'Will show QR code'}
+                        </div>
+                        <div style={{display:'flex',gap:8,marginTop:10}}>
+                          <button onClick={()=>{
+                            const newPages = [...urlPages];
+                            newPages[urlPage.index] = { ...newPages[urlPage.index], pageIndex: i };
+                            setUrlPages(newPages);
+                          }} style={btn(true)}>✓ Set Position</button>
+                          <button onClick={()=>movePage(i,-1)} style={btn(false)} disabled={i===0}>↑ Move Up</button>
+                          <button onClick={()=>movePage(i,1)} style={btn(false)} disabled={i===reorderedPageGroups.length-1}>↓ Move Down</button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  // Type guard: ensure group is an array
+                  if (typeof group === 'object' && 'type' in group) {
+                    // This should never happen as URL pages are handled above
+                    return null;
                   }
                   const firstIdx = group[0];
                   const lastIdx = group[group.length-1];
