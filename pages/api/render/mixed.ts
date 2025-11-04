@@ -14,7 +14,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex, internalsCount1L } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -25,7 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       websiteName?: string;
       pageHeaders?: string[]; // Optional array of custom header text for each page (by page index)
       utmParams?: UtmParams;
-      internalsCount1L?: number; // Number of internals to display for 1L layout (1-4)
+      itemInternalsCount1L?: {[key: number]: number}; // Per-item internals count for 1L layout (1-4)
+      internalsCount1L?: number; // Default number of internals to display for 1L layout (1-4)
       coverData?: {
         showFrontCover: boolean;
         showBackCover: boolean;
@@ -38,13 +39,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
       appendView?: 'none' | 'list' | 'compact-list' | 'table';
       appendInsertIndex?: number | null;
+      urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>;
     };
     
     if (!items?.length) throw new Error("No items provided");
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex, internalsCount1L);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -62,13 +64,14 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, internalsCount1L?: number) {
-  const options: RenderOptions & { internalsCount1L?: number } = {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>) {
+  const options: RenderOptions & { itemInternalsCount1L?: {[key: number]: number}; internalsCount1L?: number } = {
     showFields,
     hyperlinkToggle,
     itemBarcodeTypes,
     barcodeType: barcodeType || "None",
     utmParams,
+    itemInternalsCount1L: itemInternalsCount1L,
     internalsCount1L: internalsCount1L || 2
   };
 
@@ -199,6 +202,47 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     return itemType === 'EAN-13' ? generateEAN13Barcode(ean13) : (itemType === 'QR Code' ? generateQRCode(url) : '');
   });
 
+  // Generate URL page HTML
+  const generateUrlPageHtml = (urlPage: {url: string; title?: string}) => {
+    let pageTitle = urlPage.title || '';
+    try {
+      if (!pageTitle) {
+        const urlObj = new URL(urlPage.url);
+        pageTitle = urlObj.hostname.replace('www.', '');
+      }
+    } catch {
+      pageTitle = urlPage.url;
+    }
+    const qrCodeUrl = generateQRCode(urlPage.url);
+    
+    return `
+      <div class="page url-page" style="page-break-after: always;">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+        <div class="page-content" style="padding: 40px 15mm; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(297mm - 100px - 80px); text-align: center;">
+          <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">${esc(pageTitle)}</h1>
+          <p style="font-size: 16px; color: #666; margin-bottom: 40px; max-width: 500px; word-break: break-all;">
+            <a href="${esc(urlPage.url)}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">
+              ${esc(urlPage.url)}
+            </a>
+          </p>
+          ${qrCodeUrl ? `
+            <div style="margin-bottom: 30px;">
+              <img src="${qrCodeUrl}" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; background: white;" />
+            </div>
+          ` : ''}
+          <p style="font-size: 14px; color: #999; margin-top: 20px;">
+            Scan the QR code or click the link above to visit this page
+          </p>
+        </div>
+        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+      </div>
+    `;
+  };
+
   const appendedListHtml = () => `
     <div class="page layout-table" data-layout="list" style="page-break-after: always;">
       <div class="page-header" style="background-color:${bannerColor || '#F7981D'};color:#fff;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">${esc(websiteName || 'www.woodslane.com.au')}</div>
@@ -317,6 +361,10 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
       : appendView === 'table'
         ? simpleTable()
         : '';
+
+  // Generate URL pages if requested
+  const urlPagesBefore = (urlPages || []).filter(p => p.position === 'before').map(p => generateUrlPageHtml(p)).join('');
+  const urlPagesAfter = (urlPages || []).filter(p => p.position === 'after' || !p.position).map(p => generateUrlPageHtml(p)).join('');
 
   // Merge pages with optional appended view at desired index
   let mergedPagesHtml = '';
@@ -900,22 +948,27 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     overflow: hidden;
   }
   
-  /* 1L layout: Use 2x2 grid for internals like html.ts */
+  /* 1L layout: Use flexible grid for internals (1-4 images) */
   .layout-1L .internals-thumbnails-full {
     display: grid !important;
-    grid-template-columns: 1fr 1fr; /* 2 columns */
-    grid-template-rows: auto auto; /* 2 rows */
+    grid-template-columns: repeat(2, 1fr); /* 2 columns - will adapt based on number of images */
+    grid-auto-rows: auto; /* Auto rows based on content */
     gap: 12px; /* Reduced from 20px to minimize padding */
     width: 100%;
     justify-items: center;
+  }
+  
+  /* Adjust grid for 1 internal - single column */
+  .layout-1L .internals-thumbnails-full:has(img:only-child) {
+    grid-template-columns: 1fr;
   }
   
   .layout-1L .internal-thumbnail-full {
     width: 100%;
     max-width: 250px;
     height: auto;
-    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
-    object-fit: cover;
+    max-height: 200px; /* Constrain height to prevent overflow */
+    object-fit: contain; /* Show full image without cropping */
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -924,12 +977,12 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   /* Landscape vs Portrait handling for 1L internal images */
   .layout-1L .internal-thumbnail-full.image-portrait {
     object-fit: contain;
-    aspect-ratio: 2 / 3.3; /* 10% taller: 2/3 * 1.1 = 2/3.3 */
+    max-height: 200px; /* Constrain height */
   }
   
   .layout-1L .internal-thumbnail-full.image-landscape {
-    object-fit: cover;
-    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+    object-fit: contain; /* Changed from cover to contain to show full image */
+    max-height: 200px; /* Constrain height */
   }
   
   @media print {
@@ -1512,7 +1565,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
 </head>
 <body>
   ${frontCoverHtml}
+  ${urlPagesBefore}
   ${mergedPagesHtml}
+  ${urlPagesAfter}
   ${backCoverHtml}
 </body>
 </html>`;

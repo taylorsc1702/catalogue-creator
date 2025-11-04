@@ -16,14 +16,15 @@ type Item = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, internalsCount1L } = req.body as {
+    const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, itemInternalsCount1L, internalsCount1L, urlPages } = req.body as {
       items: Item[]; 
       layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
-      internalsCount1L?: number; // Number of internals to display for 1L layout (1-4)
+      itemInternalsCount1L?: {[key: number]: number}; // Per-item internals count for 1L layout (1-4)
+      internalsCount1L?: number; // Default number of internals to display for 1L layout (1-4)
       bannerColor?: string;
       websiteName?: string;
       utmParams?: {
@@ -43,9 +44,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         coverImageUrls: string[]; // New: Direct image URLs
         catalogueName: string;
       };
+      urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>;
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData, internalsCount1L);
+    const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData, itemInternalsCount1L, internalsCount1L, urlPages);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -69,7 +71,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, internalsCount1L?: number) {
+}, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; position?: 'before' | 'after'}>) {
   
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -127,6 +129,51 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       console.error('QR Code generation error:', error);
       return '';
     }
+  };
+
+  // Generate URL page HTML
+  const generateUrlPageHtml = (urlPage: {url: string; title?: string}) => {
+    let pageTitle = urlPage.title || '';
+    try {
+      if (!pageTitle) {
+        const urlObj = new URL(urlPage.url);
+        pageTitle = urlObj.hostname.replace('www.', '');
+      }
+    } catch {
+      pageTitle = urlPage.url;
+    }
+    const qrCodeUrl = generateQRCode(urlPage.url);
+    
+    return `
+      <div class="page url-page" style="page-break-after: always;">
+        <div class="page-header" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+        <div class="page-content" style="padding: 40px 15mm; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(297mm - 100px - 80px); text-align: center;">
+          <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">${esc(pageTitle)}</h1>
+          <p style="font-size: 16px; color: #666; margin-bottom: 40px; max-width: 500px; word-break: break-all;">
+            <a href="${esc(urlPage.url)}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">
+              ${esc(urlPage.url)}
+            </a>
+          </p>
+          ${qrCodeUrl ? `
+            <div style="margin-bottom: 30px;">
+              <img src="${qrCodeUrl}" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; background: white;" />
+            </div>
+          ` : ''}
+          <p style="font-size: 14px; color: #999; margin-top: 20px;">
+            Scan the QR code or click the link above to visit this page
+          </p>
+          <!-- Web preview iframe (won't print) -->
+          <div style="margin-top: 30px; width: 100%; max-width: 800px; height: 400px; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; display: none; /* Hidden by default, can be shown with @media screen */" class="url-preview">
+            <iframe src="${esc(urlPage.url)}" style="width: 100%; height: 100%; border: none;" title="Page Preview"></iframe>
+          </div>
+        </div>
+        <div class="page-footer" style="background-color: ${bannerColor || '#F7981D'}; color: white; padding: 12px 15mm; text-align: center; font-weight: 600; font-size: 14px;">
+          ${esc(websiteName || 'www.woodslane.com.au')}
+        </div>
+      </div>
+    `;
   };
 
   const generateEAN13Barcode = (code: string) => {
@@ -339,6 +386,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         const shouldTruncateBio = plainTextBio && plainTextBio.length > 752;
         const displayBio = shouldTruncateBio ? plainTextBio.substring(0, 752) + '...' : plainTextBio;
         
+        // Get per-item internals count or use default
+        const itemInternalsCount = itemInternalsCount1L?.[globalIndex] ?? internalsCount1L ?? 2;
+        
         return `
           <div class="product-card layout-1-full layout-1L">
             <div class="main-content">
@@ -381,7 +431,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <div class="internals-section-full internals-section-1L">
                 <div class="internals-title">Internals:</div>
                 <div class="internals-thumbnails-full internals-thumbnails-1L">
-                  ${item.additionalImages.slice(0, internalsCount1L || 2).map((img, idx) => 
+                  ${item.additionalImages.slice(0, itemInternalsCount).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
                   ).join('')}
                 </div>
@@ -695,6 +745,10 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       </div>
     </div>`;
   }).join("");
+
+  // Generate URL pages if requested
+  const urlPagesBefore = (urlPages || []).filter(p => p.position === 'before').map(p => generateUrlPageHtml(p)).join('');
+  const urlPagesAfter = (urlPages || []).filter(p => p.position === 'after' || !p.position).map(p => generateUrlPageHtml(p)).join('');
 
   // Generate covers if requested
   let frontCoverHtml = '';
@@ -2475,7 +2529,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 </head>
 <body>
   ${frontCoverHtml}
+  ${urlPagesBefore}
   ${pagesHtml}
+  ${urlPagesAfter}
   ${backCoverHtml}
 </body>
 </html>`;

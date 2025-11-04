@@ -504,9 +504,13 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
         <div class="internals-section-full internals-section-1L">
           <div class="internals-title">Internals:</div>
           <div class="internals-thumbnails-full internals-thumbnails-1L">
-            ${item.additionalImages.slice(0, 4).map((img, idx) => 
-              `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
-            ).join('')}
+            ${(() => {
+              const extendedOptions = options as RenderOptions & { itemInternalsCount1L?: {[key: number]: number}; internalsCount1L?: number };
+              const itemInternalsCount = extendedOptions.itemInternalsCount1L?.[globalIndex] ?? extendedOptions.internalsCount1L ?? 2;
+              return item.additionalImages.slice(0, itemInternalsCount).map((img, idx) => 
+                `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
+              ).join('');
+            })()}
           </div>
         </div>
       ` : ""}

@@ -94,9 +94,10 @@ export default function Home() {
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|'1L'|2|'2-int'|3|4|8}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
+  const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-4)
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
-  const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Number of internals to display for 1L layout (1-4)
+  const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Default number of internals to display for 1L layout (1-4)
   
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
@@ -116,6 +117,9 @@ export default function Home() {
   const [backCoverText2, setBackCoverText2] = useState("");
   const [coverImageUrls, setCoverImageUrls] = useState<string[]>(["", "", "", ""]);
   const [coverCatalogueName, setCoverCatalogueName] = useState("");
+
+  // URL pages state (up to 4 URLs)
+  const [urlPages, setUrlPages] = useState<Array<{url: string; title?: string; position?: 'before' | 'after'}>>(Array(4).fill(null).map(() => ({ url: '', position: 'after' as const })));
 
   // Email state
   const [emailGenerating, setEmailGenerating] = useState(false);
@@ -367,7 +371,8 @@ export default function Home() {
             backCoverText2,
             coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
-          }
+          },
+          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
         })
       });
       
@@ -1032,6 +1037,16 @@ export default function Home() {
     setItemLayouts(newLayouts);
   }
 
+  function setItemInternalsCount1L(index: number, count: number) {
+    setItemInternalsCount1L({...itemInternalsCount1L, [index]: count});
+  }
+
+  function clearItemInternalsCount1L(index: number) {
+    const newCounts = {...itemInternalsCount1L};
+    delete newCounts[index];
+    setItemInternalsCount1L(newCounts);
+  }
+
   function setItemBarcodeType(index: number, barcodeType: "EAN-13" | "QR Code" | "None") {
     setItemBarcodeTypes({...itemBarcodeTypes, [index]: barcodeType});
   }
@@ -1103,6 +1118,7 @@ export default function Home() {
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          itemInternalsCount1L: itemInternalsCount1L,
           internalsCount1L: internalsCount1L,
           appendView,
           appendInsertIndex,
@@ -1115,7 +1131,8 @@ export default function Home() {
             backCoverText2,
             coverImageUrls,
             catalogueName: coverCatalogueName || catalogueName
-          }
+          },
+          urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
         })
       });
       
@@ -1252,6 +1269,7 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                itemInternalsCount1L: itemInternalsCount1L,
                 internalsCount1L: internalsCount1L,
                 appendView,
                 appendInsertIndex,
@@ -1264,7 +1282,8 @@ export default function Home() {
                   backCoverText2,
                   coverImageUrls,
                   catalogueName: coverCatalogueName || catalogueName
-                }
+                },
+                urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, position: p.position }))
               })
             });
             const html = await resp.text();
@@ -1284,6 +1303,7 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                itemInternalsCount1L: layout === '1L' ? itemInternalsCount1L : undefined,
                 internalsCount1L: layout === '1L' ? internalsCount1L : undefined,
                 coverData: {
                   showFrontCover,
@@ -2206,6 +2226,116 @@ export default function Home() {
         </div>
       </div>
 
+      {/* URL Pages Section */}
+      <div style={{ 
+        marginTop: 20, 
+        padding: 16, 
+        background: "#F8F9FA", 
+        borderRadius: 12, 
+        border: "1px solid #E9ECEF" 
+      }}>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 8, 
+          marginBottom: 16 
+        }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#495057" }}>🔗 URL Pages</span>
+          <span style={{ fontSize: 12, color: "#6C757D" }}>(Up to 4 URLs - Each creates an A4 page)</span>
+        </div>
+        
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} style={{ marginBottom: 12, padding: 12, background: "white", borderRadius: 8, border: "1px solid #E9ECEF" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#495057", marginBottom: 4 }}>
+                  URL {index + 1}:
+                </label>
+                <input 
+                  type="url"
+                  value={urlPages[index]?.url || ""} 
+                  onChange={e => {
+                    const newPages = [...urlPages];
+                    newPages[index] = { 
+                      url: e.target.value.trim(), 
+                      title: newPages[index]?.title || '', 
+                      position: newPages[index]?.position || 'after' 
+                    };
+                    setUrlPages(newPages);
+                  }} 
+                  placeholder="https://example.com/page" 
+                  style={{ 
+                    width: "100%",
+                    fontSize: 12,
+                    padding: "8px 10px",
+                    border: "1px solid #DEE2E6",
+                    borderRadius: 6
+                  }}
+                />
+              </div>
+              <div style={{ width: 120 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#495057", marginBottom: 4 }}>
+                  Position:
+                </label>
+                <select
+                  value={urlPages[index]?.position || 'after'}
+                  onChange={e => {
+                    const newPages = [...urlPages];
+                    if (urlPages[index]?.url) {
+                      newPages[index] = { ...newPages[index], position: e.target.value as 'before' | 'after' };
+                      setUrlPages(newPages);
+                    }
+                  }}
+                  disabled={!urlPages[index]?.url}
+                  style={{ 
+                    width: "100%",
+                    fontSize: 12,
+                    padding: "8px 10px",
+                    border: "1px solid #DEE2E6",
+                    borderRadius: 6,
+                    background: urlPages[index]?.url ? "white" : "#F5F5F5"
+                  }}
+                >
+                  <option value="before">Before Products</option>
+                  <option value="after">After Products</option>
+                </select>
+              </div>
+            </div>
+            {urlPages[index]?.url && (
+              <div style={{ marginTop: 8 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#495057", marginBottom: 4 }}>
+                  Page Title (Optional):
+                </label>
+                <input 
+                  type="text"
+                  value={urlPages[index]?.title || ""} 
+                  onChange={e => {
+                    const newPages = [...urlPages];
+                    newPages[index] = { 
+                      ...newPages[index], 
+                      title: e.target.value.trim() 
+                    };
+                    setUrlPages(newPages);
+                  }} 
+                  placeholder="Auto-generated from URL" 
+                  style={{ 
+                    width: "100%",
+                    fontSize: 12,
+                    padding: "8px 10px",
+                    border: "1px solid #DEE2E6",
+                    borderRadius: 6
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
+        
+        <div style={{ fontSize: 12, color: "#6C757D", marginTop: 8 }}>
+          💡 Each URL will create a full A4 page with a QR code and link. Pages will be inserted at the specified position in the catalogue.
+        </div>
+      </div>
+
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
             <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
@@ -2275,7 +2405,7 @@ export default function Home() {
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1L} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
@@ -3348,7 +3478,7 @@ function EditModal({
   );
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal }: {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal }: {
   items: Item[]; 
   layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -3364,6 +3494,10 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   itemAuthorBioToggle: {[key: number]: boolean};
   setItemAuthorBioToggle: (index: number, enabled: boolean) => void;
   clearItemAuthorBioToggle: (index: number) => void;
+  itemInternalsCount1L: {[key: number]: number};
+  setItemInternalsCount1L: (index: number, count: number) => void;
+  clearItemInternalsCount1L: (index: number) => void;
+  internalsCount1L: number;
   hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
   generateProductUrl: (handle: string) => string;
   isMixedView?: boolean;
@@ -3380,6 +3514,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   void itemBarcodeTypes;
   void setItemBarcodeType;
   void clearItemBarcodeType;
+  // Note: itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, and internalsCount1L are used in the UI below
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
@@ -3680,6 +3815,34 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     <span style={{ fontSize: 11, color: "#6C757D", fontWeight: 600 }}>
                       Internals: {it.additionalImages.length}
                     </span>
+                    {(itemLayouts[i] === '1L' || (layout === '1L' && !itemLayouts[i])) && (
+                      <>
+                        <span style={{ fontSize: 11, color: "#6C757D" }}>Show:</span>
+                        <select
+                          value={itemInternalsCount1L[i] ?? internalsCount1L}
+                          onChange={(e) => {
+                            const count = parseInt(e.target.value);
+                            if (count === internalsCount1L) {
+                              clearItemInternalsCount1L(i);
+                            } else {
+                              setItemInternalsCount1L(i, count);
+                            }
+                          }}
+                          style={{
+                            padding: "2px 6px",
+                            fontSize: 11,
+                            border: "1px solid #DEE2E6",
+                            borderRadius: 4,
+                            backgroundColor: "white",
+                            cursor: "pointer"
+                          }}
+                        >
+                          {[1, 2, 3, 4].map(n => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
+                        </select>
+                      </>
+                    )}
                   </div>
                 )}
 
