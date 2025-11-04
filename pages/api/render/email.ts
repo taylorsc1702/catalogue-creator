@@ -1089,13 +1089,15 @@ function generateCompleteEmailHtml(
   `;
   
   // ISSUU Catalogue section HTML
-  const issuuCatalogueSection = issuuUrl ? (() => {
-    // Only show section if ISSUU URL is provided (we need a link target)
-    // If catalogueImageUrl is also provided, use it; otherwise try to generate from ISSUU URL
-    const linkUrl = issuuUrl;
+  // Only show section if either ISSUU URL or Catalogue Image URL is provided
+  const hasIssuuUrl = issuuUrl && issuuUrl.trim().length > 0;
+  const hasCatalogueImageUrl = catalogueImageUrl && catalogueImageUrl.trim().length > 0;
+  const issuuCatalogueSection = (hasIssuuUrl || hasCatalogueImageUrl) ? (() => {
+    // Use ISSUU URL as link target if provided, otherwise use catalogue image URL
+    const linkUrl = issuuUrl || catalogueImageUrl;
     
     // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
-    const thumbnailUrl = catalogueImageUrl || getIssuuThumbnailUrl(issuuUrl);
+    const thumbnailUrl = catalogueImageUrl || (issuuUrl ? getIssuuThumbnailUrl(issuuUrl) : null);
     
     return `
     <!-- ISSUU Catalogue Link -->
@@ -1157,7 +1159,7 @@ function generateCompleteEmailHtml(
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'products') {
       orderedSections.push(sectionMap[sectionId] || '');
-    } else if (sectionId === 'issuuCatalogue' && issuuUrl) {
+    } else if (sectionId === 'issuuCatalogue' && (hasIssuuUrl || hasCatalogueImageUrl)) {
       orderedSections.push(sectionMap[sectionId] || '');
     }
   }

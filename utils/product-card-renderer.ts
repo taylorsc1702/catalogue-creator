@@ -256,7 +256,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
         <div class="internals-section-full">
           <div class="internals-title">Internals:</div>
           <div class="internals-thumbnails-full">
-            ${item.additionalImages.slice(0, 4).map((img, idx) => 
+            ${item.additionalImages.slice(0, (options as RenderOptions & { internalsCount1L?: number }).internalsCount1L || 2).map((img, idx) => 
               `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
             ).join('')}
           </div>

@@ -23,6 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
+      internalsCount1L?: number; // Number of internals to display for 1L layout (1-4)
       bannerColor?: string;
       websiteName?: string;
       utmParams?: {
@@ -44,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     };
     if (!items?.length) throw new Error("No items provided");
-    const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData);
+    const html = await renderHtml(items, layout, showFields || {}, hyperlinkToggle, utmParams, itemBarcodeTypes, barcodeType, bannerColor, websiteName, coverData, internalsCount1L);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -68,7 +69,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}) {
+}, internalsCount1L?: number) {
   
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -380,7 +381,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <div class="internals-section-full internals-section-1L">
                 <div class="internals-title">Internals:</div>
                 <div class="internals-thumbnails-full internals-thumbnails-1L">
-                  ${item.additionalImages.slice(0, 4).map((img, idx) => 
+                  ${item.additionalImages.slice(0, internalsCount1L || 2).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
                   ).join('')}
                 </div>
@@ -1079,34 +1080,44 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   /* Ensure 1L layout fits on page and doesn't push footer off */
   .page.layout-1L {
     max-height: 297mm; /* A4 height constraint */
-    overflow: hidden;
+    overflow: visible; /* Allow internals to be visible */
   }
   
   .page.layout-1L .page-content {
     max-height: calc(297mm - 60mm); /* Minus header/footer heights */
-    overflow: hidden;
+    overflow: visible; /* Allow internals to be visible */
   }
   
   .page.layout-1L .layout-1-full {
-    max-height: 100%;
-    overflow: hidden;
+    max-height: none; /* Remove height constraint to allow internals */
+    overflow: visible; /* Allow internals to be visible */
+  }
+  
+  /* Ensure internals section is not clipped */
+  .page.layout-1L .internals-section-full {
+    overflow: visible;
   }
   
   .layout-1L .internals-thumbnails-full {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 columns */
-    grid-template-rows: auto auto; /* 2 rows */
+    grid-template-columns: repeat(2, 1fr); /* 2 columns - will adapt based on number of images */
+    grid-auto-rows: auto; /* Auto rows based on content */
     gap: 12px; /* Reduced from 20px to minimize padding */
     width: 100%;
     justify-items: center;
+  }
+  
+  /* Adjust grid for 1 internal - single column */
+  .layout-1L .internals-thumbnails-full:has(img:only-child) {
+    grid-template-columns: 1fr;
   }
   
   .layout-1L .internal-thumbnail-full {
     width: 100%;
     max-width: 250px;
     height: auto;
-    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
-    object-fit: cover;
+    max-height: 200px; /* Constrain height to prevent overflow */
+    object-fit: contain; /* Show full image without cropping */
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -1115,12 +1126,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   /* Landscape vs Portrait handling for 1L internal images */
   .layout-1L .internal-thumbnail-full.image-portrait {
     object-fit: contain;
-    aspect-ratio: 2 / 3.3; /* 10% taller: 2/3 * 1.1 = 2/3.3 */
+    max-height: 200px; /* Constrain height */
   }
   
   .layout-1L .internal-thumbnail-full.image-landscape {
-    object-fit: cover;
-    aspect-ratio: 3 / 2.2; /* 10% taller: 3/2 * 1.1 = 3/2.2 */
+    object-fit: contain; /* Changed from cover to contain to show full image */
+    max-height: 200px; /* Constrain height */
   }
   
   @media print {

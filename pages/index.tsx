@@ -96,6 +96,7 @@ export default function Home() {
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
+  const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Number of internals to display for 1L layout (1-4)
   
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
@@ -1102,6 +1103,7 @@ export default function Home() {
           bannerColor: getBannerColor(hyperlinkToggle),
           websiteName: getWebsiteName(hyperlinkToggle),
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          internalsCount1L: internalsCount1L,
           appendView,
           appendInsertIndex,
           coverData: {
@@ -1250,6 +1252,7 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                internalsCount1L: internalsCount1L,
                 appendView,
                 appendInsertIndex,
                 coverData: {
@@ -1281,6 +1284,7 @@ export default function Home() {
                 bannerColor: getBannerColor(hyperlinkToggle),
                 websiteName: getWebsiteName(hyperlinkToggle),
                 utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+                internalsCount1L: layout === '1L' ? internalsCount1L : undefined,
                 coverData: {
                   showFrontCover,
                   showBackCover,
@@ -1707,6 +1711,27 @@ export default function Home() {
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
         ))}
         <button onClick={()=>setLayout('1L')} style={btn(layout==='1L')}>1L</button>
+        {layout === '1L' && (
+          <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 600, color: "#495057" }}>Internals:</span>
+        )}
+        {layout === '1L' && (
+          <select 
+            value={internalsCount1L} 
+            onChange={(e) => setInternalsCount1L(parseInt(e.target.value))}
+            style={{
+              padding: "6px 12px",
+              fontSize: 14,
+              border: "1px solid #ddd",
+              borderRadius: 4,
+              backgroundColor: "white",
+              cursor: "pointer"
+            }}
+          >
+            {[1, 2, 3, 4].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        )}
         <button onClick={()=>setLayout('2-int')} style={btn(layout==='2-int')}>2-int</button>
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>

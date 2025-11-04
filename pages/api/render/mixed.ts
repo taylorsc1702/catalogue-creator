@@ -14,7 +14,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex, internalsCount1L } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       websiteName?: string;
       pageHeaders?: string[]; // Optional array of custom header text for each page (by page index)
       utmParams?: UtmParams;
+      internalsCount1L?: number; // Number of internals to display for 1L layout (1-4)
       coverData?: {
         showFrontCover: boolean;
         showBackCover: boolean;
@@ -43,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex, internalsCount1L);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -61,13 +62,14 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null) {
-  const options: RenderOptions = {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, internalsCount1L?: number) {
+  const options: RenderOptions & { internalsCount1L?: number } = {
     showFields,
     hyperlinkToggle,
     itemBarcodeTypes,
     barcodeType: barcodeType || "None",
-    utmParams
+    utmParams,
+    internalsCount1L: internalsCount1L || 2
   };
 
   // Group items by their layout requirements
