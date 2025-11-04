@@ -562,7 +562,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
       // For 2-int layout, use vertical layout with image at top and internal image above barcode
       if (layout === '2-int') {
-        const truncatedDesc = item.description ? (item.description.length > 1600 ? item.description.substring(0, 1597) + '...' : item.description) : '';
+        const truncatedDesc = item.description ? (item.description.length > 800 ? item.description.substring(0, 797) + '...' : item.description) : '';
         
         return `
           <div class="product-card layout-2-vertical layout-2-int">
