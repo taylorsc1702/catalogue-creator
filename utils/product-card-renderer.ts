@@ -410,7 +410,8 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
 };
 
 export const renderProductCard2Int = (item: Item, globalIndex: number, options: RenderOptions): string => {
-  const truncatedDesc = item.description ? (item.description.length > 1600 ? item.description.substring(0, 1597) + '...' : item.description) : '';
+  // Reduced by 150 characters from 800 to 650 to prevent cutoff in mixed layout
+  const truncatedDesc = item.description ? (item.description.length > 650 ? item.description.substring(0, 647) + '...' : item.description) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
