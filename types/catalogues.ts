@@ -15,3 +15,20 @@ export interface CatalogueSummary {
   ownerId: string;
 }
 
+export interface CatalogueSavePayload {
+  id?: string;
+  name: string;
+  description?: string | null;
+  branding?: Record<string, any> | null;
+  layoutConfig?: Record<string, any> | null;
+  items?: any[] | null;
+  settings?: Record<string, any> | null;
+}
+
+export interface CatalogueDetails extends CatalogueSavePayload {
+  id: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+

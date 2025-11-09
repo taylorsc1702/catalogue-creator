@@ -4,6 +4,75 @@ import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
 import { getItemTruncations, type LayoutType } from '@/utils/truncation-detector';
 import SavedCataloguesPanel from "@/components/catalogues/SavedCataloguesPanel";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import type { CatalogueDetails, CatalogueSavePayload, CatalogueSummary } from "@/types/catalogues";
+
+const createDefaultEmailLogoLinks = () => [
+  { imageUrl: "", destinationUrl: "" },
+  { imageUrl: "", destinationUrl: "" },
+  { imageUrl: "", destinationUrl: "" },
+  { imageUrl: "", destinationUrl: "" },
+];
+
+type FeedbackMessage = { type: "success" | "error"; text: string };
+
+type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
+type ItemLayoutOption = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8;
+
+const ALLOWED_LAYOUTS: BuilderLayout[] = [1, "1L", 2, "2-int", 3, 4, 8, "list", "compact-list", "table"];
+const ALLOWED_ITEM_LAYOUTS: ItemLayoutOption[] = [1, "1L", 2, "2-int", 3, 4, 8];
+const ALLOWED_EMAIL_TEMPLATES = [
+  "single",
+  "grid-2",
+  "grid-3",
+  "grid-4",
+  "list",
+  "spotlight",
+  "featured",
+  "mixed",
+] as const;
+const ALLOWED_BARCODE_TYPES = ["EAN-13", "QR Code", "None"] as const;
+
+type EmailTemplateType = (typeof ALLOWED_EMAIL_TEMPLATES)[number];
+type EmailAssignmentTemplate = Exclude<EmailTemplateType, "mixed">;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const getString = (record: Record<string, unknown>, key: string): string | null =>
+  typeof record[key] === "string" ? (record[key] as string) : null;
+
+const isEmailTemplate = (value: unknown): value is EmailTemplateType =>
+  typeof value === "string" && (ALLOWED_EMAIL_TEMPLATES as readonly string[]).includes(value);
+
+const isAssignmentTemplate = (value: unknown): value is EmailAssignmentTemplate =>
+  typeof value === "string" &&
+  value !== "mixed" &&
+  (ALLOWED_EMAIL_TEMPLATES as readonly string[]).includes(value);
+
+const isBarcodeType = (value: unknown): value is (typeof ALLOWED_BARCODE_TYPES)[number] =>
+  typeof value === "string" && (ALLOWED_BARCODE_TYPES as readonly string[]).includes(value);
+
+const isLayoutValue = (value: unknown): value is BuilderLayout =>
+  (typeof value === "number" || typeof value === "string") && ALLOWED_LAYOUTS.includes(value as BuilderLayout);
+
+const isItemLayoutValue = (value: unknown): value is ItemLayoutOption =>
+  (typeof value === "number" || typeof value === "string") && ALLOWED_ITEM_LAYOUTS.includes(value as ItemLayoutOption);
+
+const normalizeRecordValues = <T,>(
+  input: unknown,
+  isValid: (value: unknown) => value is T
+): { [key: number]: T } => {
+  if (!isRecord(input)) return {};
+  const result: { [key: number]: T } = {};
+  Object.entries(input).forEach(([key, value]) => {
+    const numericKey = Number(key);
+    if (!Number.isNaN(numericKey) && isValid(value)) {
+      result[numericKey] = value;
+    }
+  });
+  return result;
+};
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -126,8 +195,8 @@ export default function Home() {
   const [emailGenerating, setEmailGenerating] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailHtml, setEmailHtml] = useState<string>('');
-  const [emailTemplate, setEmailTemplate] = useState<'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured' | 'mixed'>('single');
-  const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured'}>({});
+  const [emailTemplate, setEmailTemplate] = useState<EmailTemplateType>('single');
+  const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: EmailAssignmentTemplate}>({});
   const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
@@ -136,12 +205,7 @@ export default function Home() {
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
   // Logo URLs (up to 4) - each has image URL and destination URL
-  const [emailLogoUrls, setEmailLogoUrls] = useState<Array<{imageUrl: string; destinationUrl: string}>>([
-    { imageUrl: '', destinationUrl: '' },
-    { imageUrl: '', destinationUrl: '' },
-    { imageUrl: '', destinationUrl: '' },
-    { imageUrl: '', destinationUrl: '' }
-  ]);
+  const [emailLogoUrls, setEmailLogoUrls] = useState<Array<{imageUrl: string; destinationUrl: string}>>(createDefaultEmailLogoLinks);
   // Line break text section
   const [emailLineBreakText, setEmailLineBreakText] = useState<string>('');
   // Email section order - default order
@@ -162,6 +226,20 @@ export default function Home() {
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<'description' | 'authorBio' | null>(null);
   const [isMixedView, setIsMixedView] = useState(false);
+
+  const session = useSession();
+  const supabaseClient = useSupabaseClient();
+
+  const [activeCatalogueId, setActiveCatalogueId] = useState<string | null>(null);
+  const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
+  const [isLoadingCatalogue, setIsLoadingCatalogue] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState<FeedbackMessage | null>(null);
+  const [catalogueRefreshToken, setCatalogueRefreshToken] = useState(0);
+
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState<FeedbackMessage | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Get items with edited content applied
   const getItemsWithEdits = (): Item[] => {
@@ -221,6 +299,348 @@ export default function Home() {
       return updated;
     });
   }
+
+  const handleSignIn = async () => {
+    if (!authEmail.trim() || !authPassword) {
+      setAuthMessage({ type: "error", text: "Enter both email and password to sign in." });
+      return;
+    }
+    setAuthLoading(true);
+    setAuthMessage(null);
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+      if (error) throw error;
+      setAuthMessage({ type: "success", text: "Signed in successfully." });
+      setCatalogueRefreshToken(Date.now());
+    } catch (error) {
+      setAuthMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to sign in.",
+      });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setAuthLoading(true);
+    setAuthMessage(null);
+    try {
+      await supabaseClient.auth.signOut();
+      setAuthMessage({ type: "success", text: "Signed out." });
+      setActiveCatalogueId(null);
+      setCatalogueRefreshToken(Date.now());
+    } catch (error) {
+      setAuthMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to sign out.",
+      });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const startNewCatalogue = () => {
+    setActiveCatalogueId(null);
+    setCatalogueName("");
+    setCoverCatalogueName("");
+    setShowFrontCover(false);
+    setShowBackCover(false);
+    setFrontCoverText1("");
+    setFrontCoverText2("");
+    setBackCoverText1("");
+    setBackCoverText2("");
+    setCoverImageUrls(["", "", "", ""]);
+    setDiscountCode("");
+    setCustomBannerColor("");
+    setHyperlinkToggle("woodslane");
+    setLayout(4);
+    setBarcodeType("QR Code");
+    setItems([]);
+    setItemLayouts({});
+    setItemBarcodeTypes({});
+    setItemAuthorBioToggle({});
+    setItemInternalsCount1L({});
+    setInternalsCount1L(2);
+    setEditedContent({});
+    setEmailTemplate("single");
+    setEmailTemplateAssignments({});
+    setEmailBannerImageUrl("");
+    setEmailFreeText("");
+    setEmailIssuuUrl("");
+    setEmailCatalogueImageUrl("");
+    setEmailEditedDescriptions({});
+    setEmailInternalsToggle({});
+    setEmailLogoUrls(createDefaultEmailLogoLinks());
+    setEmailLineBreakText("");
+    setEmailSectionOrder(['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue']);
+    setUtmSource("");
+    setUtmMedium("");
+    setUtmCampaign("");
+    setUtmContent("");
+    setUtmTerm("");
+    setSaveFeedback({ type: "success", text: "Started a new catalogue draft." });
+  };
+
+  const handleSaveCatalogue = async () => {
+    if (!session) {
+      setSaveFeedback({ type: "error", text: "Sign in to save catalogues." });
+      return;
+    }
+    setIsSavingCatalogue(true);
+    setSaveFeedback(null);
+    try {
+      const effectiveName = (coverCatalogueName || catalogueName).trim() || "Untitled catalogue";
+      const coverImages = Array.isArray(coverImageUrls) ? [...coverImageUrls] : ["", "", "", ""];
+      while (coverImages.length < 4) coverImages.push("");
+
+      const payload: CatalogueSavePayload = {
+        id: activeCatalogueId ?? undefined,
+        name: effectiveName,
+        description: coverCatalogueName?.trim() ? coverCatalogueName.trim() : null,
+        branding: {
+          bannerColor: getBannerColor(hyperlinkToggle),
+          customBannerColor: customBannerColor || null,
+          hyperlinkToggle,
+          websiteName: getWebsiteName(hyperlinkToggle),
+          discountCode: discountCode || null,
+          cover: {
+            showFrontCover,
+            showBackCover,
+            frontCoverText1,
+            frontCoverText2,
+            backCoverText1,
+            backCoverText2,
+            coverImageUrls: coverImages.slice(0, 4),
+            catalogueName: coverCatalogueName,
+          },
+        },
+        layoutConfig: {
+          layoutType: layout,
+          barcodeType,
+          itemLayouts,
+          itemBarcodeTypes,
+          itemAuthorBioToggle,
+          itemInternalsCount1L,
+          internalsCount1L,
+        },
+        items,
+        settings: {
+          utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
+          editedContent,
+          emailConfig: {
+            template: emailTemplate,
+            assignments: emailTemplateAssignments,
+            freeText: emailFreeText,
+            bannerImageUrl: emailBannerImageUrl,
+            issuuUrl: emailIssuuUrl,
+            catalogueImageUrl: emailCatalogueImageUrl,
+            logoUrls: emailLogoUrls,
+            lineBreakText: emailLineBreakText,
+            sectionOrder: emailSectionOrder,
+            editedDescriptions: emailEditedDescriptions,
+            internalsToggle: emailInternalsToggle,
+          },
+        },
+      };
+
+      const endpoint = activeCatalogueId ? `/api/catalogues/${activeCatalogueId}` : "/api/catalogues";
+      const method = activeCatalogueId ? "PUT" : "POST";
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 401) {
+        setSaveFeedback({ type: "error", text: "Your session expired. Please sign in again." });
+        setCatalogueRefreshToken(Date.now());
+        return;
+      }
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to save catalogue.");
+      }
+
+      const savedSummary = (await response.json()) as CatalogueSummary;
+      setActiveCatalogueId(savedSummary.id);
+      setSaveFeedback({
+        type: "success",
+        text: `Catalogue saved${savedSummary.name ? `: ${savedSummary.name}` : ""}.`,
+      });
+      setCatalogueRefreshToken(Date.now());
+    } catch (error) {
+      setSaveFeedback({
+        type: "error",
+        text: error instanceof Error ? error.message : "Unexpected error while saving catalogue.",
+      });
+    } finally {
+      setIsSavingCatalogue(false);
+    }
+  };
+
+  const handleOpenCatalogue = async (catalogueId: string) => {
+    setIsLoadingCatalogue(true);
+    setSaveFeedback(null);
+    try {
+      const response = await fetch(`/api/catalogues/${catalogueId}`);
+      if (response.status === 401) {
+        setSaveFeedback({ type: "error", text: "Sign in to open saved catalogues." });
+        setCatalogueRefreshToken(Date.now());
+        return;
+      }
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to load catalogue.");
+      }
+
+      const data: CatalogueDetails = await response.json();
+
+      const brandingRecord = isRecord(data.branding) ? (data.branding as Record<string, unknown>) : {};
+      const coverRecord = isRecord(brandingRecord["cover"]) ? (brandingRecord["cover"] as Record<string, unknown>) : {};
+      const layoutRecord = isRecord(data.layoutConfig) ? (data.layoutConfig as Record<string, unknown>) : {};
+      const settingsRecord = isRecord(data.settings) ? (data.settings as Record<string, unknown>) : {};
+      const utmRecord = isRecord(settingsRecord["utmParams"])
+        ? (settingsRecord["utmParams"] as Record<string, unknown>)
+        : {};
+      const emailRecord = isRecord(settingsRecord["emailConfig"])
+        ? (settingsRecord["emailConfig"] as Record<string, unknown>)
+        : {};
+
+      const coverImagesValue = coverRecord["coverImageUrls"];
+      const coverImages = Array.isArray(coverImagesValue)
+        ? coverImagesValue.map((value) => (typeof value === "string" ? value : ""))
+        : [];
+      while (coverImages.length < 4) coverImages.push("");
+
+      const logoUrlsValue = emailRecord["logoUrls"];
+      const savedLogoUrls = Array.isArray(logoUrlsValue)
+        ? logoUrlsValue.map((link) => {
+            if (isRecord(link)) {
+              return {
+                imageUrl: getString(link, "imageUrl") ?? "",
+                destinationUrl: getString(link, "destinationUrl") ?? "",
+              };
+            }
+            return { imageUrl: "", destinationUrl: "" };
+          })
+        : createDefaultEmailLogoLinks();
+      while (savedLogoUrls.length < 4) savedLogoUrls.push({ imageUrl: "", destinationUrl: "" });
+
+      const layoutTypeValue = layoutRecord["layoutType"];
+      const resolvedLayout: BuilderLayout =
+        isLayoutValue(layoutTypeValue) ? (layoutTypeValue as BuilderLayout) : 4;
+
+      const barcodeRaw = layoutRecord["barcodeType"];
+      const resolvedBarcode =
+        isBarcodeType(barcodeRaw) ? (barcodeRaw as (typeof ALLOWED_BARCODE_TYPES)[number]) : "QR Code";
+
+      const hyperlinkRaw = getString(brandingRecord, "hyperlinkToggle");
+      const resolvedHyperlink =
+        hyperlinkRaw === "woodslane" ||
+        hyperlinkRaw === "woodslanehealth" ||
+        hyperlinkRaw === "woodslaneeducation" ||
+        hyperlinkRaw === "woodslanepress"
+          ? hyperlinkRaw
+          : "woodslane";
+
+      const assignmentsNormalized = normalizeRecordValues<EmailAssignmentTemplate>(
+        emailRecord["assignments"],
+        isAssignmentTemplate
+      );
+      const editedDescriptionsNormalized = normalizeRecordValues<string>(
+        emailRecord["editedDescriptions"],
+        (value): value is string => typeof value === "string"
+      );
+      const internalsToggleNormalized = normalizeRecordValues<boolean>(
+        emailRecord["internalsToggle"],
+        (value): value is boolean => typeof value === "boolean"
+      );
+      const itemLayoutsNormalized = normalizeRecordValues<ItemLayoutOption>(
+        layoutRecord["itemLayouts"],
+        isItemLayoutValue
+      );
+      const itemBarcodeTypesNormalized = normalizeRecordValues<(typeof ALLOWED_BARCODE_TYPES)[number]>(
+        layoutRecord["itemBarcodeTypes"],
+        isBarcodeType
+      );
+      const itemAuthorBioToggleNormalized = normalizeRecordValues<boolean>(
+        layoutRecord["itemAuthorBioToggle"],
+        (value): value is boolean => typeof value === "boolean"
+      );
+      const itemInternalsCountNormalized = normalizeRecordValues<number>(
+        layoutRecord["itemInternalsCount1L"],
+        (value): value is number => typeof value === "number"
+      );
+      const editedContentNormalized = normalizeRecordValues<{ description?: string; authorBio?: string }>(
+        settingsRecord["editedContent"],
+        (value): value is { description?: string; authorBio?: string } => isRecord(value)
+      );
+
+      const sectionOrderValue = emailRecord["sectionOrder"];
+      const sectionOrder =
+        Array.isArray(sectionOrderValue) && sectionOrderValue.length
+          ? sectionOrderValue.filter((section): section is string => typeof section === "string")
+          : ['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue'];
+
+      setActiveCatalogueId(data.id);
+      setCatalogueName(data.name ?? "");
+      setCoverCatalogueName(getString(coverRecord, "catalogueName") ?? "");
+      setShowFrontCover(typeof coverRecord["showFrontCover"] === "boolean" ? (coverRecord["showFrontCover"] as boolean) : false);
+      setShowBackCover(typeof coverRecord["showBackCover"] === "boolean" ? (coverRecord["showBackCover"] as boolean) : false);
+      setFrontCoverText1(getString(coverRecord, "frontCoverText1") ?? "");
+      setFrontCoverText2(getString(coverRecord, "frontCoverText2") ?? "");
+      setBackCoverText1(getString(coverRecord, "backCoverText1") ?? "");
+      setBackCoverText2(getString(coverRecord, "backCoverText2") ?? "");
+      setCoverImageUrls(coverImages.slice(0, 4));
+      setDiscountCode(getString(brandingRecord, "discountCode") ?? "");
+      setCustomBannerColor(getString(brandingRecord, "customBannerColor") ?? "");
+      setHyperlinkToggle(resolvedHyperlink);
+      setLayout(resolvedLayout);
+      setBarcodeType(resolvedBarcode);
+      setItemLayouts(itemLayoutsNormalized);
+      setItemBarcodeTypes(itemBarcodeTypesNormalized);
+      setItemAuthorBioToggle(itemAuthorBioToggleNormalized);
+      setItemInternalsCount1L(itemInternalsCountNormalized);
+      setInternalsCount1L(typeof layoutRecord["internalsCount1L"] === "number" ? (layoutRecord["internalsCount1L"] as number) : 2);
+      setItems(Array.isArray(data.items) ? (data.items as Item[]) : []);
+      setEditedContent(editedContentNormalized);
+      setUtmSource(getString(utmRecord, "utmSource") ?? "");
+      setUtmMedium(getString(utmRecord, "utmMedium") ?? "");
+      setUtmCampaign(getString(utmRecord, "utmCampaign") ?? "");
+      setUtmContent(getString(utmRecord, "utmContent") ?? "");
+      setUtmTerm(getString(utmRecord, "utmTerm") ?? "");
+      const templateRaw = getString(emailRecord, "template");
+      setEmailTemplate(templateRaw && isEmailTemplate(templateRaw) ? templateRaw : "single");
+      setEmailTemplateAssignments(assignmentsNormalized);
+      setEmailBannerImageUrl(getString(emailRecord, "bannerImageUrl") ?? "");
+      setEmailFreeText(getString(emailRecord, "freeText") ?? "");
+      setEmailIssuuUrl(getString(emailRecord, "issuuUrl") ?? "");
+      setEmailCatalogueImageUrl(getString(emailRecord, "catalogueImageUrl") ?? "");
+      setEmailEditedDescriptions(editedDescriptionsNormalized);
+      setEmailInternalsToggle(internalsToggleNormalized);
+      setEmailLogoUrls(savedLogoUrls.slice(0, 4));
+      setEmailLineBreakText(getString(emailRecord, "lineBreakText") ?? "");
+      setEmailSectionOrder(sectionOrder);
+
+      setSaveFeedback({
+        type: "success",
+        text: `Loaded catalogue${data.name ? `: ${data.name}` : ""}.`,
+      });
+      setCatalogueRefreshToken(Date.now());
+    } catch (error) {
+      setSaveFeedback({
+        type: "error",
+        text: error instanceof Error ? error.message : "Unexpected error while loading catalogue.",
+      });
+    } finally {
+      setIsLoadingCatalogue(false);
+    }
+  };
 
   // Logo URLs for different brands
   const getLogoUrl = (brand: string): string => {
@@ -975,7 +1395,7 @@ export default function Home() {
     }
   }
   
-  function setItemEmailTemplate(itemIndex: number, template: 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured') {
+  function setItemEmailTemplate(itemIndex: number, template: EmailAssignmentTemplate) {
     setEmailTemplateAssignments({...emailTemplateAssignments, [itemIndex]: template});
   }
   
@@ -1587,7 +2007,167 @@ export default function Home() {
           </p>
         </div>
 
-        <SavedCataloguesPanel />
+        <div
+          style={{
+            marginBottom: 24,
+            border: "1px solid #e2e8f0",
+            borderRadius: 12,
+            padding: 20,
+            background: "#f8fafc",
+          }}
+        >
+          <h2 style={{ margin: "0 0 12px", fontSize: 18, color: "#1f2937" }}>Account</h2>
+          {session ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+              <span style={{ fontSize: 14, color: "#475569" }}>
+                Signed in as <strong>{session.user.email}</strong>
+              </span>
+              <button
+                onClick={handleSignOut}
+                disabled={authLoading}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #cbd5f5",
+                  background: "#e2e8f0",
+                  color: "#1f2937",
+                  cursor: authLoading ? "wait" : "pointer",
+                  fontSize: 13,
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSignIn();
+              }}
+              style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}
+            >
+              <input
+                type="email"
+                value={authEmail}
+                onChange={(event) => setAuthEmail(event.target.value)}
+                placeholder="you@example.com"
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #cbd5f5",
+                  fontSize: 13,
+                }}
+              />
+              <input
+                type="password"
+                value={authPassword}
+                onChange={(event) => setAuthPassword(event.target.value)}
+                placeholder="Password"
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #cbd5f5",
+                  fontSize: 13,
+                }}
+              />
+              <button
+                type="submit"
+                disabled={authLoading}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "1px solid #2563eb",
+                  background: "#2563eb",
+                  color: "#ffffff",
+                  cursor: authLoading ? "wait" : "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                {authLoading ? "Signing in…" : "Sign in"}
+              </button>
+              <span style={{ fontSize: 12, color: "#64748b" }}>
+                Use your Supabase admin credentials.
+              </span>
+            </form>
+          )}
+          {authMessage && (
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 13,
+                color: authMessage.type === "success" ? "#15803d" : "#b91c1c",
+              }}
+            >
+              {authMessage.text}
+            </div>
+          )}
+        </div>
+
+        <SavedCataloguesPanel
+          onOpenCatalogue={handleOpenCatalogue}
+          onStartNewCatalogue={startNewCatalogue}
+          refreshToken={catalogueRefreshToken}
+        />
+
+        <div style={{ margin: "24px 0" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 12,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <button
+              onClick={handleSaveCatalogue}
+              disabled={isSavingCatalogue}
+              style={{
+                padding: "10px 20px",
+                borderRadius: 10,
+                border: "1px solid #2563eb",
+                background: "#2563eb",
+                color: "#ffffff",
+                fontWeight: 600,
+                cursor: isSavingCatalogue ? "wait" : "pointer",
+                fontSize: 14,
+                minWidth: 200,
+              }}
+            >
+              {isSavingCatalogue
+                ? "Saving…"
+                : session
+                  ? activeCatalogueId
+                    ? "Update saved catalogue"
+                    : "Save catalogue"
+                  : "Sign in to save"}
+            </button>
+            {isLoadingCatalogue && (
+              <span style={{ fontSize: 13, color: "#64748b" }}>Loading catalogue…</span>
+            )}
+          </div>
+          {saveFeedback && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "12px 16px",
+                borderRadius: 8,
+                border:
+                  saveFeedback.type === "success"
+                    ? "1px solid #86efac"
+                    : "1px solid #fecaca",
+                background:
+                  saveFeedback.type === "success" ? "#dcfce7" : "#fee2e2",
+                color: saveFeedback.type === "success" ? "#166534" : "#b91c1c",
+                fontSize: 13,
+                textAlign: "center",
+              }}
+            >
+              {saveFeedback.text}
+            </div>
+          )}
+        </div>
 
         {/* Catalogue Name Input */}
         <div style={{ marginBottom: "24px", textAlign: "center" }}>
@@ -3045,8 +3625,10 @@ export default function Home() {
                       <select
                         value={emailTemplateAssignments[index] || 'single'}
                         onChange={(e) => {
-                          const newTemplate = e.target.value as 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured';
-                          setItemEmailTemplate(index, newTemplate);
+                          const value = e.target.value;
+                          if (isAssignmentTemplate(value)) {
+                            setItemEmailTemplate(index, value);
+                          }
                         }}
                         style={{
                           border: '2px solid #E9ECEF',

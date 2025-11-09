@@ -25,6 +25,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/supabase-js": "^2.80.0",
     "@types/nodemailer": "^7.0.3",
     "canvas": "^3.2.0",

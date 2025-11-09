@@ -4,7 +4,14 @@ import { CatalogueSummary } from "@/types/catalogues";
 type FetchState =
   | { status: "idle" | "loading" }
   | { status: "error"; message: string }
-  | { status: "success" };
+  | { status: "success" }
+  | { status: "unauthorized" };
+
+type SavedCataloguesPanelProps = {
+  onOpenCatalogue?: (catalogueId: string) => void;
+  onStartNewCatalogue?: () => void;
+  refreshToken?: number;
+};
 
 const sectionStyle: React.CSSProperties = {
   marginTop: "32px",
@@ -34,10 +41,11 @@ const buttonStyle: React.CSSProperties = {
   padding: "8px 14px",
   borderRadius: 8,
   border: "1px solid #dee2e6",
-  background: "#f8f9fa",
-  color: "#495057",
+  background: "#f1f5f9",
+  color: "#1f2937",
   cursor: "pointer",
   fontSize: 13,
+  transition: "all 0.15s ease",
 };
 
 const disabledButtonStyle: React.CSSProperties = {
@@ -77,7 +85,11 @@ const formatRelativeTime = (isoDate: string) => {
   });
 };
 
-const SavedCataloguesPanel: React.FC = () => {
+const SavedCataloguesPanel: React.FC<SavedCataloguesPanelProps> = ({
+  onOpenCatalogue,
+  onStartNewCatalogue,
+  refreshToken = 0,
+}) => {
   const [catalogues, setCatalogues] = useState<CatalogueSummary[]>([]);
   const [loadState, setLoadState] = useState<FetchState>({ status: "idle" });
 
@@ -87,6 +99,13 @@ const SavedCataloguesPanel: React.FC = () => {
       setLoadState({ status: "loading" });
       try {
         const response = await fetch("/api/catalogues");
+        if (response.status === 401) {
+          if (isMounted) {
+            setCatalogues([]);
+            setLoadState({ status: "unauthorized" });
+          }
+          return;
+        }
         if (!response.ok) {
           throw new Error(await response.text());
         }
@@ -110,11 +129,12 @@ const SavedCataloguesPanel: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [refreshToken]);
 
   const headerLabel = useMemo(() => {
     if (loadState.status === "loading") return "Loading saved catalogues…";
     if (loadState.status === "error") return "Saved catalogues";
+    if (loadState.status === "unauthorized") return "Saved catalogues";
     return `Saved catalogues (${catalogues.length})`;
   }, [loadState.status, catalogues.length]);
 
@@ -128,9 +148,14 @@ const SavedCataloguesPanel: React.FC = () => {
           </p>
         </div>
         <button
-          style={{ ...buttonStyle, background: "#2563eb", color: "#ffffff", borderColor: "#2563eb" }}
-          disabled
-          title="Coming soon"
+          style={{
+            ...buttonStyle,
+            background: onStartNewCatalogue ? "#2563eb" : "#94a3b8",
+            color: "#ffffff",
+            borderColor: onStartNewCatalogue ? "#2563eb" : "#94a3b8",
+          }}
+          onClick={onStartNewCatalogue ?? undefined}
+          disabled={!onStartNewCatalogue}
         >
           + New catalogue
         </button>
@@ -151,7 +176,23 @@ const SavedCataloguesPanel: React.FC = () => {
         </div>
       )}
 
-      {loadState.status !== "loading" && catalogues.length === 0 && (
+      {loadState.status === "unauthorized" && (
+        <div
+          style={{
+            border: "1px dashed #cbd5f5",
+            borderRadius: 12,
+            padding: "24px",
+            textAlign: "center",
+            background: "#f8fafc",
+            color: "#475569",
+            fontSize: 14,
+          }}
+        >
+          Sign in to view and manage your saved catalogues.
+        </div>
+      )}
+
+      {loadState.status !== "loading" && loadState.status !== "unauthorized" && catalogues.length === 0 && (
         <div
           style={{
             border: "1px dashed #cbd5f5",
@@ -282,13 +323,17 @@ const SavedCataloguesPanel: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
-                <button style={disabledButtonStyle} disabled title="Coming soon">
+                <button
+                  style={onOpenCatalogue ? buttonStyle : disabledButtonStyle}
+                  onClick={onOpenCatalogue ? () => onOpenCatalogue(catalogue.id) : undefined}
+                  disabled={!onOpenCatalogue}
+                >
                   Open
                 </button>
-                <button style={disabledButtonStyle} disabled title="Coming soon">
+                <button style={disabledButtonStyle} disabled title="Sharing coming soon">
                   Share
                 </button>
-                <button style={disabledButtonStyle} disabled title="Coming soon">
+                <button style={disabledButtonStyle} disabled title="Archiving coming soon">
                   Archive
                 </button>
               </div>
