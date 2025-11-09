@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
 import { getItemTruncations, type LayoutType } from '@/utils/truncation-detector';
+import SavedCataloguesPanel from "@/components/catalogues/SavedCataloguesPanel";
 
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
@@ -1585,6 +1586,8 @@ export default function Home() {
             Create professional product catalogues from your Shopify store
           </p>
         </div>
+
+        <SavedCataloguesPanel />
 
         {/* Catalogue Name Input */}
         <div style={{ marginBottom: "24px", textAlign: "center" }}>

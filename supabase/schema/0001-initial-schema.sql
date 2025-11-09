@@ -12,6 +12,12 @@ create table if not exists public.profiles (
   avatar_url text,
   role text not null default 'general' check (role in ('admin', 'general')),
   default_domain text,
+  can_domain_woodslane boolean not null default false,
+  can_domain_press boolean not null default false,
+  can_domain_health boolean not null default false,
+  can_domain_education boolean not null default false,
+  allowed_vendors text[],
+  discount_code_setting text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -146,19 +152,18 @@ alter table public.profiles enable row level security;
 alter table public.catalogues enable row level security;
 alter table public.catalogue_permissions enable row level security;
 alter table public.discount_codes enable row level security;
-alter table public.allowed_domains enable row level security;
-alter table public.allowed_vendors enable row level security;
-alter table public.allowed_discount_codes enable row level security;
 
--- Profiles policies
-create policy if not exists "profiles self access" on public.profiles
+drop policy if exists "profiles self access" on public.profiles;
+create policy "profiles self access" on public.profiles
   for select using (id = auth.uid());
 
-create policy if not exists "profiles admins manage" on public.profiles
+drop policy if exists "profiles admins manage" on public.profiles;
+create policy "profiles admins manage" on public.profiles
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- Catalogues policies
-create policy if not exists "catalogues owners and shared read" on public.catalogues
+drop policy if exists "catalogues owners and shared read" on public.catalogues;
+create policy "catalogues owners and shared read" on public.catalogues
   for select using (
     public.is_admin()
     or owner_id = auth.uid()
@@ -169,10 +174,12 @@ create policy if not exists "catalogues owners and shared read" on public.catalo
     )
   );
 
-create policy if not exists "catalogues insert self" on public.catalogues
+drop policy if exists "catalogues insert self" on public.catalogues;
+create policy "catalogues insert self" on public.catalogues
   for insert with check (owner_id = auth.uid() or public.is_admin());
 
-create policy if not exists "catalogues update" on public.catalogues
+drop policy if exists "catalogues update" on public.catalogues;
+create policy "catalogues update" on public.catalogues
   for update using (
     public.is_admin()
     or owner_id = auth.uid()
@@ -184,11 +191,13 @@ create policy if not exists "catalogues update" on public.catalogues
     )
   );
 
-create policy if not exists "catalogues delete" on public.catalogues
+drop policy if exists "catalogues delete" on public.catalogues;
+create policy "catalogues delete" on public.catalogues
   for delete using (public.is_admin() or owner_id = auth.uid());
 
 -- Catalogue permissions policies
-create policy if not exists "catalogue_permissions visibility" on public.catalogue_permissions
+drop policy if exists "catalogue_permissions visibility" on public.catalogue_permissions;
+create policy "catalogue_permissions visibility" on public.catalogue_permissions
   for select using (
     public.is_admin()
     or user_id = auth.uid()
@@ -199,7 +208,8 @@ create policy if not exists "catalogue_permissions visibility" on public.catalog
     )
   );
 
-create policy if not exists "catalogue_permissions insert admin or owner" on public.catalogue_permissions
+drop policy if exists "catalogue_permissions insert admin or owner" on public.catalogue_permissions;
+create policy "catalogue_permissions insert admin or owner" on public.catalogue_permissions
   for insert with check (
     public.is_admin()
     or exists (
@@ -210,7 +220,8 @@ create policy if not exists "catalogue_permissions insert admin or owner" on pub
     )
   );
 
-create policy if not exists "catalogue_permissions manage admin or owner" on public.catalogue_permissions
+drop policy if exists "catalogue_permissions manage admin or owner" on public.catalogue_permissions;
+create policy "catalogue_permissions manage admin or owner" on public.catalogue_permissions
   for delete using (
     public.is_admin()
     or exists (
@@ -222,24 +233,16 @@ create policy if not exists "catalogue_permissions manage admin or owner" on pub
   );
 
 -- Discount codes policies
-create policy if not exists "discount_codes read" on public.discount_codes
+drop policy if exists "discount_codes read" on public.discount_codes;
+create policy "discount_codes read" on public.discount_codes
   for select using (is_active);
 
-create policy if not exists "discount_codes manage admins" on public.discount_codes
+drop policy if exists "discount_codes manage admins" on public.discount_codes;
+create policy "discount_codes manage admins" on public.discount_codes
   for all using (public.is_admin()) with check (public.is_admin());
 
--- Allowed domains policies
-create policy if not exists "allowed_domains self" on public.allowed_domains
-  for all using (user_id = auth.uid() or public.is_admin())
-  with check (user_id = auth.uid() or public.is_admin());
-
--- Allowed vendors policies
-create policy if not exists "allowed_vendors self" on public.allowed_vendors
-  for all using (user_id = auth.uid() or public.is_admin())
-  with check (user_id = auth.uid() or public.is_admin());
-
--- Allowed discount codes policies
-create policy if not exists "allowed_discount_codes self" on public.allowed_discount_codes
-  for all using (user_id = auth.uid() or public.is_admin())
-  with check (user_id = auth.uid() or public.is_admin());
+-- Deprecated helper tables (left here for reference)
+drop table if exists public.allowed_discount_codes;
+drop table if exists public.allowed_vendors;
+drop table if exists public.allowed_domains;
 
