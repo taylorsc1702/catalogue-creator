@@ -1,5 +1,5 @@
 // pages/index.tsx
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
@@ -246,7 +246,36 @@ export default function Home() {
   const supabaseClient = useSupabaseClient();
   const [profileRole, setProfileRole] = useState<"admin" | "general" | null>(null);
   const [domainAccess, setDomainAccess] = useState<DomainAccessMap | null>(null);
-  const [allowedVendors, setAllowedVendors] = useState<string[] | null>(null);
+const [allowedVendors, setAllowedVendors] = useState<string[] | null>(null);
+const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([]);
+  const toggleAllowedVendor = useCallback((value: string) => {
+    if (!allowedVendors || allowedVendors.length === 0) return;
+    setSelectedAllowedVendors((prev) => {
+      const exists = prev.includes(value);
+      if (exists) {
+        const filtered = prev.filter((v) => v !== value);
+        return filtered.length > 0 ? filtered : prev;
+      }
+      const next = [...prev, value];
+      next.sort((a, b) => allowedVendors.indexOf(a) - allowedVendors.indexOf(b));
+      return next;
+    });
+  }, [allowedVendors]);
+
+  const selectAllAllowedVendors = useCallback(() => {
+    if (!allowedVendors || allowedVendors.length === 0) return;
+    setSelectedAllowedVendors((prev) => {
+      const next = [...allowedVendors];
+      if (prev.length === next.length && prev.every((value) => next.includes(value))) {
+        return prev;
+      }
+      return next;
+    });
+  }, [allowedVendors]);
+
+  const selectOnlyAllowedVendor = useCallback((value: string) => {
+    setSelectedAllowedVendors([value]);
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -256,6 +285,8 @@ export default function Home() {
       setProfileRole(null);
       setDomainAccess(null);
       setAllowedVendors(null);
+      setSelectedAllowedVendors([]);
+      setVendor("");
     }
   }, [session]);
 
@@ -283,14 +314,19 @@ export default function Home() {
         health: resolvedRole === "admin" ? true : !!data.can_domain_health,
         education: resolvedRole === "admin" ? true : !!data.can_domain_education,
       });
+      let cleanedAllowed: string[] | null = null;
       if (Array.isArray(data.allowed_vendors) && data.allowed_vendors.length > 0) {
         const rawValues = data.allowed_vendors as unknown[];
         const cleaned = rawValues
           .map((value) => (typeof value === "string" ? value.trim() : ""))
           .filter((value): value is string => value.length > 0);
-        setAllowedVendors(cleaned.length > 0 ? cleaned : null);
+        cleanedAllowed = cleaned.length > 0 ? cleaned : null;
+      }
+      setAllowedVendors(cleanedAllowed);
+      if (resolvedRole === "admin") {
+        setSelectedAllowedVendors([]);
       } else {
-        setAllowedVendors(null);
+        setSelectedAllowedVendors(cleanedAllowed ?? []);
       }
     };
     loadProfileRole();
@@ -322,26 +358,31 @@ export default function Home() {
   );
   const hyperlinkSelectionLocked = availableHyperlinkOptions.length <= 1;
 
-  const enforcedVendor = useMemo(() => {
-    if (profileRole === "admin") return null;
-    if (allowedVendors && allowedVendors.length === 1) {
-      return allowedVendors[0];
-    }
-    return null;
-  }, [profileRole, allowedVendors]);
-
   useEffect(() => {
     if (profileRole === "admin") return;
-    if (allowedVendors && allowedVendors.length > 0) {
-      setVendor((current) => (allowedVendors.includes(current) ? current : allowedVendors[0]));
-    }
+    setVendor("");
   }, [profileRole, allowedVendors]);
 
   useEffect(() => {
-    if (enforcedVendor) {
-      setVendor(enforcedVendor);
+    if (profileRole === "admin") {
+      setSelectedAllowedVendors([]);
+      return;
     }
-  }, [enforcedVendor]);
+    if (!allowedVendors || allowedVendors.length === 0) {
+      setSelectedAllowedVendors([]);
+      return;
+    }
+    setSelectedAllowedVendors((prev) => {
+      const filtered = prev.filter((value) => allowedVendors.includes(value));
+      if (filtered.length === prev.length && filtered.length > 0) {
+        return prev;
+      }
+      if (filtered.length > 0) {
+        return filtered;
+      }
+      return [...allowedVendors];
+    });
+  }, [profileRole, allowedVendors]);
 
   const [activeCatalogueId, setActiveCatalogueId] = useState<string | null>(null);
   const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
@@ -811,13 +852,22 @@ export default function Home() {
     
     const parts: string[] = [];
     if (tag) parts.push(`tag:'${tag}'`);
-    if (vendor) parts.push(`vendor:'${vendor}'`);
+    if (profileRole === "admin") {
+      if (vendor) parts.push(`vendor:'${vendor}'`);
+    } else if (selectedAllowedVendors.length > 0) {
+      if (allowedVendors && selectedAllowedVendors.length === allowedVendors.length) {
+        parts.push(`vendor ∈ allowed (${selectedAllowedVendors.length})`);
+      } else {
+        const vendorTerms = selectedAllowedVendors.map((value) => `vendor:'${value}'`).join(" OR ");
+        parts.push(`(${vendorTerms})`);
+      }
+    }
     if (collectionId) parts.push(`collection_id:${collectionId}`);
     if (publishingStatus !== "All") {
       parts.push(`status:${publishingStatus.toLowerCase()}`);
     }
     return parts.join(" AND ") || "status:active";
-  }, [tag, vendor, collectionId, publishingStatus, useHandleList, handleList]);
+  }, [tag, vendor, collectionId, publishingStatus, useHandleList, handleList, profileRole, selectedAllowedVendors, allowedVendors]);
 
   async function fetchItems() {
     setLoading(true);
@@ -847,9 +897,26 @@ export default function Home() {
         });
       }
       
+      const generalVendorList =
+        profileRole === "admin"
+          ? undefined
+          : (selectedAllowedVendors.length > 0
+              ? selectedAllowedVendors
+              : allowedVendors ?? []);
+
       const requestBody = useHandleList && handleList.trim() 
         ? { handleList: parsedHandles }
-        : { tag, vendor, collectionId, publishingStatus };
+        : {
+            tag,
+            vendor: profileRole === "admin"
+              ? vendor
+              : generalVendorList && generalVendorList.length === 1
+                ? generalVendorList[0]
+                : undefined,
+            vendorList: profileRole === "admin" ? undefined : generalVendorList,
+            collectionId,
+            publishingStatus
+          };
         
       const resp = await fetch("/api/products", {
         method: "POST",
@@ -2484,28 +2551,80 @@ export default function Home() {
           ) : allowedVendors.length === 1 ? (
             <input value={allowedVendors[0]} readOnly disabled style={{ cursor: "not-allowed" }} />
           ) : (
-            <select
-              value={allowedVendors.includes(vendor) ? vendor : allowedVendors[0]}
-              onChange={e=>setVendor(e.target.value)}
-              style={{
-                border: "2px solid #E9ECEF",
-                borderRadius: "10px",
-                padding: "12px 16px",
-                fontSize: "14px",
-                background: "#FAFBFC",
-                transition: "all 0.2s ease",
-                outline: "none",
-                cursor: "pointer"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "#667eea"}
-              onBlur={(e) => e.target.style.borderColor = "#E9ECEF"}
-            >
-              {allowedVendors.map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontSize: 12, color: "#6C757D" }}>
+                Select one or more vendors to include. Leave all selected to search across every allowed vendor.
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {allowedVendors.map((value) => {
+                  const isChecked = selectedAllowedVendors.includes(value);
+                  return (
+                    <label key={value} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleAllowedVendor(value)}
+                        style={{ width: 16, height: 16, cursor: "pointer" }}
+                      />
+                      <span style={{ fontSize: 14, color: "#495057" }}>{value}</span>
+                      {selectedAllowedVendors.length > 1 && isChecked && (
+                        <button
+                          type="button"
+                          onClick={() => selectOnlyAllowedVendor(value)}
+                          style={{
+                            marginLeft: "auto",
+                            fontSize: 11,
+                            border: "1px solid #cbd5f5",
+                            borderRadius: 6,
+                            padding: "4px 8px",
+                            background: "#f1f5f9",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Only
+                        </button>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={selectAllAllowedVendors}
+                  style={{
+                    border: "1px solid #cbd5f5",
+                    borderRadius: 6,
+                    padding: "6px 10px",
+                    background: "#e7eefc",
+                    color: "#1f2937",
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (allowedVendors && allowedVendors.length > 0) {
+                      setSelectedAllowedVendors([allowedVendors[0]]);
+                    }
+                  }}
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 6,
+                    padding: "6px 10px",
+                    background: "#f8fafc",
+                    color: "#334155",
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear to one
+                </button>
+              </div>
+            </div>
           )}
         </Field>
         <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>

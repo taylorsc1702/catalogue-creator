@@ -184,6 +184,7 @@ export async function fetchProductsByQuery(searchQuery: string): Promise<Shopify
 export function buildShopifyQuery(opts: {
   tag?: string;
   vendor?: string;
+  vendors?: string[];
   collectionId?: string;
   publishingStatus?: "Active" | "Draft" | "All";
   handleList?: string[];
@@ -236,7 +237,13 @@ export function buildShopifyQuery(opts: {
     p.push(`(tag:${t} OR tag:'${t}')`);
   }
 
-  if (opts.vendor) {
+  if (opts.vendors && opts.vendors.length > 0) {
+    const vendorTerms = opts.vendors.map((raw) => {
+      const v = escapeVal(raw);
+      return `(vendor:${v} OR vendor:'${v}')`;
+    });
+    p.push(`(${vendorTerms.join(" OR ")})`);
+  } else if (opts.vendor) {
     const v = escapeVal(opts.vendor);
     // OR both forms to be lenient
     p.push(`(vendor:${v} OR vendor:'${v}')`);

@@ -32,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 const schema = z.object({
   tag: z.string().optional(),
   vendor: z.string().optional(),
+  vendorList: z.array(z.string()).optional(),
   collectionId: z.string().optional(),
   publishingStatus: z.enum(["Active", "Draft", "All"]).optional(),
   handleList: z.array(z.string()).optional(),
@@ -40,14 +41,34 @@ const schema = z.object({
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
 
     const isAdmin = profile?.role === "admin";
+    const normalizeVendor = (value: string) => value.trim().toLowerCase();
     const allowedVendorsRaw = Array.isArray(profile?.allowed_vendors)
       ? (profile?.allowed_vendors as string[]).filter((v) => typeof v === "string" && v.trim().length > 0)
       : [];
+    const allowedVendorMap = new Map<string, string>();
+    for (const vendorValue of allowedVendorsRaw) {
+      allowedVendorMap.set(normalizeVendor(vendorValue), vendorValue);
+    }
     const restrictToVendors = !isAdmin && allowedVendorsRaw.length > 0;
 
-    if (restrictToVendors && parsed.vendor && !allowedVendorsRaw.includes(parsed.vendor)) {
-      res.status(403).json({ error: "You do not have access to this vendor." });
-      return;
+    const rawVendorList = Array.isArray(parsed.vendorList)
+      ? parsed.vendorList
+      : parsed.vendor
+        ? [parsed.vendor]
+        : [];
+    let requestedVendors = rawVendorList.map((v) => v.trim()).filter((v) => v.length > 0);
+
+    if (restrictToVendors) {
+      if (requestedVendors.length > 0) {
+        const invalid = requestedVendors.filter((v) => !allowedVendorMap.has(normalizeVendor(v)));
+        if (invalid.length > 0) {
+          res.status(403).json({ error: "You do not have access to one or more selected vendors." });
+          return;
+        }
+        requestedVendors = requestedVendors.map((v) => allowedVendorMap.get(normalizeVendor(v)) ?? v);
+      } else {
+        requestedVendors = [...allowedVendorsRaw];
+      }
     }
 
     // If a large handleList is provided, batch it to avoid oversized query strings
@@ -89,12 +110,30 @@ const schema = z.object({
       };
       products.sort((a, b) => indexOfProduct(a) - indexOfProduct(b));
     } else {
-      const query = buildShopifyQuery(parsed);         // <- the exact string we send to Shopify
+      const singleVendor = requestedVendors.length === 1 ? requestedVendors[0] : undefined;
+      const query = buildShopifyQuery({
+        tag: parsed.tag,
+        vendor: singleVendor ?? (parsed.vendor && parsed.vendor.trim() ? parsed.vendor.trim() : undefined),
+        vendors: requestedVendors.length > 1 ? requestedVendors : undefined,
+        collectionId: parsed.collectionId,
+        publishingStatus: parsed.publishingStatus,
+      });         // <- the exact string we send to Shopify
       products = await fetchProductsByQuery(query);
     }
 
     if (restrictToVendors) {
-      products = products.filter((p) => allowedVendorsRaw.includes((p.vendor || "").trim()));
+      const allowedSet = new Set(Array.from(allowedVendorMap.keys()));
+      const requestedSet =
+        requestedVendors.length > 0
+          ? new Set(requestedVendors.map((v) => normalizeVendor(v)))
+          : allowedSet;
+      products = products.filter((p) => {
+        const normalized = normalizeVendor(p.vendor || "");
+        return allowedSet.has(normalized) && requestedSet.has(normalized);
+      });
+    } else if (requestedVendors.length > 0) {
+      const requestedSet = new Set(requestedVendors.map((v) => normalizeVendor(v)));
+      products = products.filter((p) => requestedSet.has(normalizeVendor(p.vendor || "")));
     }
 
     const items = products.map((p) => {
