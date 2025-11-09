@@ -92,6 +92,8 @@ const SavedCataloguesPanel: React.FC<SavedCataloguesPanelProps> = ({
 }) => {
   const [catalogues, setCatalogues] = useState<CatalogueSummary[]>([]);
   const [loadState, setLoadState] = useState<FetchState>({ status: "idle" });
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -138,6 +140,36 @@ const SavedCataloguesPanel: React.FC<SavedCataloguesPanelProps> = ({
     return `Saved catalogues (${catalogues.length})`;
   }, [loadState.status, catalogues.length]);
 
+  const handleArchive = async (catalogue: CatalogueSummary) => {
+    if (archivingId) return;
+    const confirmed = typeof window === "undefined" ? true : window.confirm(`Archive "${catalogue.name}"? It will no longer appear in this list.`);
+    if (!confirmed) return;
+
+    setArchivingId(catalogue.id);
+    setActionFeedback(null);
+
+    try {
+      const response = await fetch(`/api/catalogues/${catalogue.id}`, { method: "DELETE" });
+      if (response.status === 401) {
+        setActionFeedback({ type: "error", text: "You are not authorized to archive this catalogue." });
+        return;
+      }
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to archive catalogue.");
+      }
+      setCatalogues((prev) => prev.filter((item) => item.id !== catalogue.id));
+      setActionFeedback({ type: "success", text: `Archived catalogue${catalogue.name ? `: ${catalogue.name}` : ""}.` });
+    } catch (error) {
+      setActionFeedback({
+        type: "error",
+        text: error instanceof Error ? error.message : "Unexpected error while archiving catalogue.",
+      });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
   return (
     <section style={sectionStyle}>
       <div style={headerRowStyle}>
@@ -173,6 +205,22 @@ const SavedCataloguesPanel: React.FC<SavedCataloguesPanelProps> = ({
           }}
         >
           Failed to load saved catalogues. {loadState.message}
+        </div>
+      )}
+
+      {actionFeedback && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: 8,
+            marginBottom: 16,
+            border: `1px solid ${actionFeedback.type === "success" ? "#86efac" : "#fecaca"}`,
+            background: actionFeedback.type === "success" ? "#dcfce7" : "#fee2e2",
+            color: actionFeedback.type === "success" ? "#166534" : "#b91c1c",
+            fontSize: 13,
+          }}
+        >
+          {actionFeedback.text}
         </div>
       )}
 
@@ -333,8 +381,12 @@ const SavedCataloguesPanel: React.FC<SavedCataloguesPanelProps> = ({
                 <button style={disabledButtonStyle} disabled title="Sharing coming soon">
                   Share
                 </button>
-                <button style={disabledButtonStyle} disabled title="Archiving coming soon">
-                  Archive
+                <button
+                  style={archivingId === catalogue.id ? disabledButtonStyle : buttonStyle}
+                  onClick={() => handleArchive(catalogue)}
+                  disabled={archivingId === catalogue.id}
+                >
+                  {archivingId === catalogue.id ? "Archiving…" : "Archive"}
                 </button>
               </div>
             </div>

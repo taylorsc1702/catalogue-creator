@@ -15,6 +15,8 @@ export interface CatalogueSummary {
   ownerId: string;
 }
 
+export type HyperlinkToggle = "woodslane" | "woodslanehealth" | "woodslaneeducation" | "woodslanepress";
+
 export interface CatalogueSavePayload {
   id?: string;
   name: string;

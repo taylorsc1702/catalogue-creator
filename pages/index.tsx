@@ -1,11 +1,12 @@
 // pages/index.tsx
 import { useMemo, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
 import { getItemTruncations, type LayoutType } from '@/utils/truncation-detector';
 import SavedCataloguesPanel from "@/components/catalogues/SavedCataloguesPanel";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import type { CatalogueDetails, CatalogueSavePayload, CatalogueSummary } from "@/types/catalogues";
+import type { CatalogueDetails, CatalogueSavePayload, CatalogueSummary, HyperlinkToggle } from "@/types/catalogues";
 
 const createDefaultEmailLogoLinks = () => [
   { imageUrl: "", destinationUrl: "" },
@@ -84,6 +85,20 @@ type Item = {
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
 };
+
+type DomainAccessMap = {
+  woodslane: boolean;
+  press: boolean;
+  health: boolean;
+  education: boolean;
+};
+
+const HYPERLINK_OPTIONS_META: Array<{ value: HyperlinkToggle; label: string; key: keyof DomainAccessMap }> = [
+  { value: "woodslane", label: "Woodslane", key: "woodslane" },
+  { value: "woodslanehealth", label: "Woodslane Health", key: "health" },
+  { value: "woodslaneeducation", label: "Woodslane Education", key: "education" },
+  { value: "woodslanepress", label: "Woodslane Press", key: "press" },
+];
 
 // Matches what /api/products now returns: { items, query }
 type ProductsResponse = {
@@ -230,6 +245,8 @@ export default function Home() {
   const session = useSession();
   const supabaseClient = useSupabaseClient();
   const [profileRole, setProfileRole] = useState<"admin" | "general" | null>(null);
+  const [domainAccess, setDomainAccess] = useState<DomainAccessMap | null>(null);
+  const [allowedVendors, setAllowedVendors] = useState<string[] | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -237,6 +254,8 @@ export default function Home() {
       setAuthPassword("");
     } else {
       setProfileRole(null);
+      setDomainAccess(null);
+      setAllowedVendors(null);
     }
   }, [session]);
 
@@ -246,7 +265,9 @@ export default function Home() {
       if (!session) return;
       const { data, error } = await supabaseClient
         .from("profiles")
-        .select("role")
+        .select(
+          "role, allowed_vendors, can_domain_woodslane, can_domain_press, can_domain_health, can_domain_education, discount_code_setting"
+        )
         .eq("id", session.user.id)
         .single();
       if (!isMounted) return;
@@ -254,7 +275,23 @@ export default function Home() {
         setProfileRole(null);
         return;
       }
-      setProfileRole(data.role === "admin" ? "admin" : "general");
+      const resolvedRole = data.role === "admin" ? "admin" : "general";
+      setProfileRole(resolvedRole);
+      setDomainAccess({
+        woodslane: resolvedRole === "admin" ? true : !!data.can_domain_woodslane,
+        press: resolvedRole === "admin" ? true : !!data.can_domain_press,
+        health: resolvedRole === "admin" ? true : !!data.can_domain_health,
+        education: resolvedRole === "admin" ? true : !!data.can_domain_education,
+      });
+      if (Array.isArray(data.allowed_vendors) && data.allowed_vendors.length > 0) {
+        const rawValues = data.allowed_vendors as unknown[];
+        const cleaned = rawValues
+          .map((value) => (typeof value === "string" ? value.trim() : ""))
+          .filter((value): value is string => value.length > 0);
+        setAllowedVendors(cleaned.length > 0 ? cleaned : null);
+      } else {
+        setAllowedVendors(null);
+      }
     };
     loadProfileRole();
     return () => {
@@ -263,6 +300,48 @@ export default function Home() {
   }, [session, supabaseClient]);
 
   const canSaveCatalogues = profileRole === "admin";
+  const availableHyperlinkOptions = useMemo<HyperlinkToggle[]>(() => {
+    if (profileRole === "admin" || !domainAccess) {
+      return HYPERLINK_OPTIONS_META.map((opt) => opt.value);
+    }
+    const allowed = HYPERLINK_OPTIONS_META
+      .filter((opt) => domainAccess?.[opt.key])
+      .map((opt) => opt.value);
+    return allowed.length > 0 ? allowed : ["woodslane"];
+  }, [profileRole, domainAccess]);
+
+  useEffect(() => {
+    if (!availableHyperlinkOptions.includes(hyperlinkToggle)) {
+      setHyperlinkToggle(availableHyperlinkOptions[0] ?? "woodslane");
+    }
+  }, [availableHyperlinkOptions, hyperlinkToggle]);
+
+  const hyperlinkButtonOptions = useMemo(
+    () => HYPERLINK_OPTIONS_META.filter((opt) => availableHyperlinkOptions.includes(opt.value)),
+    [availableHyperlinkOptions]
+  );
+  const hyperlinkSelectionLocked = availableHyperlinkOptions.length <= 1;
+
+  const enforcedVendor = useMemo(() => {
+    if (profileRole === "admin") return null;
+    if (allowedVendors && allowedVendors.length === 1) {
+      return allowedVendors[0];
+    }
+    return null;
+  }, [profileRole, allowedVendors]);
+
+  useEffect(() => {
+    if (profileRole === "admin") return;
+    if (allowedVendors && allowedVendors.length > 0) {
+      setVendor((current) => (allowedVendors.includes(current) ? current : allowedVendors[0]));
+    }
+  }, [profileRole, allowedVendors]);
+
+  useEffect(() => {
+    if (enforcedVendor) {
+      setVendor(enforcedVendor);
+    }
+  }, [enforcedVendor]);
 
   const [activeCatalogueId, setActiveCatalogueId] = useState<string | null>(null);
   const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
@@ -2210,22 +2289,6 @@ export default function Home() {
           )}
         </div>
 
-        {profileRole === "general" && (
-          <div
-            style={{
-              marginBottom: 24,
-              border: "1px solid #fee2e2",
-              borderRadius: 12,
-              padding: 16,
-              background: "#fff5f5",
-              color: "#b91c1c",
-              fontSize: 13,
-            }}
-          >
-            Saving catalogues is restricted to admin accounts. You can still build and export layouts.
-          </div>
-        )}
-
         {canSaveCatalogues && (
           <>
             <SavedCataloguesPanel
@@ -2415,7 +2478,36 @@ export default function Home() {
       {!useHandleList ? (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <Field label="Tag"><input value={tag} onChange={e=>setTag(e.target.value)} placeholder="education" /></Field>
-        <Field label="Vendor"><input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" /></Field>
+        <Field label="Vendor">
+          {profileRole === "admin" || !allowedVendors || allowedVendors.length === 0 ? (
+            <input value={vendor} onChange={e=>setVendor(e.target.value)} placeholder="Human Kinetics" />
+          ) : allowedVendors.length === 1 ? (
+            <input value={allowedVendors[0]} readOnly disabled style={{ cursor: "not-allowed" }} />
+          ) : (
+            <select
+              value={allowedVendors.includes(vendor) ? vendor : allowedVendors[0]}
+              onChange={e=>setVendor(e.target.value)}
+              style={{
+                border: "2px solid #E9ECEF",
+                borderRadius: "10px",
+                padding: "12px 16px",
+                fontSize: "14px",
+                background: "#FAFBFC",
+                transition: "all 0.2s ease",
+                outline: "none",
+                cursor: "pointer"
+              }}
+              onFocus={(e) => e.target.style.borderColor = "#667eea"}
+              onBlur={(e) => e.target.style.borderColor = "#E9ECEF"}
+            >
+              {allowedVendors.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
         <Field label="Collection ID"><input value={collectionId} onChange={e=>setCollectionId(e.target.value)} placeholder="numeric id" /></Field>
         <Field label="Publishing Status">
           <select 
@@ -2527,19 +2619,17 @@ export default function Home() {
 
       <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Hyperlink Domain:</span>
-        {[
-          { key: 'woodslane', label: 'Woodslane' },
-          { key: 'woodslanehealth', label: 'Woodslane Health' },
-          { key: 'woodslaneeducation', label: 'Woodslane Education' },
-          { key: 'woodslanepress', label: 'Woodslane Press' }
-        ].map(option => (
+        {hyperlinkButtonOptions.map(option => (
           <button 
-            key={option.key}
-            onClick={() => setHyperlinkToggle(option.key as 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress')}
+            key={option.value}
+            onClick={() => setHyperlinkToggle(option.value)}
+            disabled={hyperlinkSelectionLocked}
             style={{
-              ...btn(hyperlinkToggle === option.key),
+              ...btn(hyperlinkToggle === option.value),
               fontSize: 12,
-              padding: "6px 12px"
+              padding: "6px 12px",
+              opacity: hyperlinkSelectionLocked ? 0.6 : 1,
+              cursor: hyperlinkSelectionLocked ? "not-allowed" : "pointer"
             }}
           >
             {option.label}
@@ -4053,7 +4143,7 @@ export default function Home() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label style={{ display: "grid", gap: 8 }}>
       <span style={{ 

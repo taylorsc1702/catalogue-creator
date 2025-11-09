@@ -2,9 +2,33 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { buildShopifyQuery, fetchProductsByQuery, firstDefined } from "@/lib/shopify";
 import { z } from "zod";
+import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const supabase = createPagesServerClient({ req, res });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select(
+        "role, allowed_vendors, can_domain_woodslane, can_domain_press, can_domain_health, can_domain_education, discount_code_setting"
+      )
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      res.status(500).json({ error: profileError.message });
+      return;
+    }
+
 const schema = z.object({
   tag: z.string().optional(),
   vendor: z.string().optional(),
@@ -14,6 +38,17 @@ const schema = z.object({
 });
 
     const parsed = schema.parse(req.method === "GET" ? req.query : req.body);
+
+    const isAdmin = profile?.role === "admin";
+    const allowedVendorsRaw = Array.isArray(profile?.allowed_vendors)
+      ? (profile?.allowed_vendors as string[]).filter((v) => typeof v === "string" && v.trim().length > 0)
+      : [];
+    const restrictToVendors = !isAdmin && allowedVendorsRaw.length > 0;
+
+    if (restrictToVendors && parsed.vendor && !allowedVendorsRaw.includes(parsed.vendor)) {
+      res.status(403).json({ error: "You do not have access to this vendor." });
+      return;
+    }
 
     // If a large handleList is provided, batch it to avoid oversized query strings
     let products: Awaited<ReturnType<typeof fetchProductsByQuery>> = [];
@@ -56,6 +91,10 @@ const schema = z.object({
     } else {
       const query = buildShopifyQuery(parsed);         // <- the exact string we send to Shopify
       products = await fetchProductsByQuery(query);
+    }
+
+    if (restrictToVendors) {
+      products = products.filter((p) => allowedVendorsRaw.includes((p.vendor || "").trim()));
     }
 
     const items = products.map((p) => {
