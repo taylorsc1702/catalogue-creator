@@ -10,7 +10,6 @@ type CatalogueRow = {
   owner_id: string;
   created_at: string;
   updated_at: string;
-  catalogue_permissions?: { user_id: string | null }[] | null;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -39,14 +38,7 @@ function buildCatalogueSummary(
     getString(brandingRecord, "issuuUrl") ||
     getString(coverRecord, "issuuUrl");
 
-  const sharedCount = Array.isArray(catalogue.catalogue_permissions)
-    ? catalogue.catalogue_permissions.filter((permission) => permission?.user_id).length
-    : 0;
-
-  const isShared =
-    catalogue.owner_id !== currentUserId
-      ? true
-      : sharedCount > 0 || Boolean(brandingRecord["sharedWithTeam"]);
+  const isShared = catalogue.owner_id !== currentUserId;
 
   return {
     id: catalogue.id,
@@ -80,18 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "GET") {
     const { data, error } = await supabase
       .from("catalogues")
-      .select(
-        `
-          id,
-          name,
-          description,
-          branding,
-          owner_id,
-          created_at,
-          updated_at,
-          catalogue_permissions ( user_id )
-        `
-      )
+      .select("id, name, description, branding, owner_id, created_at, updated_at")
       .eq("is_archived", false)
       .order("updated_at", { ascending: false });
 
@@ -125,18 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         settings: payload.settings ?? {},
         is_archived: false,
       })
-      .select(
-        `
-          id,
-          name,
-          description,
-          branding,
-          owner_id,
-          created_at,
-          updated_at,
-          catalogue_permissions ( user_id )
-        `
-      )
+      .select("id, name, description, branding, owner_id, created_at, updated_at")
       .single();
 
     if (error || !data) {
