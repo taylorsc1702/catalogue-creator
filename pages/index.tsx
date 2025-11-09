@@ -230,6 +230,13 @@ export default function Home() {
   const session = useSession();
   const supabaseClient = useSupabaseClient();
 
+  useEffect(() => {
+    if (session) {
+      setAuthMessage(null);
+      setAuthPassword("");
+    }
+  }, [session]);
+
   const [activeCatalogueId, setActiveCatalogueId] = useState<string | null>(null);
   const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
   const [isLoadingCatalogue, setIsLoadingCatalogue] = useState(false);
@@ -1970,6 +1977,128 @@ export default function Home() {
     }
   }
 
+  if (!session) {
+    return (
+      <div
+        style={{
+          padding: 32,
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            borderRadius: 16,
+            padding: 32,
+            boxShadow: "0 24px 48px rgba(15, 23, 42, 0.12)",
+            width: "100%",
+            maxWidth: 440,
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <h1
+              style={{
+                fontSize: 32,
+                fontWeight: 700,
+                color: "#2C3E50",
+                margin: 0,
+              }}
+            >
+              📚 Catalogue Creator
+            </h1>
+            <p
+              style={{
+                color: "#475569",
+                fontSize: 16,
+                margin: "12px 0 0",
+              }}
+            >
+              Sign in to access saved catalogues and build layouts.
+            </p>
+          </div>
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSignIn();
+            }}
+            style={{ display: "grid", gap: 12 }}
+          >
+            <label style={{ display: "grid", gap: 6, fontSize: 13, color: "#475569" }}>
+              Email address
+              <input
+                type="email"
+                value={authEmail}
+                onChange={(event) => setAuthEmail(event.target.value)}
+                placeholder="you@example.com"
+                required
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #cbd5f5",
+                  fontSize: 14,
+                }}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13, color: "#475569" }}>
+              Password
+              <input
+                type="password"
+                value={authPassword}
+                onChange={(event) => setAuthPassword(event.target.value)}
+                placeholder="Password"
+                required
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #cbd5f5",
+                  fontSize: 14,
+                }}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={authLoading}
+              style={{
+                marginTop: 8,
+                padding: "10px 16px",
+                borderRadius: 10,
+                border: "none",
+                background: "#2563eb",
+                color: "#ffffff",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: authLoading ? "wait" : "pointer",
+              }}
+            >
+              {authLoading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+
+          <p style={{ marginTop: 12, fontSize: 12, color: "#64748b" }}>
+            Use your Supabase admin credentials. Contact an administrator if you need an account.
+          </p>
+
+          {authMessage && (
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 13,
+                color: authMessage.type === "success" ? "#15803d" : "#b91c1c",
+              }}
+            >
+              {authMessage.text}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ 
       padding: 32, 
@@ -2017,80 +2146,26 @@ export default function Home() {
           }}
         >
           <h2 style={{ margin: "0 0 12px", fontSize: 18, color: "#1f2937" }}>Account</h2>
-          {session ? (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-              <span style={{ fontSize: 14, color: "#475569" }}>
-                Signed in as <strong>{session.user.email}</strong>
-              </span>
-              <button
-                onClick={handleSignOut}
-                disabled={authLoading}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #cbd5f5",
-                  background: "#e2e8f0",
-                  color: "#1f2937",
-                  cursor: authLoading ? "wait" : "pointer",
-                  fontSize: 13,
-                }}
-              >
-                Sign out
-              </button>
-            </div>
-          ) : (
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                handleSignIn();
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            <span style={{ fontSize: 14, color: "#475569" }}>
+              Signed in as <strong>{session.user.email}</strong>
+            </span>
+            <button
+              onClick={handleSignOut}
+              disabled={authLoading}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: "1px solid #cbd5f5",
+                background: "#e2e8f0",
+                color: "#1f2937",
+                cursor: authLoading ? "wait" : "pointer",
+                fontSize: 13,
               }}
-              style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}
             >
-              <input
-                type="email"
-                value={authEmail}
-                onChange={(event) => setAuthEmail(event.target.value)}
-                placeholder="you@example.com"
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  border: "1px solid #cbd5f5",
-                  fontSize: 13,
-                }}
-              />
-              <input
-                type="password"
-                value={authPassword}
-                onChange={(event) => setAuthPassword(event.target.value)}
-                placeholder="Password"
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  border: "1px solid #cbd5f5",
-                  fontSize: 13,
-                }}
-              />
-              <button
-                type="submit"
-                disabled={authLoading}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 8,
-                  border: "1px solid #2563eb",
-                  background: "#2563eb",
-                  color: "#ffffff",
-                  cursor: authLoading ? "wait" : "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                {authLoading ? "Signing in…" : "Sign in"}
-              </button>
-              <span style={{ fontSize: 12, color: "#64748b" }}>
-                Use your Supabase admin credentials.
-              </span>
-            </form>
-          )}
+              Sign out
+            </button>
+          </div>
           {authMessage && (
             <div
               style={{
