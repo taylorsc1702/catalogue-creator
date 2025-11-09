@@ -229,13 +229,40 @@ export default function Home() {
 
   const session = useSession();
   const supabaseClient = useSupabaseClient();
+  const [profileRole, setProfileRole] = useState<"admin" | "general" | null>(null);
 
   useEffect(() => {
     if (session) {
       setAuthMessage(null);
       setAuthPassword("");
+    } else {
+      setProfileRole(null);
     }
   }, [session]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadProfileRole = async () => {
+      if (!session) return;
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      if (!isMounted) return;
+      if (error || !data?.role) {
+        setProfileRole(null);
+        return;
+      }
+      setProfileRole(data.role === "admin" ? "admin" : "general");
+    };
+    loadProfileRole();
+    return () => {
+      isMounted = false;
+    };
+  }, [session, supabaseClient]);
+
+  const canSaveCatalogues = profileRole === "admin";
 
   const [activeCatalogueId, setActiveCatalogueId] = useState<string | null>(null);
   const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
@@ -395,6 +422,10 @@ export default function Home() {
   const handleSaveCatalogue = async () => {
     if (!session) {
       setSaveFeedback({ type: "error", text: "Sign in to save catalogues." });
+      return;
+    }
+    if (!canSaveCatalogues) {
+      setSaveFeedback({ type: "error", text: "You do not have permission to save catalogues." });
       return;
     }
     setIsSavingCatalogue(true);
@@ -2179,70 +2210,90 @@ export default function Home() {
           )}
         </div>
 
-        <SavedCataloguesPanel
-          onOpenCatalogue={handleOpenCatalogue}
-          onStartNewCatalogue={startNewCatalogue}
-          refreshToken={catalogueRefreshToken}
-        />
-
-        <div style={{ margin: "24px 0" }}>
+        {profileRole === "general" && (
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-              flexWrap: "wrap",
-              alignItems: "center",
+              marginBottom: 24,
+              border: "1px solid #fee2e2",
+              borderRadius: 12,
+              padding: 16,
+              background: "#fff5f5",
+              color: "#b91c1c",
+              fontSize: 13,
             }}
           >
-            <button
-              onClick={handleSaveCatalogue}
-              disabled={isSavingCatalogue}
-              style={{
-                padding: "10px 20px",
-                borderRadius: 10,
-                border: "1px solid #2563eb",
-                background: "#2563eb",
-                color: "#ffffff",
-                fontWeight: 600,
-                cursor: isSavingCatalogue ? "wait" : "pointer",
-                fontSize: 14,
-                minWidth: 200,
-              }}
-            >
-              {isSavingCatalogue
-                ? "Saving…"
-                : session
-                  ? activeCatalogueId
-                    ? "Update saved catalogue"
-                    : "Save catalogue"
-                  : "Sign in to save"}
-            </button>
-            {isLoadingCatalogue && (
-              <span style={{ fontSize: 13, color: "#64748b" }}>Loading catalogue…</span>
-            )}
+            Saving catalogues is restricted to admin accounts. You can still build and export layouts.
           </div>
-          {saveFeedback && (
-            <div
-              style={{
-                marginTop: 12,
-                padding: "12px 16px",
-                borderRadius: 8,
-                border:
-                  saveFeedback.type === "success"
-                    ? "1px solid #86efac"
-                    : "1px solid #fecaca",
-                background:
-                  saveFeedback.type === "success" ? "#dcfce7" : "#fee2e2",
-                color: saveFeedback.type === "success" ? "#166534" : "#b91c1c",
-                fontSize: 13,
-                textAlign: "center",
-              }}
-            >
-              {saveFeedback.text}
+        )}
+
+        {canSaveCatalogues && (
+          <>
+            <SavedCataloguesPanel
+              onOpenCatalogue={handleOpenCatalogue}
+              onStartNewCatalogue={startNewCatalogue}
+              refreshToken={catalogueRefreshToken}
+            />
+
+            <div style={{ margin: "24px 0" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <button
+                  onClick={handleSaveCatalogue}
+                  disabled={isSavingCatalogue}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: 10,
+                    border: "1px solid #2563eb",
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    fontWeight: 600,
+                    cursor: isSavingCatalogue ? "wait" : "pointer",
+                    fontSize: 14,
+                    minWidth: 200,
+                  }}
+                >
+                  {isSavingCatalogue
+                    ? "Saving…"
+                    : session
+                      ? activeCatalogueId
+                        ? "Update saved catalogue"
+                        : "Save catalogue"
+                      : "Sign in to save"}
+                </button>
+                {isLoadingCatalogue && (
+                  <span style={{ fontSize: 13, color: "#64748b" }}>Loading catalogue…</span>
+                )}
+              </div>
+              {saveFeedback && (
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: "12px 16px",
+                    borderRadius: 8,
+                    border:
+                      saveFeedback.type === "success"
+                        ? "1px solid #86efac"
+                        : "1px solid #fecaca",
+                    background:
+                      saveFeedback.type === "success" ? "#dcfce7" : "#fee2e2",
+                    color: saveFeedback.type === "success" ? "#166534" : "#b91c1c",
+                    fontSize: 13,
+                    textAlign: "center",
+                  }}
+                >
+                  {saveFeedback.text}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Catalogue Name Input */}
         <div style={{ marginBottom: "24px", textAlign: "center" }}>
