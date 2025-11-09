@@ -287,6 +287,14 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setAllowedVendors(null);
       setSelectedAllowedVendors([]);
       setVendor("");
+      setShowFrontCover(false);
+      setShowBackCover(false);
+      setFrontCoverText1("");
+      setFrontCoverText2("");
+      setBackCoverText1("");
+      setBackCoverText2("");
+      setCoverImageUrls(["", "", "", ""]);
+      setUrlPages(Array(4).fill(null).map(() => ({ url: '', pageIndex: null })));
     }
   }, [session]);
 
@@ -327,6 +335,14 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         setSelectedAllowedVendors([]);
       } else {
         setSelectedAllowedVendors(cleanedAllowed ?? []);
+        setShowFrontCover(false);
+        setShowBackCover(false);
+        setFrontCoverText1("");
+        setFrontCoverText2("");
+        setBackCoverText1("");
+        setBackCoverText2("");
+        setCoverImageUrls(["", "", "", ""]);
+        setUrlPages(Array(4).fill(null).map(() => ({ url: '', pageIndex: null })));
       }
     };
     loadProfileRole();
@@ -336,6 +352,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   }, [session, supabaseClient]);
 
   const canSaveCatalogues = profileRole === "admin";
+  const isAdmin = profileRole === "admin";
   const availableHyperlinkOptions = useMemo<HyperlinkToggle[]>(() => {
     if (profileRole === "admin" || !domainAccess) {
       return HYPERLINK_OPTIONS_META.map((opt) => opt.value);
@@ -2831,6 +2848,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         </div>
       </div>
 
+      {isAdmin && (
+        <>
       {/* Cover System Section */}
       <div style={{ marginTop: 24 }}>
         <span style={{ fontSize: 16, fontWeight: 600, color: "#495057", marginBottom: 16, display: "block" }}>Cover System</span>
@@ -2932,56 +2951,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           )}
         </div>
 
-        {/* Back Cover Controls */}
-        <div style={{ marginBottom: 20, padding: 16, border: "2px solid #E9ECEF", borderRadius: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-            <input
-              type="checkbox"
-              checked={showBackCover}
-              onChange={(e) => setShowBackCover(e.target.checked)}
-              style={{ marginRight: 8 }}
-            />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Include Back Cover</span>
-          </div>
-          
-          {showBackCover && (
-            <div style={{ marginLeft: 24 }}>
-              <Field label="Back Cover Text 1">
-                <textarea
-                  value={backCoverText1}
-                  onChange={(e) => setBackCoverText1(e.target.value)}
-                  placeholder="Enter first text block for back cover..."
-                  style={{ 
-                    width: "100%", 
-                    border: "2px solid #E9ECEF", 
-                    borderRadius: 8, 
-                    padding: "8px 12px", 
-                    fontSize: 14,
-                    minHeight: 60,
-                    resize: "vertical"
-                  }}
-                />
-              </Field>
-              
-              <Field label="Back Cover Text 2">
-                <textarea
-                  value={backCoverText2}
-                  onChange={(e) => setBackCoverText2(e.target.value)}
-                  placeholder="Enter second text block for back cover..."
-                  style={{ 
-                    width: "100%", 
-                    border: "2px solid #E9ECEF", 
-                    borderRadius: 8, 
-                    padding: "8px 12px", 
-                    fontSize: 14,
-                    minHeight: 60,
-                    resize: "vertical"
-                  }}
-                />
-              </Field>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Cover Preview Section */}
@@ -3121,6 +3090,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           </div>
         </div>
       )}
+        </>
+      )}
 
       {/* UTM Parameters Section */}
       <div style={{ 
@@ -3189,6 +3160,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       </div>
 
       {/* URL Pages Section */}
+      {profileRole === "admin" && (
       <div style={{ 
         marginTop: 20, 
         padding: 16, 
@@ -3301,18 +3273,25 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           💡 Each URL will create a full A4 page. Use the &quot;Preview &amp; Reorder Pages&quot; button to set page positions and reorder. Images will be displayed directly in A4 format.
         </div>
       </div>
+      )}
 
           <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-            <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
-            <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
-            <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
+            {isAdmin && (
+              <>
+                <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
+                <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
+                <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
+              </>
+            )}
             <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
             <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
             <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
-            <button onClick={openEmailHTML} disabled={!items.length || emailGenerating} style={btn()}>
-              {emailGenerating ? '⏳ Generating...' : '📧 Email HTML'}
-            </button>
+            {isAdmin && (
+              <button onClick={openEmailHTML} disabled={!items.length || emailGenerating} style={btn()}>
+                {emailGenerating ? '⏳ Generating...' : '📧 Email HTML'}
+              </button>
+            )}
             <button onClick={() => openEmailWithOutlook('single')} disabled={!items.length || emailGenerating} style={btn()}>
               {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - PDF'}
             </button>
@@ -3355,9 +3334,11 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
               <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
                 🧩 Preview & Reorder Pages
               </button>
-              <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
-                🚀 Mixed Google Doc
-              </button>
+              {isAdmin && (
+                <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
+                  🚀 Mixed Google Doc
+                </button>
+              )}
               <button onClick={() => openEmailWithOutlook('mixed')} disabled={!items.length || emailGenerating} style={btn()}>
                 {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - Mixed Layout (PDF)'}
               </button>
