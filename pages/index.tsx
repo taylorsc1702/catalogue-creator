@@ -1,5 +1,6 @@
 // pages/index.tsx
 import { useMemo, useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import Image from 'next/image';
 import { layoutRegistry } from '@/lib/layout-registry';
@@ -2359,6 +2360,22 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             >
               Sign out
             </button>
+            {isAdmin && (
+              <Link
+                href="/admin/users"
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #2563eb",
+                  background: "#2563eb",
+                  color: "#ffffff",
+                  fontSize: 13,
+                  textDecoration: "none",
+                }}
+              >
+                Manage users
+              </Link>
+            )}
           </div>
           {authMessage && (
             <div
