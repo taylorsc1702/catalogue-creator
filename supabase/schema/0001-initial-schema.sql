@@ -131,11 +131,6 @@ create policy "catalogues owners and shared read" on public.catalogues
   for select using (
     public.is_admin()
     or owner_id = auth.uid()
-    or exists (
-      select 1 from public.catalogue_permissions cp
-      where cp.catalogue_id = catalogues.id
-        and cp.user_id = auth.uid()
-    )
   );
 
 drop policy if exists "catalogues insert self" on public.catalogues;
@@ -147,12 +142,6 @@ create policy "catalogues update" on public.catalogues
   for update using (
     public.is_admin()
     or owner_id = auth.uid()
-    or exists (
-      select 1 from public.catalogue_permissions cp
-      where cp.catalogue_id = catalogues.id
-        and cp.user_id = auth.uid()
-        and cp.permission in ('owner', 'editor')
-    )
   );
 
 drop policy if exists "catalogues delete" on public.catalogues;
@@ -165,34 +154,13 @@ create policy "catalogue_permissions visibility" on public.catalogue_permissions
   for select using (
     public.is_admin()
     or user_id = auth.uid()
-    or exists (
-      select 1 from public.catalogues c
-      where c.id = catalogue_permissions.catalogue_id
-        and c.owner_id = auth.uid()
-    )
   );
 
 drop policy if exists "catalogue_permissions insert admin or owner" on public.catalogue_permissions;
 create policy "catalogue_permissions insert admin or owner" on public.catalogue_permissions
-  for insert with check (
-    public.is_admin()
-    or exists (
-      select 1
-      from public.catalogues c
-      where c.id = catalogue_permissions.catalogue_id
-        and c.owner_id = auth.uid()
-    )
-  );
+  for insert with check (public.is_admin());
 
 drop policy if exists "catalogue_permissions manage admin or owner" on public.catalogue_permissions;
 create policy "catalogue_permissions manage admin or owner" on public.catalogue_permissions
-  for delete using (
-    public.is_admin()
-    or exists (
-      select 1
-      from public.catalogues c
-      where c.id = catalogue_permissions.catalogue_id
-        and c.owner_id = auth.uid()
-    )
-  );
+  for delete using (public.is_admin());
 
