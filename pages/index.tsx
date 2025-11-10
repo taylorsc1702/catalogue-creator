@@ -16,6 +16,13 @@ const createDefaultEmailLogoLinks = () => [
   { imageUrl: "", destinationUrl: "" },
 ];
 
+const createDefaultEmailBannerLinks = () => [
+  { label: "", url: "" },
+  { label: "", url: "" },
+  { label: "", url: "" },
+  { label: "", url: "" },
+];
+
 type FeedbackMessage = { type: "success" | "error"; text: string };
 
 type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
@@ -225,6 +232,8 @@ export default function Home() {
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
   // Logo URLs (up to 4) - each has image URL and destination URL
   const [emailLogoUrls, setEmailLogoUrls] = useState<Array<{imageUrl: string; destinationUrl: string}>>(createDefaultEmailLogoLinks);
+  // Banner links (up to 4) - each has label and destination URL
+  const [emailBannerLinks, setEmailBannerLinks] = useState<Array<{label: string; url: string}>>(createDefaultEmailBannerLinks);
   // Line break text section
   const [emailLineBreakText, setEmailLineBreakText] = useState<string>('');
   // Email section order - default order
@@ -550,6 +559,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setEmailEditedDescriptions({});
     setEmailInternalsToggle({});
     setEmailLogoUrls(createDefaultEmailLogoLinks());
+    setEmailBannerLinks(createDefaultEmailBannerLinks());
     setEmailLineBreakText("");
     setEmailSectionOrder(['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue']);
     setUtmSource("");
@@ -618,6 +628,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             issuuUrl: emailIssuuUrl,
             catalogueImageUrl: emailCatalogueImageUrl,
             logoUrls: emailLogoUrls,
+            bannerLinks: emailBannerLinks,
             lineBreakText: emailLineBreakText,
             sectionOrder: emailSectionOrder,
             editedDescriptions: emailEditedDescriptions,
@@ -697,6 +708,19 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       while (coverImages.length < 4) coverImages.push("");
 
       const logoUrlsValue = emailRecord["logoUrls"];
+      const bannerLinksValue = emailRecord["bannerLinks"];
+      const savedBannerLinks = Array.isArray(bannerLinksValue)
+        ? bannerLinksValue.map((link) => {
+            if (isRecord(link)) {
+              return {
+                label: getString(link, "label") ?? "",
+                url: getString(link, "url") ?? "",
+              };
+            }
+            return { label: "", url: "" };
+          })
+        : createDefaultEmailBannerLinks();
+      while (savedBannerLinks.length < 4) savedBannerLinks.push({ label: "", url: "" });
       const savedLogoUrls = Array.isArray(logoUrlsValue)
         ? logoUrlsValue.map((link) => {
             if (isRecord(link)) {
@@ -803,6 +827,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setEmailEditedDescriptions(editedDescriptionsNormalized);
       setEmailInternalsToggle(internalsToggleNormalized);
       setEmailLogoUrls(savedLogoUrls.slice(0, 4));
+      setEmailBannerLinks(savedBannerLinks.slice(0, 4));
       setEmailLineBreakText(getString(emailRecord, "lineBreakText") ?? "");
       setEmailSectionOrder(sectionOrder);
 
@@ -1567,6 +1592,16 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           catalogueImageUrl: emailCatalogueImageUrl.trim() || undefined,
           logoUrls: emailLogoUrls.filter(logo => logo.imageUrl.trim()).length > 0 ? emailLogoUrls.filter(logo => logo.imageUrl.trim()) : undefined,
           lineBreakText: emailLineBreakText.trim() || undefined,
+          bannerLinks: (() => {
+            const sanitized = emailBannerLinks
+              .map(link => ({
+                label: link.label.trim(),
+                url: link.url.trim()
+              }))
+              .filter(link => link.label.length > 0 && link.url.length > 0)
+              .slice(0, 4);
+            return sanitized.length > 0 ? sanitized : undefined;
+          })(),
           sectionOrder: emailSectionOrder,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
@@ -3577,6 +3612,91 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                   <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
                     If populated, a discount message will appear in the separator above products. Otherwise, just a colored separator bar.
                   </div>
+                </div>
+
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                      Banner Links (Optional - up to 4):
+                    </label>
+                    <span style={{ fontSize: 11, color: '#6c757d' }}>
+                      These appear in the coloured banner when no discount code is provided.
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6c757d', margin: '6px 0 10px' }}>
+                    Add quick website links such as category pages. Provide both a label and URL for each link.
+                    If a discount code is set, it will take priority instead of these links.
+                  </div>
+                  {emailBannerLinks.map((link, index) => (
+                    <div key={index} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8, padding: 8, background: '#FFFFFF', borderRadius: 6, border: '1px solid #E9ECEF' }}>
+                      <div style={{ flex: '1 1 180px', minWidth: 160 }}>
+                        <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
+                          Link Label {index + 1}
+                        </label>
+                        <input
+                          type="text"
+                          value={link.label}
+                          onChange={(event) => {
+                            const next = [...emailBannerLinks];
+                            next[index] = { ...next[index], label: event.target.value };
+                            setEmailBannerLinks(next);
+                          }}
+                          placeholder="e.g. Psychology"
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            border: '1px solid #DEE2E6',
+                            borderRadius: 6,
+                            fontSize: 12
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: '2 1 260px', minWidth: 220 }}>
+                        <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
+                          Link URL {index + 1}
+                        </label>
+                        <input
+                          type="url"
+                          value={link.url}
+                          onChange={(event) => {
+                            const next = [...emailBannerLinks];
+                            next[index] = { ...next[index], url: event.target.value };
+                            setEmailBannerLinks(next);
+                          }}
+                          placeholder="https://www.example.com/path"
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            border: '1px solid #DEE2E6',
+                            borderRadius: 6,
+                            fontSize: 12,
+                            fontFamily: 'monospace'
+                          }}
+                        />
+                      </div>
+                      {(link.label.trim().length > 0 || link.url.trim().length > 0) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = [...emailBannerLinks];
+                            next[index] = { label: '', url: '' };
+                            setEmailBannerLinks(next);
+                          }}
+                          style={{
+                            padding: '8px 12px',
+                            borderRadius: 6,
+                            border: '1px solid #CED4DA',
+                            background: '#F8F9FA',
+                            fontSize: 12,
+                            color: '#495057',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
                 
                 <div style={{ marginBottom: 12 }}>

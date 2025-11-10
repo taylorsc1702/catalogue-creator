@@ -32,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle = 'woodslane',
       utmParams,
       discountCode,
+      bannerLinks,
       bannerImageUrl,
       freeText,
       issuuUrl,
@@ -64,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle?: HyperlinkToggle;
       utmParams?: UtmParams;
       discountCode?: string;
+      bannerLinks?: Array<{ label?: string; url?: string }>;
       bannerImageUrl?: string;
       freeText?: string;
       issuuUrl?: string;
@@ -89,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -107,6 +109,7 @@ function generateEmailHtml(
   hyperlinkToggle?: HyperlinkToggle,
   utmParams?: UtmParams,
   discountCode?: string,
+  bannerLinks?: Array<{ label?: string; url?: string }>,
   bannerImageUrl?: string,
   freeText?: string,
   issuuUrl?: string,
@@ -634,7 +637,7 @@ function generateEmailHtml(
     }).join('');
     
     // Generate complete email with header, banner, free text, separator, and footer
-    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
+    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
   }
   
   switch (template) {
@@ -773,7 +776,7 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
+  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
 }
 
 // Helper function to generate complete email HTML structure
@@ -782,9 +785,10 @@ function generateCompleteEmailHtml(
   logoUrl: string,
   websiteName: string,
   bannerColor: string,
+  discountCode?: string,
+  bannerLinks?: Array<{ label?: string; url?: string }>,
   bannerImageUrl?: string,
   freeText?: string,
-  discountCode?: string,
   issuuUrl?: string,
   catalogueImageUrl?: string,
   logoUrls?: Array<{imageUrl: string; destinationUrl?: string}>,
@@ -954,6 +958,36 @@ function generateCompleteEmailHtml(
   ` : '';
   
   // Discount Separator (if discount code exists)
+  const validBannerLinks = (bannerLinks || [])
+    .filter(link => !!link && typeof link.label === 'string' && typeof link.url === 'string')
+    .map(link => ({
+      label: (link.label || '').trim(),
+      url: (link.url || '').trim()
+    }))
+    .filter(link => link.label.length > 0 && link.url.length > 0)
+    .slice(0, 4);
+
+  const bannerLinksSection = validBannerLinks.length > 0 ? `
+    <!-- Banner Links -->
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
+      <tr>
+        <td align="center" style="padding: 16px 20px;">
+          <table border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto;">
+            <tr>
+              <td align="center" style="padding: 0;">
+                ${validBannerLinks.map(link => `
+                  <a href="${esc(link.url)}" style="display: inline-block; margin: 4px 8px; padding: 8px 16px; background-color: rgba(255, 255, 255, 0.18); color: #ffffff; border-radius: 20px; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: 600;">
+                    ${esc(link.label)}
+                  </a>
+                `).join('')}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  ` : '';
+
   const discountSeparator = discountCode ? `
     <!-- Discount Separator -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
@@ -969,14 +1003,14 @@ function generateCompleteEmailHtml(
         </td>
       </tr>
     </table>
-  ` : `
+  ` : (bannerLinksSection || `
     <!-- Separator (Banner Color) -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${bannerColor};">
       <tr>
         <td style="height: 10px; line-height: 10px; font-size: 10px;">&nbsp;</td>
       </tr>
     </table>
-  `;
+  `);
   
   // Social media URLs (placeholder - will be updated tomorrow based on domain)
   const socialMediaUrls: Record<HyperlinkToggle, { facebook?: string; website?: string; instagram?: string }> = {
