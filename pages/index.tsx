@@ -23,6 +23,14 @@ const createDefaultEmailBannerLinks = () => [
   { label: "", url: "" },
 ];
 
+const BUTTON_SHAPE_OPTIONS = [
+  { label: "Square", value: "4px" },
+  { label: "Soft Corners", value: "8px" },
+  { label: "Rounded", value: "12px" },
+  { label: "Pill", value: "999px" },
+  { label: "Sharp (No Radius)", value: "0px" },
+] as const;
+
 type FeedbackMessage = { type: "success" | "error"; text: string };
 
 type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
@@ -227,6 +235,7 @@ export default function Home() {
   const [emailButtonLabel, setEmailButtonLabel] = useState<string>('Shop Now →');
   const [emailButtonColor, setEmailButtonColor] = useState<string>('#007bff');
   const [emailButtonTextColor, setEmailButtonTextColor] = useState<string>('#ffffff');
+  const [emailButtonBorderRadius, setEmailButtonBorderRadius] = useState<string>('4px');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
@@ -556,6 +565,10 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setEmailFreeText("");
     setEmailIssuuUrl("");
     setEmailCatalogueImageUrl("");
+    setEmailButtonLabel('Shop Now →');
+    setEmailButtonColor('#007bff');
+    setEmailButtonTextColor('#ffffff');
+    setEmailButtonBorderRadius('4px');
     setEmailEditedDescriptions({});
     setEmailInternalsToggle({});
     setEmailLogoUrls(createDefaultEmailLogoLinks());
@@ -633,6 +646,10 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             sectionOrder: emailSectionOrder,
             editedDescriptions: emailEditedDescriptions,
             internalsToggle: emailInternalsToggle,
+            buttonColor: emailButtonColor,
+            buttonTextColor: emailButtonTextColor,
+            buttonLabel: emailButtonLabel,
+            buttonBorderRadius: emailButtonBorderRadius,
           },
         },
       };
@@ -721,6 +738,11 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           })
         : createDefaultEmailBannerLinks();
       while (savedBannerLinks.length < 4) savedBannerLinks.push({ label: "", url: "" });
+
+      const buttonColorValue = getString(emailRecord, "buttonColor");
+      const buttonTextColorValue = getString(emailRecord, "buttonTextColor");
+      const buttonLabelValue = getString(emailRecord, "buttonLabel");
+      const buttonBorderRadiusValue = getString(emailRecord, "buttonBorderRadius");
       const savedLogoUrls = Array.isArray(logoUrlsValue)
         ? logoUrlsValue.map((link) => {
             if (isRecord(link)) {
@@ -830,6 +852,10 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setEmailBannerLinks(savedBannerLinks.slice(0, 4));
       setEmailLineBreakText(getString(emailRecord, "lineBreakText") ?? "");
       setEmailSectionOrder(sectionOrder);
+      setEmailButtonColor(buttonColorValue ?? '#007bff');
+      setEmailButtonTextColor(buttonTextColorValue ?? '#ffffff');
+      setEmailButtonLabel(buttonLabelValue ?? 'Shop Now →');
+      setEmailButtonBorderRadius(buttonBorderRadiusValue ?? '4px');
 
       setSaveFeedback({
         type: "success",
@@ -1607,7 +1633,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             primaryColor: getBannerColor(hyperlinkToggle),
             buttonColor: emailButtonColor.trim() || undefined,
             buttonTextColor: emailButtonTextColor.trim() || undefined,
-            buttonLabel: emailButtonLabel.trim() || undefined
+            buttonLabel: emailButtonLabel.trim() || undefined,
+            buttonBorderRadius: emailButtonBorderRadius.trim() || undefined
           },
           showFields: {
             subtitle: true,
@@ -3795,6 +3822,33 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                       <code style={{ fontSize: 12, color: '#6c757d' }}>{emailButtonTextColor}</code>
                     </div>
                   </div>
+                  <div style={{ marginTop: 16 }}>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6c757d', marginBottom: 6 }}>
+                      Button Shape:
+                    </label>
+                    <select
+                      value={emailButtonBorderRadius}
+                      onChange={(event) => setEmailButtonBorderRadius(event.target.value)}
+                      style={{
+                        width: '100%',
+                        maxWidth: 220,
+                        padding: '8px 12px',
+                        border: '1px solid #CED4DA',
+                        borderRadius: 6,
+                        fontSize: 13,
+                        background: '#FFFFFF'
+                      }}
+                    >
+                      {BUTTON_SHAPE_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                      Controls the corner style of all call-to-action buttons.
+                    </div>
+                  </div>
                   <div style={{ marginTop: 10 }}>
                     <span
                       style={{
@@ -3802,7 +3856,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                         padding: '10px 24px',
                         background: emailButtonColor || '#007bff',
                         color: emailButtonTextColor || '#ffffff',
-                        borderRadius: 6,
+                        borderRadius: emailButtonBorderRadius || '4px',
                         fontSize: 14,
                         fontWeight: 600
                       }}

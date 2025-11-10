@@ -46,7 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         backgroundColor: '#ffffff',
         buttonColor: '#007bff',
         buttonTextColor: '#ffffff',
-        buttonLabel: 'Shop Now →'
+        buttonLabel: 'Shop Now →',
+        buttonBorderRadius: '4px'
       },
       showFields = {
         subtitle: true,
@@ -80,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         buttonColor?: string;
         buttonTextColor?: string;
         buttonLabel?: string;
+        buttonBorderRadius?: string;
       };
       showFields?: Record<string, boolean>;
     };
@@ -124,6 +126,7 @@ function generateEmailHtml(
     buttonColor?: string;
     buttonTextColor?: string;
     buttonLabel?: string;
+    buttonBorderRadius?: string;
   },
   showFields?: Record<string, boolean>
 ): string {
@@ -162,6 +165,17 @@ function generateEmailHtml(
   const buttonColor = theme?.buttonColor || '#007bff';
   const buttonTextColor = theme?.buttonTextColor || '#ffffff';
   const buttonLabel = (theme?.buttonLabel && theme.buttonLabel.trim()) ? theme.buttonLabel.trim() : 'Shop Now →';
+  const allowedBorderRadii = new Set(['0px', '4px', '8px', '12px', '20px', '999px']);
+  const buttonBorderRadius = (() => {
+    const raw = theme?.buttonBorderRadius?.trim().toLowerCase();
+    if (!raw) return '4px';
+    if (allowedBorderRadii.has(raw)) return raw;
+    // Allow numeric values with optional px unit (basic validation)
+    if (/^\d+(\.\d+)?(px|rem|em|%)?$/.test(raw)) {
+      return raw;
+    }
+    return '4px';
+  })();
 
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
@@ -318,7 +332,7 @@ function generateEmailHtml(
                     <tr>
                       <td align="center">
                         <a href="${esc(productUrl)}" 
-                           style="display: inline-block; padding: 12px 30px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
+                           style="display: inline-block; padding: 12px 30px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: ${buttonBorderRadius}; font-weight: bold; font-size: 16px;">
                           ${esc(buttonLabel)}
                         </a>
                       </td>
@@ -384,7 +398,7 @@ function generateEmailHtml(
                 </p>
               ` : ''}
               <a href="${esc(productUrl)}" 
-                 style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold;">
+                 style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: ${buttonBorderRadius}; font-size: 14px; font-weight: bold;">
                 ${esc(buttonLabel)}
               </a>
             </td>
@@ -464,7 +478,7 @@ function generateEmailHtml(
                     <tr>
                       <td align="center">
                         <a href="${esc(productUrl)}" 
-                           style="display: inline-block; padding: 15px 40px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 18px;">
+                           style="display: inline-block; padding: 15px 40px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: ${buttonBorderRadius}; font-weight: bold; font-size: 18px;">
                           ${esc(buttonLabel)}
                         </a>
                       </td>
@@ -544,7 +558,7 @@ function generateEmailHtml(
                     </p>
                   ` : ''}
                   <a href="${esc(productUrl)}" 
-                     style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                     style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: ${buttonBorderRadius}; font-size: 14px;">
                     View Product →
                   </a>
                 </td>
@@ -754,7 +768,7 @@ function generateEmailHtml(
                   </p>
                 ` : ''}
                 <a href="${esc(productUrl)}" 
-                   style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                   style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: ${buttonBorderRadius}; font-size: 14px;">
                   View Product →
                 </a>
               </td>
