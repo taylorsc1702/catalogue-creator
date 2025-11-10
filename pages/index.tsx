@@ -31,6 +31,13 @@ const BUTTON_SHAPE_OPTIONS = [
   { label: "Sharp (No Radius)", value: "0px" },
 ] as const;
 
+const DEFAULT_BUTTON_COLOR = '#007bff';
+const DEFAULT_BUTTON_TEXT_COLOR = '#ffffff';
+const DEFAULT_BUTTON_BORDER_RADIUS = '4px';
+const DEFAULT_BANNER_LINK_BG_COLOR = 'rgba(255, 255, 255, 0.18)';
+const DEFAULT_BANNER_LINK_TEXT_COLOR = '#ffffff';
+const DEFAULT_BANNER_LINK_BORDER_RADIUS = '20px';
+
 type FeedbackMessage = { type: "success" | "error"; text: string };
 
 type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
@@ -233,9 +240,9 @@ export default function Home() {
   const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
   const [emailCatalogueImageUrl, setEmailCatalogueImageUrl] = useState<string>('');
   const [emailButtonLabel, setEmailButtonLabel] = useState<string>('Shop Now →');
-  const [emailButtonColor, setEmailButtonColor] = useState<string>('#007bff');
-  const [emailButtonTextColor, setEmailButtonTextColor] = useState<string>('#ffffff');
-  const [emailButtonBorderRadius, setEmailButtonBorderRadius] = useState<string>('4px');
+  const [emailButtonColor, setEmailButtonColor] = useState<string>(DEFAULT_BUTTON_COLOR);
+  const [emailButtonTextColor, setEmailButtonTextColor] = useState<string>(DEFAULT_BUTTON_TEXT_COLOR);
+  const [emailButtonBorderRadius, setEmailButtonBorderRadius] = useState<string>(DEFAULT_BUTTON_BORDER_RADIUS);
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
@@ -243,6 +250,9 @@ export default function Home() {
   const [emailLogoUrls, setEmailLogoUrls] = useState<Array<{imageUrl: string; destinationUrl: string}>>(createDefaultEmailLogoLinks);
   // Banner links (up to 4) - each has label and destination URL
   const [emailBannerLinks, setEmailBannerLinks] = useState<Array<{label: string; url: string}>>(createDefaultEmailBannerLinks);
+  const [emailBannerLinkBgColor, setEmailBannerLinkBgColor] = useState<string>(DEFAULT_BANNER_LINK_BG_COLOR);
+  const [emailBannerLinkTextColor, setEmailBannerLinkTextColor] = useState<string>(DEFAULT_BANNER_LINK_TEXT_COLOR);
+  const [emailBannerLinkBorderRadius, setEmailBannerLinkBorderRadius] = useState<string>(DEFAULT_BANNER_LINK_BORDER_RADIUS);
   // Line break text section
   const [emailLineBreakText, setEmailLineBreakText] = useState<string>('');
   // Email section order - default order
@@ -566,13 +576,16 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setEmailIssuuUrl("");
     setEmailCatalogueImageUrl("");
     setEmailButtonLabel('Shop Now →');
-    setEmailButtonColor('#007bff');
-    setEmailButtonTextColor('#ffffff');
-    setEmailButtonBorderRadius('4px');
+    setEmailButtonColor(DEFAULT_BUTTON_COLOR);
+    setEmailButtonTextColor(DEFAULT_BUTTON_TEXT_COLOR);
+    setEmailButtonBorderRadius(DEFAULT_BUTTON_BORDER_RADIUS);
     setEmailEditedDescriptions({});
     setEmailInternalsToggle({});
     setEmailLogoUrls(createDefaultEmailLogoLinks());
     setEmailBannerLinks(createDefaultEmailBannerLinks());
+    setEmailBannerLinkBgColor(DEFAULT_BANNER_LINK_BG_COLOR);
+    setEmailBannerLinkTextColor(DEFAULT_BANNER_LINK_TEXT_COLOR);
+    setEmailBannerLinkBorderRadius(DEFAULT_BANNER_LINK_BORDER_RADIUS);
     setEmailLineBreakText("");
     setEmailSectionOrder(['bannerImage', 'freeText', 'logoSection', 'lineBreakText', 'products', 'issuuCatalogue']);
     setUtmSource("");
@@ -650,6 +663,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             buttonTextColor: emailButtonTextColor,
             buttonLabel: emailButtonLabel,
             buttonBorderRadius: emailButtonBorderRadius,
+            bannerLinkBgColor: emailBannerLinkBgColor,
+            bannerLinkTextColor: emailBannerLinkTextColor,
+            bannerLinkBorderRadius: emailBannerLinkBorderRadius,
           },
         },
       };
@@ -743,6 +759,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       const buttonTextColorValue = getString(emailRecord, "buttonTextColor");
       const buttonLabelValue = getString(emailRecord, "buttonLabel");
       const buttonBorderRadiusValue = getString(emailRecord, "buttonBorderRadius");
+      const bannerLinkBgColorValue = getString(emailRecord, "bannerLinkBgColor");
+      const bannerLinkTextColorValue = getString(emailRecord, "bannerLinkTextColor");
+      const bannerLinkBorderRadiusValue = getString(emailRecord, "bannerLinkBorderRadius");
       const savedLogoUrls = Array.isArray(logoUrlsValue)
         ? logoUrlsValue.map((link) => {
             if (isRecord(link)) {
@@ -852,10 +871,13 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setEmailBannerLinks(savedBannerLinks.slice(0, 4));
       setEmailLineBreakText(getString(emailRecord, "lineBreakText") ?? "");
       setEmailSectionOrder(sectionOrder);
-      setEmailButtonColor(buttonColorValue ?? '#007bff');
-      setEmailButtonTextColor(buttonTextColorValue ?? '#ffffff');
+      setEmailButtonColor(buttonColorValue ?? DEFAULT_BUTTON_COLOR);
+      setEmailButtonTextColor(buttonTextColorValue ?? DEFAULT_BUTTON_TEXT_COLOR);
       setEmailButtonLabel(buttonLabelValue ?? 'Shop Now →');
-      setEmailButtonBorderRadius(buttonBorderRadiusValue ?? '4px');
+      setEmailButtonBorderRadius(buttonBorderRadiusValue ?? DEFAULT_BUTTON_BORDER_RADIUS);
+      setEmailBannerLinkBgColor(bannerLinkBgColorValue ?? DEFAULT_BANNER_LINK_BG_COLOR);
+      setEmailBannerLinkTextColor(bannerLinkTextColorValue ?? DEFAULT_BANNER_LINK_TEXT_COLOR);
+      setEmailBannerLinkBorderRadius(bannerLinkBorderRadiusValue ?? DEFAULT_BANNER_LINK_BORDER_RADIUS);
 
       setSaveFeedback({
         type: "success",
@@ -1634,7 +1656,10 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             buttonColor: emailButtonColor.trim() || undefined,
             buttonTextColor: emailButtonTextColor.trim() || undefined,
             buttonLabel: emailButtonLabel.trim() || undefined,
-            buttonBorderRadius: emailButtonBorderRadius.trim() || undefined
+            buttonBorderRadius: emailButtonBorderRadius.trim() || undefined,
+            bannerLinkBgColor: emailBannerLinkBgColor.trim() || undefined,
+            bannerLinkTextColor: emailBannerLinkTextColor.trim() || undefined,
+            bannerLinkBorderRadius: emailBannerLinkBorderRadius.trim() || undefined
           },
           showFields: {
             subtitle: true,
@@ -3025,6 +3050,106 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                       }}
                     />
                   ))}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
+                    <div style={{ flex: '1 1 220px', minWidth: 200 }}>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
+                        Background Colour (CSS):
+                      </label>
+                      <input
+                        type="text"
+                        value={emailBannerLinkBgColor}
+                        onChange={(event) => setEmailBannerLinkBgColor(event.target.value)}
+                        placeholder="e.g. rgba(255,255,255,0.18) or #ffffff"
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          border: '1px solid #DEE2E6',
+                          borderRadius: 6,
+                          fontSize: 12,
+                          fontFamily: 'monospace'
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 220px', minWidth: 200 }}>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
+                        Text Colour (CSS):
+                      </label>
+                      <input
+                        type="text"
+                        value={emailBannerLinkTextColor}
+                        onChange={(event) => setEmailBannerLinkTextColor(event.target.value)}
+                        placeholder="e.g. #ffffff"
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          border: '1px solid #DEE2E6',
+                          borderRadius: 6,
+                          fontSize: 12,
+                          fontFamily: 'monospace'
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 180px', minWidth: 160 }}>
+                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
+                        Button Shape:
+                      </label>
+                      <select
+                        value={emailBannerLinkBorderRadius}
+                        onChange={(event) => setEmailBannerLinkBorderRadius(event.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          border: '1px solid #DEE2E6',
+                          borderRadius: 6,
+                          fontSize: 12,
+                          background: '#FFFFFF'
+                        }}
+                      >
+                        {BUTTON_SHAPE_OPTIONS.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 12,
+                      borderRadius: 6,
+                      border: '1px dashed #CED4DA',
+                      background: getBannerColor(hyperlinkToggle),
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 8
+                    }}
+                  >
+                    {emailBannerLinks.some(link => link.label.trim() && link.url.trim()) ? (
+                      emailBannerLinks
+                        .filter(link => link.label.trim() && link.url.trim())
+                        .map((link, index) => (
+                          <span
+                            key={`${link.label}-${index}`}
+                            style={{
+                              display: 'inline-block',
+                              padding: '8px 14px',
+                              background: emailBannerLinkBgColor || DEFAULT_BANNER_LINK_BG_COLOR,
+                              color: emailBannerLinkTextColor || DEFAULT_BANNER_LINK_TEXT_COLOR,
+                              borderRadius: emailBannerLinkBorderRadius || DEFAULT_BANNER_LINK_BORDER_RADIUS,
+                              fontSize: 12,
+                              fontWeight: 600
+                            }}
+                          >
+                            {link.label.trim() || `Link ${index + 1}`}
+                          </span>
+                        ))
+                    ) : (
+                      <span style={{ fontSize: 12, color: '#FFFFFF', opacity: 0.85 }}>
+                        Preview updates once you add labels and URLs.
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ fontSize: 12, color: "#666", marginTop: 8 }}>
                   Add 1-4 image URLs. Layout will automatically adjust based on number of images.

@@ -47,7 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         buttonColor: '#007bff',
         buttonTextColor: '#ffffff',
         buttonLabel: 'Shop Now →',
-        buttonBorderRadius: '4px'
+        buttonBorderRadius: '4px',
+        bannerLinkBgColor: 'rgba(255, 255, 255, 0.18)',
+        bannerLinkTextColor: '#ffffff',
+        bannerLinkBorderRadius: '20px'
       },
       showFields = {
         subtitle: true,
@@ -82,6 +85,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         buttonTextColor?: string;
         buttonLabel?: string;
         buttonBorderRadius?: string;
+        bannerLinkBgColor?: string;
+        bannerLinkTextColor?: string;
+        bannerLinkBorderRadius?: string;
       };
       showFields?: Record<string, boolean>;
     };
@@ -127,6 +133,9 @@ function generateEmailHtml(
     buttonTextColor?: string;
     buttonLabel?: string;
     buttonBorderRadius?: string;
+    bannerLinkBgColor?: string;
+    bannerLinkTextColor?: string;
+    bannerLinkBorderRadius?: string;
   },
   showFields?: Record<string, boolean>
 ): string {
@@ -164,18 +173,21 @@ function generateEmailHtml(
   const bgColor = theme?.backgroundColor || '#ffffff';
   const buttonColor = theme?.buttonColor || '#007bff';
   const buttonTextColor = theme?.buttonTextColor || '#ffffff';
+  const normalizeBorderRadius = (value: string | undefined, fallback: string): string => {
+    if (!value) return fallback;
+    const raw = value.trim().toLowerCase();
+    if (!raw) return fallback;
+    const allowed = new Set(['0px', '4px', '8px', '12px', '16px', '20px', '24px', '999px']);
+    if (allowed.has(raw)) return raw;
+    if (/^\d+(\.\d+)?(px|rem|em|%)?$/.test(raw)) return raw;
+    return fallback;
+  };
+
   const buttonLabel = (theme?.buttonLabel && theme.buttonLabel.trim()) ? theme.buttonLabel.trim() : 'Shop Now →';
-  const allowedBorderRadii = new Set(['0px', '4px', '8px', '12px', '20px', '999px']);
-  const buttonBorderRadius = (() => {
-    const raw = theme?.buttonBorderRadius?.trim().toLowerCase();
-    if (!raw) return '4px';
-    if (allowedBorderRadii.has(raw)) return raw;
-    // Allow numeric values with optional px unit (basic validation)
-    if (/^\d+(\.\d+)?(px|rem|em|%)?$/.test(raw)) {
-      return raw;
-    }
-    return '4px';
-  })();
+  const buttonBorderRadius = normalizeBorderRadius(theme?.buttonBorderRadius, '4px');
+  const bannerLinkBgColor = (theme?.bannerLinkBgColor && theme.bannerLinkBgColor.trim()) ? theme.bannerLinkBgColor.trim() : 'rgba(255, 255, 255, 0.18)';
+  const bannerLinkTextColor = (theme?.bannerLinkTextColor && theme.bannerLinkTextColor.trim()) ? theme.bannerLinkTextColor.trim() : '#ffffff';
+  const bannerLinkBorderRadius = normalizeBorderRadius(theme?.bannerLinkBorderRadius, '20px');
 
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
@@ -651,7 +663,27 @@ function generateEmailHtml(
     }).join('');
     
     // Generate complete email with header, banner, free text, separator, and footer
-    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
+    return generateCompleteEmailHtml(
+      content,
+      logoUrl,
+      websiteName,
+      bannerColor,
+      discountCode,
+      bannerLinks,
+      {
+        backgroundColor: bannerLinkBgColor,
+        textColor: bannerLinkTextColor,
+        borderRadius: bannerLinkBorderRadius
+      },
+      bannerImageUrl,
+      freeText,
+      issuuUrl,
+      catalogueImageUrl,
+      logoUrls,
+      lineBreakText,
+      sectionOrder,
+      toggle
+    );
   }
   
   switch (template) {
@@ -790,7 +822,27 @@ function generateEmailHtml(
   }
 
   // Generate complete email with header, banner, free text, separator, and footer
-  return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
+  return generateCompleteEmailHtml(
+    content,
+    logoUrl,
+    websiteName,
+    bannerColor,
+    discountCode,
+    bannerLinks,
+    {
+      backgroundColor: bannerLinkBgColor,
+      textColor: bannerLinkTextColor,
+      borderRadius: bannerLinkBorderRadius
+    },
+    bannerImageUrl,
+    freeText,
+    issuuUrl,
+    catalogueImageUrl,
+    logoUrls,
+    lineBreakText,
+    sectionOrder,
+    toggle
+  );
 }
 
 // Helper function to generate complete email HTML structure
@@ -801,6 +853,7 @@ function generateCompleteEmailHtml(
   bannerColor: string,
   discountCode?: string,
   bannerLinks?: Array<{ label?: string; url?: string }>,
+  bannerLinkStyles?: { backgroundColor?: string; textColor?: string; borderRadius?: string },
   bannerImageUrl?: string,
   freeText?: string,
   issuuUrl?: string,
@@ -971,6 +1024,16 @@ function generateCompleteEmailHtml(
     </table>
   ` : '';
   
+  const resolvedBannerLinkBgColor = bannerLinkStyles?.backgroundColor && bannerLinkStyles.backgroundColor.trim()
+    ? bannerLinkStyles.backgroundColor.trim()
+    : 'rgba(255, 255, 255, 0.18)';
+  const resolvedBannerLinkTextColor = bannerLinkStyles?.textColor && bannerLinkStyles.textColor.trim()
+    ? bannerLinkStyles.textColor.trim()
+    : '#ffffff';
+  const resolvedBannerLinkBorderRadius = bannerLinkStyles?.borderRadius && bannerLinkStyles.borderRadius.trim()
+    ? bannerLinkStyles.borderRadius.trim()
+    : '20px';
+
   // Discount Separator (if discount code exists)
   const validBannerLinks = (bannerLinks || [])
     .filter(link => !!link && typeof link.label === 'string' && typeof link.url === 'string')
@@ -990,7 +1053,7 @@ function generateCompleteEmailHtml(
             <tr>
               <td align="center" style="padding: 0;">
                 ${validBannerLinks.map(link => `
-                  <a href="${esc(link.url)}" style="display: inline-block; margin: 4px 8px; padding: 8px 16px; background-color: rgba(255, 255, 255, 0.18); color: #ffffff; border-radius: 20px; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: 600;">
+                  <a href="${esc(link.url)}" style="display: inline-block; margin: 4px 8px; padding: 8px 16px; background-color: ${resolvedBannerLinkBgColor}; color: ${resolvedBannerLinkTextColor}; border-radius: ${resolvedBannerLinkBorderRadius}; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: 600;">
                     ${esc(link.label)}
                   </a>
                 `).join('')}
