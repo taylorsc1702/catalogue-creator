@@ -38,6 +38,8 @@ const DEFAULT_BANNER_LINK_BG_COLOR = 'rgba(255, 255, 255, 0.18)';
 const DEFAULT_BANNER_LINK_TEXT_COLOR = '#ffffff';
 const DEFAULT_BANNER_LINK_BORDER_RADIUS = '20px';
 
+const isValidHexColor = (value: string) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim());
+
 type FeedbackMessage = { type: "success" | "error"; text: string };
 
 type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
@@ -3051,43 +3053,67 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                     />
                   ))}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
-                    <div style={{ flex: '1 1 220px', minWidth: 200 }}>
+                    <div style={{ flex: '1 1 240px', minWidth: 200 }}>
                       <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
-                        Background Colour (CSS):
+                        Background Colour:
                       </label>
-                      <input
-                        type="text"
-                        value={emailBannerLinkBgColor}
-                        onChange={(event) => setEmailBannerLinkBgColor(event.target.value)}
-                        placeholder="e.g. rgba(255,255,255,0.18) or #ffffff"
-                        style={{
-                          width: '100%',
-                          padding: '8px 10px',
-                          border: '1px solid #DEE2E6',
-                          borderRadius: 6,
-                          fontSize: 12,
-                          fontFamily: 'monospace'
-                        }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input
+                          type="color"
+                          value={isValidHexColor(emailBannerLinkBgColor) ? emailBannerLinkBgColor : '#ffffff'}
+                          onChange={(event) => setEmailBannerLinkBgColor(event.target.value)}
+                          style={{ width: 44, height: 28, border: '1px solid #CED4DA', borderRadius: 6, padding: 0 }}
+                          aria-label="Banner link background colour"
+                        />
+                        <input
+                          type="text"
+                          value={emailBannerLinkBgColor}
+                          onChange={(event) => setEmailBannerLinkBgColor(event.target.value)}
+                          placeholder="e.g. rgba(255,255,255,0.18) or #ffffff"
+                          style={{
+                            flex: 1,
+                            padding: '8px 10px',
+                            border: '1px solid #DEE2E6',
+                            borderRadius: 6,
+                            fontSize: 12,
+                            fontFamily: 'monospace'
+                          }}
+                        />
+                      </div>
+                      <div style={{ fontSize: 10, color: '#6c757d', marginTop: 4 }}>
+                        Use the picker for hex colours or type any valid CSS colour value.
+                      </div>
                     </div>
-                    <div style={{ flex: '1 1 220px', minWidth: 200 }}>
+                    <div style={{ flex: '1 1 240px', minWidth: 200 }}>
                       <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
-                        Text Colour (CSS):
+                        Text Colour:
                       </label>
-                      <input
-                        type="text"
-                        value={emailBannerLinkTextColor}
-                        onChange={(event) => setEmailBannerLinkTextColor(event.target.value)}
-                        placeholder="e.g. #ffffff"
-                        style={{
-                          width: '100%',
-                          padding: '8px 10px',
-                          border: '1px solid #DEE2E6',
-                          borderRadius: 6,
-                          fontSize: 12,
-                          fontFamily: 'monospace'
-                        }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input
+                          type="color"
+                          value={isValidHexColor(emailBannerLinkTextColor) ? emailBannerLinkTextColor : '#ffffff'}
+                          onChange={(event) => setEmailBannerLinkTextColor(event.target.value)}
+                          style={{ width: 44, height: 28, border: '1px solid #CED4DA', borderRadius: 6, padding: 0 }}
+                          aria-label="Banner link text colour"
+                        />
+                        <input
+                          type="text"
+                          value={emailBannerLinkTextColor}
+                          onChange={(event) => setEmailBannerLinkTextColor(event.target.value)}
+                          placeholder="e.g. #ffffff"
+                          style={{
+                            flex: 1,
+                            padding: '8px 10px',
+                            border: '1px solid #DEE2E6',
+                            borderRadius: 6,
+                            fontSize: 12,
+                            fontFamily: 'monospace'
+                          }}
+                        />
+                      </div>
+                      <div style={{ fontSize: 10, color: '#6c757d', marginTop: 4 }}>
+                        Supports hex via the picker or any CSS colour value typed in.
+                      </div>
                     </div>
                     <div style={{ flex: '1 1 180px', minWidth: 160 }}>
                       <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6c757d', marginBottom: 4 }}>
