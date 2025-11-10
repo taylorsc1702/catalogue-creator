@@ -44,7 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         textColor: '#333333',
         backgroundColor: '#ffffff',
         buttonColor: '#007bff',
-        buttonTextColor: '#ffffff'
+        buttonTextColor: '#ffffff',
+        buttonLabel: 'Shop Now →'
       },
       showFields = {
         subtitle: true,
@@ -76,6 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         backgroundColor?: string;
         buttonColor?: string;
         buttonTextColor?: string;
+        buttonLabel?: string;
       };
       showFields?: Record<string, boolean>;
     };
@@ -118,6 +120,7 @@ function generateEmailHtml(
     backgroundColor?: string;
     buttonColor?: string;
     buttonTextColor?: string;
+    buttonLabel?: string;
   },
   showFields?: Record<string, boolean>
 ): string {
@@ -155,6 +158,7 @@ function generateEmailHtml(
   const bgColor = theme?.backgroundColor || '#ffffff';
   const buttonColor = theme?.buttonColor || '#007bff';
   const buttonTextColor = theme?.buttonTextColor || '#ffffff';
+  const buttonLabel = (theme?.buttonLabel && theme.buttonLabel.trim()) ? theme.buttonLabel.trim() : 'Shop Now →';
 
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
@@ -312,7 +316,7 @@ function generateEmailHtml(
                       <td align="center">
                         <a href="${esc(productUrl)}" 
                            style="display: inline-block; padding: 12px 30px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
-                          Shop Now →
+                          ${esc(buttonLabel)}
                         </a>
                       </td>
                     </tr>
@@ -378,7 +382,7 @@ function generateEmailHtml(
               ` : ''}
               <a href="${esc(productUrl)}" 
                  style="display: inline-block; padding: 8px 20px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold;">
-                Shop Now
+                ${esc(buttonLabel)}
               </a>
             </td>
           </tr>
@@ -458,7 +462,7 @@ function generateEmailHtml(
                       <td align="center">
                         <a href="${esc(productUrl)}" 
                            style="display: inline-block; padding: 15px 40px; background-color: ${buttonColor}; color: ${buttonTextColor}; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 18px;">
-                          Shop Now →
+                          ${esc(buttonLabel)}
                         </a>
                       </td>
                     </tr>
@@ -630,7 +634,7 @@ function generateEmailHtml(
     }).join('');
     
     // Generate complete email with header, banner, free text, separator, and footer
-    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, toggle);
+    return generateCompleteEmailHtml(content, logoUrl, websiteName, bannerColor, bannerImageUrl, freeText, discountCode, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, toggle);
   }
   
   switch (template) {
@@ -1089,15 +1093,17 @@ function generateCompleteEmailHtml(
   `;
   
   // ISSUU Catalogue section HTML
-  // Only show section if either ISSUU URL or Catalogue Image URL is provided
-  const hasIssuuUrl = issuuUrl && issuuUrl.trim().length > 0;
-  const hasCatalogueImageUrl = catalogueImageUrl && catalogueImageUrl.trim().length > 0;
-  const issuuCatalogueSection = (hasIssuuUrl || hasCatalogueImageUrl) ? (() => {
-    // Use ISSUU URL as link target if provided, otherwise use catalogue image URL
-    const linkUrl = issuuUrl || catalogueImageUrl;
+  // Only show section when an ISSUU URL is provided (image optional)
+  const sanitizedIssuuUrl = issuuUrl?.trim();
+  const sanitizedCatalogueImageUrl = catalogueImageUrl?.trim();
+  const hasIssuuUrl = !!sanitizedIssuuUrl;
+  const shouldRenderIssuuSection = hasIssuuUrl;
+  const issuuCatalogueSection = shouldRenderIssuuSection ? (() => {
+    if (!sanitizedIssuuUrl) return '';
+    const linkUrl = sanitizedIssuuUrl;
     
     // Get thumbnail image - use provided image URL or try to generate from ISSUU URL
-    const thumbnailUrl = catalogueImageUrl || (issuuUrl ? getIssuuThumbnailUrl(issuuUrl) : null);
+    const thumbnailUrl = sanitizedCatalogueImageUrl || getIssuuThumbnailUrl(sanitizedIssuuUrl);
     
     return `
     <!-- ISSUU Catalogue Link -->
@@ -1159,7 +1165,7 @@ function generateCompleteEmailHtml(
       orderedSections.push(sectionMap[sectionId] || '');
     } else if (sectionId === 'products') {
       orderedSections.push(sectionMap[sectionId] || '');
-    } else if (sectionId === 'issuuCatalogue' && (hasIssuuUrl || hasCatalogueImageUrl)) {
+    } else if (sectionId === 'issuuCatalogue' && shouldRenderIssuuSection) {
       orderedSections.push(sectionMap[sectionId] || '');
     }
   }

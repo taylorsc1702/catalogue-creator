@@ -171,7 +171,7 @@ export default function Home() {
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
   const [layout, setLayout] = useState<1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
-  const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("QR Code");
+  const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("EAN-13");
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
@@ -217,6 +217,9 @@ export default function Home() {
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
   const [emailCatalogueImageUrl, setEmailCatalogueImageUrl] = useState<string>('');
+  const [emailButtonLabel, setEmailButtonLabel] = useState<string>('Shop Now →');
+  const [emailButtonColor, setEmailButtonColor] = useState<string>('#007bff');
+  const [emailButtonTextColor, setEmailButtonTextColor] = useState<string>('#ffffff');
   const [emailEditedDescriptions, setEmailEditedDescriptions] = useState<{[key: number]: string}>({});
   const [editingEmailDescIndex, setEditingEmailDescIndex] = useState<number | null>(null);
   const [emailInternalsToggle, setEmailInternalsToggle] = useState<{[key: number]: boolean}>({});
@@ -530,7 +533,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setCustomBannerColor("");
     setHyperlinkToggle("woodslane");
     setLayout(4);
-    setBarcodeType("QR Code");
+    setBarcodeType("EAN-13");
     setItems([]);
     setItemLayouts({});
     setItemBarcodeTypes({});
@@ -713,7 +716,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
       const barcodeRaw = layoutRecord["barcodeType"];
       const resolvedBarcode =
-        isBarcodeType(barcodeRaw) ? (barcodeRaw as (typeof ALLOWED_BARCODE_TYPES)[number]) : "QR Code";
+        isBarcodeType(barcodeRaw) ? (barcodeRaw as (typeof ALLOWED_BARCODE_TYPES)[number]) : "EAN-13";
 
       const hyperlinkRaw = getString(brandingRecord, "hyperlinkToggle");
       const resolvedHyperlink =
@@ -1567,8 +1570,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           sectionOrder: emailSectionOrder,
           theme: {
             primaryColor: getBannerColor(hyperlinkToggle),
-            buttonColor: '#007bff',
-            buttonTextColor: '#ffffff'
+            buttonColor: emailButtonColor.trim() || undefined,
+            buttonTextColor: emailButtonTextColor.trim() || undefined,
+            buttonLabel: emailButtonLabel.trim() || undefined
           },
           showFields: {
             subtitle: true,
@@ -3617,7 +3621,74 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                     }}
                   />
                   <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
-                    If provided, this image will be displayed as a clickable thumbnail linking to the catalogue. If not provided, the system will try to generate one from the ISSUU URL.
+                    If provided (together with an ISSUU URL), this image will be displayed as a clickable thumbnail linking to the catalogue. If not provided, the system will try to generate one from the ISSUU URL. The catalogue block only appears when an ISSUU URL is supplied.
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
+                    Product Button Label (Optional):
+                  </label>
+                  <input
+                    type="text"
+                    value={emailButtonLabel}
+                    onChange={(e) => setEmailButtonLabel(e.target.value)}
+                    placeholder='Shop Now →'
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 6,
+                      fontSize: 13
+                    }}
+                  />
+                  <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
+                    Leave blank to use the default &ldquo;Shop Now →&rdquo; text. This label is used for all product call-to-action buttons.
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#495057', marginBottom: 6 }}>
+                    Product Button Colours:
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#6c757d' }}>Background:</label>
+                      <input
+                        type="color"
+                        value={emailButtonColor}
+                        onChange={(e) => setEmailButtonColor(e.target.value)}
+                        style={{ width: 44, height: 28, border: '1px solid #CED4DA', borderRadius: 6, padding: 0 }}
+                        aria-label="Product button background colour"
+                      />
+                      <code style={{ fontSize: 12, color: '#6c757d' }}>{emailButtonColor}</code>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#6c757d' }}>Text:</label>
+                      <input
+                        type="color"
+                        value={emailButtonTextColor}
+                        onChange={(e) => setEmailButtonTextColor(e.target.value)}
+                        style={{ width: 44, height: 28, border: '1px solid #CED4DA', borderRadius: 6, padding: 0 }}
+                        aria-label="Product button text colour"
+                      />
+                      <code style={{ fontSize: 12, color: '#6c757d' }}>{emailButtonTextColor}</code>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '10px 24px',
+                        background: emailButtonColor || '#007bff',
+                        color: emailButtonTextColor || '#ffffff',
+                        borderRadius: 6,
+                        fontSize: 14,
+                        fontWeight: 600
+                      }}
+                    >
+                      {emailButtonLabel.trim() || 'Shop Now →'}
+                    </span>
                   </div>
                 </div>
                 
@@ -3808,8 +3879,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                             sectionOrder: emailSectionOrder,
                             theme: {
                               primaryColor: getBannerColor(hyperlinkToggle),
-                              buttonColor: '#007bff',
-                              buttonTextColor: '#ffffff'
+                              buttonColor: emailButtonColor.trim() || undefined,
+                              buttonTextColor: emailButtonTextColor.trim() || undefined,
+                              buttonLabel: emailButtonLabel.trim() || undefined
                             },
                             showFields: {
                               subtitle: true,

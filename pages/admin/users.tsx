@@ -105,6 +105,12 @@ export default function AdminUsersPage() {
   const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [profiles, setProfiles] = useState<EditableProfile[]>([]);
   const [profilesError, setProfilesError] = useState<string | null>(null);
+  const [profileEmails, setProfileEmails] = useState<
+    Record<string, { email: string | null; lastSignInAt: string | null }>
+  >({});
+  const [emailLookupError, setEmailLookupError] = useState<string | null>(null);
+  const [expandedProfiles, setExpandedProfiles] = useState<Record<string, boolean>>({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const verifyAccess = async () => {
@@ -135,6 +141,32 @@ export default function AdminUsersPage() {
     };
     verifyAccess();
   }, [session, supabase]);
+
+  const fetchProfileEmails = useCallback(async (ids: string[]) => {
+    if (!ids.length) {
+      setProfileEmails({});
+      return;
+    }
+    try {
+      setEmailLookupError(null);
+      const resp = await fetch("/api/admin/profile-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!resp.ok) {
+        throw new Error(await resp.text());
+      }
+      const data = (await resp.json()) as {
+        emails?: Record<string, { email: string | null; lastSignInAt: string | null }>;
+      };
+      setProfileEmails(data.emails ?? {});
+    } catch (error) {
+      setEmailLookupError(
+        error instanceof Error ? error.message : "Unable to load user email addresses."
+      );
+    }
+  }, []);
 
   const loadProfiles = useCallback(async () => {
     if (!isAuthorized) return;
@@ -175,12 +207,14 @@ export default function AdminUsersPage() {
       });
 
       setProfiles(editable);
+      setExpandedProfiles({});
+      await fetchProfileEmails(editable.map((row) => row.id));
     } catch (error) {
       setProfilesError(error instanceof Error ? error.message : "Failed to load profiles.");
     } finally {
       setLoadingProfiles(false);
     }
-  }, [isAuthorized, supabase]);
+  }, [fetchProfileEmails, isAuthorized, supabase]);
 
   useEffect(() => {
     if (isAuthorized) {
@@ -308,6 +342,29 @@ export default function AdminUsersPage() {
     return "ready";
   }, [authChecked, authError, session, isAuthorized]);
 
+  const filteredProfiles = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return profiles;
+    return profiles.filter((profile) => {
+      const name = (profile.full_name ?? "").toLowerCase();
+      const email = (profileEmails[profile.id]?.email ?? "").toLowerCase();
+      const userId = profile.id.toLowerCase();
+      return (
+        name.includes(term) ||
+        email.includes(term) ||
+        userId.includes(term) ||
+        profile.discountCodeInput.toLowerCase().includes(term)
+      );
+    });
+  }, [profileEmails, profiles, searchTerm]);
+
+  const toggleProfileExpansion = (id: string) => {
+    setExpandedProfiles((previous) => ({
+      ...previous,
+      [id]: !(previous[id] ?? false),
+    }));
+  };
+
   return (
     <>
       <Head>
@@ -393,19 +450,46 @@ export default function AdminUsersPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 16,
                   borderRadius: 12,
                   background: "white",
                   padding: 20,
                   boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
                 }}
               >
-                <div>
+                <div style={{ minWidth: 240, flex: "1 1 260px" }}>
                   <h2 style={{ margin: 0, fontSize: 18, color: "#1f2937" }}>Account directory</h2>
                   <p style={{ marginTop: 6, marginBottom: 0, color: "#6b7280", fontSize: 13 }}>
                     Toggle domains, update vendor restrictions, and configure discount messaging.
                     Leave vendors blank to allow all vendors for that user.
                   </p>
                 </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    justifyContent: "flex-end",
+                    minWidth: 280,
+                  }}
+                >
+                  <input
+                    type="search"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Search by name, email, or ID…"
+                    style={{
+                      flex: "1 1 220px",
+                      minWidth: 220,
+                      borderRadius: 999,
+                      border: "1px solid #d1d5db",
+                      padding: "10px 16px",
+                      fontSize: 13,
+                      background: "#f9fafb",
+                    }}
+                  />
                 <button
                   onClick={loadProfiles}
                   disabled={loadingProfiles}
@@ -421,6 +505,7 @@ export default function AdminUsersPage() {
                 >
                   {loadingProfiles ? "Refreshing…" : "Refresh list"}
                 </button>
+                </div>
               </div>
 
               {profilesError && (
@@ -435,6 +520,21 @@ export default function AdminUsersPage() {
                   }}
                 >
                   {profilesError}
+                </div>
+              )}
+
+              {emailLookupError && (
+                <div
+                  style={{
+                    padding: 16,
+                    borderRadius: 12,
+                    background: "#fffbeb",
+                    border: "1px solid #fbbf24",
+                    color: "#92400e",
+                    fontSize: 13,
+                  }}
+                >
+                  Unable to retrieve email addresses. {emailLookupError}
                 </div>
               )}
 
@@ -454,12 +554,44 @@ export default function AdminUsersPage() {
                 </div>
               )}
 
-              {profiles.map((profile) => {
+              {profiles.length > 0 && filteredProfiles.length === 0 && !loadingProfiles && (
+                <div
+                  style={{
+                    padding: 24,
+                    borderRadius: 12,
+                    background: "white",
+                    border: "1px dashed #d1d5db",
+                    color: "#6b7280",
+                    textAlign: "center",
+                    fontSize: 14,
+                  }}
+                >
+                  No accounts match “{searchTerm.trim()}”. Try a different email, name, or ID.
+                </div>
+              )}
+
+              {filteredProfiles.map((profile) => {
                 const vendorTokens = normalizeVendorList(profile.allowedVendorsText);
                 const displayName =
                   profile.full_name && profile.full_name.trim()
                     ? profile.full_name
                     : `User ${profile.id.slice(0, 8)}…`;
+                const emailInfo = profileEmails[profile.id];
+                const emailAddress = emailInfo?.email ?? null;
+                const lastSignInAt = emailInfo?.lastSignInAt ?? null;
+                const lastSignInText = lastSignInAt
+                  ? new Date(lastSignInAt).toLocaleString()
+                  : null;
+                const isExpanded = expandedProfiles[profile.id] ?? false;
+                const roleLabel =
+                  ROLE_OPTIONS.find((option) => option.value === profile.role)?.label ??
+                  profile.role;
+                const discountText = profile.discountCodeInput.trim();
+                const vendorSummary =
+                  vendorTokens.length === 0
+                    ? "All vendors"
+                    : `${vendorTokens.length} vendor${vendorTokens.length === 1 ? "" : "s"}`;
+                const handleToggle = () => toggleProfileExpansion(profile.id);
 
                 return (
                   <section
@@ -467,10 +599,10 @@ export default function AdminUsersPage() {
                     style={{
                       background: "white",
                       borderRadius: 16,
-                      padding: 24,
+                      padding: isExpanded ? 24 : 20,
                       boxShadow: "0 10px 30px rgba(15,23,42,0.05)",
                       border: profile.hasChanges ? "1px solid #2563eb" : "1px solid #e5e7eb",
-                      transition: "border-color 0.2s ease",
+                      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
                     }}
                   >
                     <header
@@ -482,49 +614,183 @@ export default function AdminUsersPage() {
                         justifyContent: "space-between",
                       }}
                     >
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: 20, color: "#111827" }}>{displayName}</h3>
-                        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>
-                          ID: <code>{profile.id}</code>
-                        </p>
-                        {profile.updated_at && (
-                          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#9ca3af" }}>
-                            Last updated {new Date(profile.updated_at).toLocaleString()}
-                          </p>
-                        )}
-                      </div>
-                      <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>Role</span>
-                        <select
-                          value={profile.role}
-                          onChange={(event) =>
-                            updateProfileField(profile.id, {
-                              role: event.target.value as Role,
-                            })
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={handleToggle}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleToggle();
                           }
-                          disabled={profile.saving}
+                        }}
+                        style={{
+                          flex: "1 1 320px",
+                          minWidth: 260,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <span style={{ fontSize: 18, fontWeight: 600, color: "#111827" }}>
+                          {displayName}
+                        </span>
+                        <span
                           style={{
-                            border: "1px solid #d1d5db",
-                            borderRadius: 8,
-                            padding: "8px 12px",
                             fontSize: 13,
-                            background: profile.saving ? "#f3f4f6" : "white",
-                            cursor: profile.saving ? "not-allowed" : "pointer",
+                            color: emailAddress ? "#1f2937" : "#9ca3af",
                           }}
                         >
-                          {ROLE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                          {emailAddress ?? "Email unavailable"}
+                        </span>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              background: "#e0f2fe",
+                              color: "#0369a1",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {roleLabel}
+                          </span>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              background: discountText ? "#ecfccb" : "#f3f4f6",
+                              color: discountText ? "#4d7c0f" : "#6b7280",
+                              fontSize: 12,
+                            }}
+                          >
+                            {discountText ? `Discount: ${discountText}` : "No discount message"}
+                          </span>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              background: "#ede9fe",
+                              color: "#5b21b6",
+                              fontSize: 12,
+                            }}
+                          >
+                            {vendorSummary}
+                          </span>
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+                          ID: {profile.id}
+                          {lastSignInText ? ` · Last sign-in ${lastSignInText}` : ""}
+                          {profile.updated_at
+                            ? ` · Updated ${new Date(profile.updated_at).toLocaleString()}`
+                            : ""}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {profile.hasChanges && (
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: "#1d4ed8",
+                              fontWeight: 600,
+                              background: "#dbeafe",
+                              borderRadius: 999,
+                              padding: "4px 10px",
+                            }}
+                          >
+                            Unsaved changes
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleToggle}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            borderRadius: 999,
+                            border: "1px solid #d1d5db",
+                            background: "white",
+                            color: "#1f2937",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            padding: "6px 14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {isExpanded ? "Collapse" : "Manage"}
+                          <span
+                            style={{
+                              display: "inline-block",
+                              transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                            }}
+                          >
+                            ▾
+                          </span>
+                        </button>
+                      </div>
                     </header>
 
-                    <hr style={{ margin: "20px 0", border: "none", height: 1, background: "#e5e7eb" }} />
+                    {isExpanded && (
+                      <>
+                        <hr
+                          style={{ margin: "20px 0", border: "none", height: 1, background: "#e5e7eb" }}
+                        />
 
-                    <div style={{ display: "grid", gap: 18 }}>
-                      <div>
+                        <div style={{ display: "grid", gap: 18 }}>
+                          <label
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                              maxWidth: 260,
+                            }}
+                          >
+                            <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
+                              Role
+                            </span>
+                            <select
+                              value={profile.role}
+                              onChange={(event) =>
+                                updateProfileField(profile.id, {
+                                  role: event.target.value as Role,
+                                })
+                              }
+                              disabled={profile.saving}
+                              style={{
+                                border: "1px solid #d1d5db",
+                                borderRadius: 8,
+                                padding: "8px 12px",
+                                fontSize: 13,
+                                background: profile.saving ? "#f3f4f6" : "white",
+                                cursor: profile.saving ? "not-allowed" : "pointer",
+                              }}
+                            >
+                              {ROLE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <div>
                         <h4 style={{ margin: "0 0 8px", fontSize: 15, color: "#111827" }}>
                           Domain access
                         </h4>
@@ -694,58 +960,60 @@ export default function AdminUsersPage() {
 
                     <hr style={{ margin: "20px 0", border: "none", height: 1, background: "#e5e7eb" }} />
 
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <button
-                        onClick={() => saveProfile(profile)}
-                        disabled={!profile.hasChanges || profile.saving}
-                        style={{
-                          padding: "10px 16px",
-                          borderRadius: 10,
-                          border: "none",
-                          background:
-                            !profile.hasChanges || profile.saving ? "#93c5fd" : "#2563eb",
-                          color: "white",
-                          fontSize: 14,
-                          cursor:
-                            !profile.hasChanges || profile.saving ? "not-allowed" : "pointer",
-                        }}
-                      >
-                        {profile.saving ? "Saving…" : "Save changes"}
-                      </button>
-                      <button
-                        onClick={() => resetProfile(profile.id)}
-                        disabled={!profile.hasChanges || profile.saving}
-                        style={{
-                          padding: "10px 16px",
-                          borderRadius: 10,
-                          border: "1px solid #d1d5db",
-                          background: "white",
-                          color: "#1f2937",
-                          fontSize: 14,
-                          cursor:
-                            !profile.hasChanges || profile.saving ? "not-allowed" : "pointer",
-                        }}
-                      >
-                        Reset
-                      </button>
-                      {profile.successMessage && (
-                        <span style={{ fontSize: 13, color: "#16a34a" }}>
-                          {profile.successMessage}
-                        </span>
-                      )}
-                      {profile.errorMessage && (
-                        <span style={{ fontSize: 13, color: "#dc2626" }}>
-                          {profile.errorMessage}
-                        </span>
-                      )}
-                    </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            onClick={() => saveProfile(profile)}
+                            disabled={!profile.hasChanges || profile.saving}
+                            style={{
+                              padding: "10px 16px",
+                              borderRadius: 10,
+                              border: "none",
+                              background:
+                                !profile.hasChanges || profile.saving ? "#93c5fd" : "#2563eb",
+                              color: "white",
+                              fontSize: 14,
+                              cursor:
+                                !profile.hasChanges || profile.saving ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {profile.saving ? "Saving…" : "Save changes"}
+                          </button>
+                          <button
+                            onClick={() => resetProfile(profile.id)}
+                            disabled={!profile.hasChanges || profile.saving}
+                            style={{
+                              padding: "10px 16px",
+                              borderRadius: 10,
+                              border: "1px solid #d1d5db",
+                              background: "white",
+                              color: "#1f2937",
+                              fontSize: 14,
+                              cursor:
+                                !profile.hasChanges || profile.saving ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            Reset
+                          </button>
+                          {profile.successMessage && (
+                            <span style={{ fontSize: 13, color: "#16a34a" }}>
+                              {profile.successMessage}
+                            </span>
+                          )}
+                          {profile.errorMessage && (
+                            <span style={{ fontSize: 13, color: "#dc2626" }}>
+                              {profile.errorMessage}
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </section>
                 );
               })}
