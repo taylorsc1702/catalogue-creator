@@ -11,11 +11,11 @@ export type TruncationLimits = {
 // Layout-specific character limits for descriptions and author bios
 export const TRUNCATION_LIMITS: Record<string, TruncationLimits> = {
   '1-up': {
-    description: 1000,
+    description: 1397,
     authorBio: 752
   },
   '1L': {
-    description: 1000,
+    description: 1397,
     authorBio: 752
   },
   '2-up': {
