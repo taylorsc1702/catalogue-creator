@@ -100,6 +100,18 @@ const normalizeRecordValues = <T,>(
   return result;
 };
 
+const resolveLayoutForTruncation = (
+  layoutValue: BuilderLayout | ItemLayoutOption | undefined
+): LayoutType => {
+  if (layoutValue === undefined) return 4;
+  if (layoutValue === '1L') return '1L';
+  if (layoutValue === '2-int') return '2-int';
+  if (layoutValue === 1 || layoutValue === 2 || layoutValue === 3 || layoutValue === 4 || layoutValue === 8) {
+    return layoutValue;
+  }
+  return 4;
+};
+
 type Item = {
   title: string; subtitle?: string; description?: string; price?: string;
   author?: string; authorBio?: string; binding?: string; pages?: string;
@@ -4759,7 +4771,7 @@ function EditModal({
   const currentValue = editedItem?.[editingField] !== undefined 
     ? editedItem[editingField] 
     : item[editingField] || '';
-  const effectiveLayout: LayoutType = typeof itemLayout === 'number' ? itemLayout : itemLayout === '2-int' ? '2-int' : 4;
+  const effectiveLayout = resolveLayoutForTruncation(itemLayout);
   const truncations = getItemTruncations(item, effectiveLayout, isMixedView);
   const fieldTruncation = truncations[editingField];
   const limit = fieldTruncation?.limit || 0;
@@ -4944,7 +4956,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
               if (!shouldShowBadges) return null;
               
               const itemLayout = itemLayouts[i] || layout;
-              const effectiveLayout: LayoutType = typeof itemLayout === 'number' ? itemLayout : itemLayout === '2-int' ? '2-int' : 4;
+              const effectiveLayout = resolveLayoutForTruncation(itemLayout);
               // Use true for isMixed when we have custom layouts, otherwise use the isMixedView flag
               const isMixed = hasCustomLayouts || isMixedView;
               const truncations = getItemTruncations(it, effectiveLayout, isMixed);

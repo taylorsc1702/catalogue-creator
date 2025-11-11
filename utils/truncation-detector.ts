@@ -1,7 +1,7 @@
 // utils/truncation-detector.ts
 // Utility for detecting if text fields exceed layout-specific character limits
 
-export type LayoutType = 1 | 2 | '2-int' | 3 | 4 | 8;
+export type LayoutType = 1 | '1L' | 2 | '2-int' | 3 | 4 | 8;
 
 export type TruncationLimits = {
   description?: number;
@@ -11,6 +11,10 @@ export type TruncationLimits = {
 // Layout-specific character limits for descriptions and author bios
 export const TRUNCATION_LIMITS: Record<string, TruncationLimits> = {
   '1-up': {
+    description: 1000,
+    authorBio: 752
+  },
+  '1L': {
     description: 1000,
     authorBio: 752
   },
@@ -66,13 +70,20 @@ export function checkTruncation(
   }
 
   // Get layout key
-  let layoutKey = String(layout);
-  
-  // Special handling for 3-up in mixed layouts
-  if (layout === 3 && isMixed) {
-    layoutKey = '3-up';
-  } else if (layout === 3 && !isMixed) {
-    layoutKey = '3-up-standalone';
+  let layoutKey: string;
+
+  if (layout === '1L') {
+    layoutKey = '1L';
+  } else if (layout === '2-int') {
+    layoutKey = '2-int';
+  } else if (typeof layout === 'number') {
+    if (layout === 3) {
+      layoutKey = isMixed ? '3-up' : '3-up-standalone';
+    } else {
+      layoutKey = `${layout}-up`;
+    }
+  } else {
+    layoutKey = String(layout);
   }
 
   const limits = TRUNCATION_LIMITS[layoutKey] || {};
