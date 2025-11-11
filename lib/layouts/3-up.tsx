@@ -11,7 +11,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
       const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
       const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
-      const cardHeight = 280;
+      const cardMinHeight = 260;
 
       return (
         <div key={index} style={{ 
@@ -25,8 +25,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          height: `${cardHeight}px`,
-          minHeight: `${cardHeight}px`,
+          minHeight: `${cardMinHeight}px`,
           alignItems: "stretch"
         }}>
           <div style={{ 
@@ -172,13 +171,17 @@ export function create3UpLayoutHandler(): LayoutHandler {
             </div>
 
             {descriptionText && (
-              <div style={{ flex: 1, minHeight: 0, marginTop: 6 }}>
+              <div style={{ flex: 1, minHeight: 0, marginTop: 6, display: "flex" }}>
                 <div style={{
                   fontSize: 11,
                   lineHeight: 1.45,
                   color: "#495057",
                   whiteSpace: "pre-line",
-                  overflow: "hidden"
+                  overflow: "hidden",
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: hasFooterNote ? 6 : 12,
+                  flex: 1
                 }}>
                   {descriptionText}
                 </div>
