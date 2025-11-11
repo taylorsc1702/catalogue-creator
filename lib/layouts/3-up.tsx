@@ -11,6 +11,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
       const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
       const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
+      const cardHeight = 280;
 
       return (
         <div key={index} style={{ 
@@ -24,12 +25,15 @@ export function create3UpLayoutHandler(): LayoutHandler {
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          height: "fit-content",
-          alignItems: "flex-start"
+          height: `${cardHeight}px`,
+          minHeight: `${cardHeight}px`,
+          alignItems: "stretch"
         }}>
           <div style={{ 
             flexShrink: 0,
-            width: "96px"
+            width: "96px",
+            display: "flex",
+            alignItems: "flex-start"
           }}>
             <Image 
               src={item.imageUrl || "https://via.placeholder.com/96x144?text=No+Image"} 
@@ -62,10 +66,9 @@ export function create3UpLayoutHandler(): LayoutHandler {
           <div style={{ 
             display: "flex", 
             flexDirection: "column", 
-            gap: 4,
             flex: 1,
             minWidth: 0,
-            minHeight: "100%"
+            minHeight: 0
           }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <a 
@@ -78,8 +81,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
                   color: "#2C3E50",
                   lineHeight: 1.2,
                   textDecoration: "none",
-                  display: "block",
-                  marginBottom: 2
+                  display: "block"
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
                 onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
@@ -91,8 +93,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
                   fontSize: 12, 
                   color: "#7F8C8D",
                   fontStyle: "italic",
-                  lineHeight: 1.2,
-                  marginBottom: 2
+                  lineHeight: 1.2
                 }}>
                   {item.subtitle}
                 </div>
@@ -101,8 +102,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 <div style={{ 
                   fontSize: 11, 
                   color: "#667eea",
-                  fontWeight: 600,
-                  marginBottom: 4
+                  fontWeight: 600
                 }}>
                   👤 {item.author}
                 </div>
@@ -113,7 +113,6 @@ export function create3UpLayoutHandler(): LayoutHandler {
                   <div style={{
                     fontSize: 10,
                     color: "#6C757D",
-                    marginBottom: 2,
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
@@ -171,17 +170,18 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 {item.weight && <span>⚖️ {item.weight}</span>}
               </div>
             </div>
+
             {descriptionText && (
-              <div style={{
-                flexGrow: 1,
-                marginTop: 6,
-                fontSize: 11,
-                lineHeight: 1.45,
-                color: "#495057",
-                whiteSpace: "pre-line",
-                overflow: "hidden"
-              }}>
-                {descriptionText}
+              <div style={{ flex: 1, minHeight: 0, marginTop: 6 }}>
+                <div style={{
+                  fontSize: 11,
+                  lineHeight: 1.45,
+                  color: "#495057",
+                  whiteSpace: "pre-line",
+                  overflow: "hidden"
+                }}>
+                  {descriptionText}
+                </div>
               </div>
             )}
             {hasFooterNote && (
@@ -215,22 +215,22 @@ export function create3UpLayoutHandler(): LayoutHandler {
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
               ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">By ${esc(item.author)}</div>` : ""}
               ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+              <div class="product-specs">
+                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
+                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
+                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
+              </div>
+              <div class="product-meta">
+                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
+                ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+              </div>
             </div>
             <div class="product-description-wrapper">
               ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
             </div>
             ${item.footerNote ? `<div class="product-note">${esc(item.footerNote).replace(/\n/g, '<br>')}</div>` : ""}
-            <div class="product-specs">
-              ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-              ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-              ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-            </div>
-            <div class="product-meta">
-              ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-              ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
-              ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
-              ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-            </div>
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
             ${barcodeHtml || ''}
           </div>
@@ -423,12 +423,12 @@ export function create3UpLayoutHandler(): LayoutHandler {
     getCssStyles: () => `
       .product-card {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        gap: 12px;
         margin-bottom: 0;
         page-break-inside: avoid;
+        min-height: 280px;
         height: 100%;
-        min-height: 0;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
       }
@@ -444,9 +444,10 @@ export function create3UpLayoutHandler(): LayoutHandler {
         border-radius: 4px;
       }
       .product-details {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        height: 100%;
+        min-height: 0;
       }
       .product-header {
         display: flex;
@@ -474,35 +475,11 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 4px;
         font-family: 'Calibri', sans-serif;
       }
-      .product-description-wrapper {
-        flex: 1 1 auto;
-        margin-top: 6px;
-        display: flex;
-      }
-      .product-description {
-        flex: 1 1 auto;
-        font-size: 17px;
-        line-height: 1.4;
-        color: #495057;
-        margin-bottom: 4px;
-        font-family: 'Calibri', sans-serif;
-        overflow: hidden;
-      }
-      .product-note {
-        margin-top: 8px;
-        font-size: 15px;
-        color: #343A40;
-        background: #F1F3F5;
-        padding: 6px 8px;
-        border-radius: 6px;
-        font-family: 'Calibri', sans-serif;
-        white-space: pre-line;
-      }
       .product-specs {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
       .spec-item {
         font-size: 14px;
@@ -520,6 +497,33 @@ export function create3UpLayoutHandler(): LayoutHandler {
       }
       .meta-item {
         margin-bottom: 2px;
+      }
+      .product-description-wrapper {
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: 8px;
+      }
+      .product-description {
+        font-size: 17px;
+        line-height: 1.4;
+        color: #495057;
+        font-family: 'Calibri', sans-serif;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 60;
+        white-space: pre-line;
+        height: 100%;
+      }
+      .product-note {
+        margin-top: 8px;
+        font-size: 15px;
+        color: #343A40;
+        background: #F1F3F5;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-family: 'Calibri', sans-serif;
+        white-space: pre-line;
       }
       .product-price {
         font-size: 19px;
