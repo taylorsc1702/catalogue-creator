@@ -6,6 +6,7 @@ type Item = {
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   imageUrl?: string; handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -100,6 +100,14 @@ const normalizeRecordValues = <T,>(
   return result;
 };
 
+type EditedItemContent = { description?: string; authorBio?: string; footerNote?: string };
+
+const isEditedItemContent = (value: unknown): value is EditedItemContent => {
+  if (!isRecord(value)) return false;
+  const allowedKeys = new Set(['description', 'authorBio', 'footerNote']);
+  return Object.keys(value).every(key => allowedKeys.has(key) && (typeof value[key] === 'string' || value[key] === undefined));
+};
+
 const resolveLayoutForTruncation = (
   layoutValue: BuilderLayout | ItemLayoutOption | undefined
 ): LayoutType => {
@@ -121,6 +129,7 @@ type Item = {
   publicity?: string; reviews?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 type DomainAccessMap = {
@@ -282,7 +291,7 @@ export default function Home() {
   const [appendInsertIndex, setAppendInsertIndex] = useState<number | null>(null);
 
   // Truncation detection and editing
-  const [editedContent, setEditedContent] = useState<{[key: number]: {description?: string; authorBio?: string}}>({});
+  const [editedContent, setEditedContent] = useState<{[key: number]: EditedItemContent}>({});
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<'description' | 'authorBio' | null>(null);
@@ -466,7 +475,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       return {
         ...item,
         description: edits.description !== undefined ? edits.description : item.description,
-        authorBio: edits.authorBio !== undefined ? edits.authorBio : item.authorBio
+        authorBio: edits.authorBio !== undefined ? edits.authorBio : item.authorBio,
+        footerNote: edits.footerNote !== undefined ? edits.footerNote : item.footerNote
       };
     });
   };
@@ -498,6 +508,28 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     }));
     
     closeEditModal();
+  }
+
+  function setItemFooterNote(index: number, note: string) {
+    setEditedContent(prev => {
+      const existingEdits = prev[index] ?? {};
+      const originalNote = items[index]?.footerNote ?? '';
+      const currentNote = existingEdits.footerNote ?? originalNote;
+      if (note === currentNote) {
+        return prev;
+      }
+      const updated: EditedItemContent = { ...existingEdits };
+      if (note === '' && originalNote === '') {
+        delete updated.footerNote;
+      } else {
+        updated.footerNote = note;
+      }
+      if (Object.keys(updated).length === 0) {
+        const { [index]: _removed, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [index]: updated };
+    });
   }
 
   // Revert edited content to original
@@ -834,9 +866,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         layoutRecord["itemInternalsCount1L"],
         (value): value is number => typeof value === "number"
       );
-      const editedContentNormalized = normalizeRecordValues<{ description?: string; authorBio?: string }>(
+      const editedContentNormalized = normalizeRecordValues<EditedItemContent>(
         settingsRecord["editedContent"],
-        (value): value is { description?: string; authorBio?: string } => isRecord(value)
+        isEditedItemContent
       );
 
       const sectionOrderValue = emailRecord["sectionOrder"];
@@ -3598,7 +3630,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
@@ -4886,7 +4918,7 @@ function EditModal({
   );
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal }: {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote }: {
   items: Item[]; 
   layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -4910,6 +4942,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   generateProductUrl: (handle: string) => string;
   isMixedView?: boolean;
   openEditModal?: (itemIndex: number, field: 'description' | 'authorBio') => void;
+  editedContent: { [key: number]: EditedItemContent };
+  setItemFooterNote: (index: number, note: string) => void;
 }) {
   // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
   void hyperlinkToggle; // Explicitly mark as intentionally unused here
@@ -4930,12 +4964,30 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   
   // Get the handler for the current layout
   const layoutHandler = layoutRegistry.getHandler(layoutType);
+  const hasAnyCustomLayouts = Object.keys(itemLayouts).length > 0;
   
   if (layoutHandler) {
     // Use handler system for supported layouts
     return (
       <div style={{ marginTop: 24 }}>
-        {items.map((it, i) => (
+        {items.map((it, i) => {
+          const edits = editedContent[i];
+          const itemForPreview: Item = {
+            ...it,
+            ...(edits?.description !== undefined ? { description: edits.description } : {}),
+            ...(edits?.authorBio !== undefined ? { authorBio: edits.authorBio } : {}),
+            ...(edits?.footerNote !== undefined ? { footerNote: edits.footerNote } : {})
+          };
+          const itemLayoutSelection = itemLayouts[i] || layout;
+          const effectiveLayout = resolveLayoutForTruncation(itemLayoutSelection as BuilderLayout | ItemLayoutOption | undefined);
+          const truncations = getItemTruncations(itemForPreview, effectiveLayout, hasAnyCustomLayouts || isMixedView);
+          const hasTruncationIssues =
+            (truncations.description?.isTruncated ?? false) ||
+            (truncations.authorBio?.isTruncated ?? false);
+          const shouldShowBadges = (isMixedView || hasAnyCustomLayouts || showOrderEditor) && hasTruncationIssues;
+          const noteEligible = effectiveLayout === 3 && (isMixedView || showOrderEditor);
+          const noteValue = itemForPreview.footerNote ?? '';
+          return (
           <div key={i} style={{ 
             border: showOrderEditor ? "2px solid #667eea" : "none", 
             borderRadius: showOrderEditor ? 12 : 0, 
@@ -4946,105 +4998,113 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             position: "relative",
             marginBottom: showOrderEditor ? 16 : 0
           }}>
-            {layoutHandler.createPreview(it, i, generateProductUrl)}
+            {layoutHandler.createPreview(itemForPreview, i, generateProductUrl)}
             
             {/* Truncation indicators - show when items have custom layouts (mixed view) or in preview/reorder modal */}
-            {(() => {
-              // Show badges if: isMixedView is true, OR items have custom layouts assigned (indicating mixed view usage)
-              const hasCustomLayouts = Object.keys(itemLayouts).length > 0;
-              const shouldShowBadges = isMixedView || hasCustomLayouts || showOrderEditor;
-              if (!shouldShowBadges) return null;
-              
-              const itemLayout = itemLayouts[i] || layout;
-              const effectiveLayout = resolveLayoutForTruncation(itemLayout);
-              // Use true for isMixed when we have custom layouts, otherwise use the isMixedView flag
-              const isMixed = hasCustomLayouts || isMixedView;
-              const truncations = getItemTruncations(it, effectiveLayout, isMixed);
-              const hasIssues = truncations.description?.isTruncated || truncations.authorBio?.isTruncated;
-              
-              if (!hasIssues) return null;
-              
-              return (
-                <div style={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  display: 'flex',
-                  gap: 6,
-                  flexWrap: 'wrap',
-                  zIndex: 10
-                }}>
-                  {truncations.description?.isTruncated && (
-                    <div
-                      onClick={() => openEditModal?.(i, 'description')}
-                      style={{
-                        background: truncations.description.severity === 'severe' ? '#dc3545' : 
-                                   truncations.description.severity === 'moderate' ? '#ffc107' : '#28a745',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: 4,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      title={`Description truncated: ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                      }}
-                    >
-                      <span>📝 Desc</span>
-                      <span style={{ fontSize: 9, opacity: 0.9 }}>
-                        {Math.round(truncations.description.percentOver)}%
-                      </span>
-                    </div>
-                  )}
-                  {truncations.authorBio?.isTruncated && (
-                    <div
-                      onClick={() => openEditModal?.(i, 'authorBio')}
-                      style={{
-                        background: truncations.authorBio.severity === 'severe' ? '#dc3545' : 
-                                   truncations.authorBio.severity === 'moderate' ? '#ffc107' : '#28a745',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: 4,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      title={`Author bio truncated: ${truncations.authorBio.originalLength} chars (limit: ${truncations.authorBio.limit}). Click to edit.`}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                      }}
-                    >
-                      <span>👤 Bio</span>
-                      <span style={{ fontSize: 9, opacity: 0.9 }}>
-                        {Math.round(truncations.authorBio.percentOver)}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+            {shouldShowBadges && (
+              <div style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                display: 'flex',
+                gap: 6,
+                flexWrap: 'wrap',
+                zIndex: 10
+              }}>
+                {truncations.description?.isTruncated && (
+                  <div
+                    onClick={() => openEditModal?.(i, 'description')}
+                    style={{
+                      background: truncations.description.severity === 'severe' ? '#dc3545' : 
+                                 truncations.description.severity === 'moderate' ? '#ffc107' : '#28a745',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title={`Description truncated: ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    }}
+                  >
+                    <span>📝 Desc</span>
+                    <span style={{ fontSize: 9, opacity: 0.9 }}>
+                      {Math.round(truncations.description.percentOver)}%
+                    </span>
+                  </div>
+                )}
+                {truncations.authorBio?.isTruncated && (
+                  <div
+                    onClick={() => openEditModal?.(i, 'authorBio')}
+                    style={{
+                      background: truncations.authorBio.severity === 'severe' ? '#dc3545' : 
+                                 truncations.authorBio.severity === 'moderate' ? '#ffc107' : '#28a745',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title={`Author bio truncated: ${truncations.authorBio.originalLength} chars (limit: ${truncations.authorBio.limit}). Click to edit.`}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    }}
+                  >
+                    <span>👤 Bio</span>
+                    <span style={{ fontSize: 9, opacity: 0.9 }}>
+                      {Math.round(truncations.authorBio.percentOver)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            {noteEligible && (
+              <div style={{ marginTop: 12 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#495057', marginBottom: 4 }}>
+                  Footer Note (optional)
+                </label>
+                <textarea
+                  value={noteValue}
+                  onChange={(event) => setItemFooterNote(i, event.target.value)}
+                  placeholder="Add supporting text to appear beneath the description..."
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    border: '1px solid #DEE2E6',
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    fontSize: 12,
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                    background: '#F8F9FA',
+                    color: '#343A40'
+                  }}
+                />
+              </div>
+            )}
             
             {showOrderEditor && (
               <div style={{ 
@@ -5287,7 +5347,8 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
               </div>
             )}
           </div>
-        ))}
+        );
+      })}
       </div>
     );
   }
@@ -5489,8 +5550,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     Position: {i + 1}
                   </span>
                   {itemLayouts[i] && (
-                    <span style={{ 
-                      fontSize: 10, 
+                    <span style={{ fontSize: 10, 
                       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       color: "white",
                       padding: "2px 6px",

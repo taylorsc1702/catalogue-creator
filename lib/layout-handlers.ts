@@ -10,6 +10,7 @@ export type Item = {
   publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 export interface LayoutHandler {

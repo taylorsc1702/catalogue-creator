@@ -9,6 +9,7 @@ type Item = {
   publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 type EmailTemplate = 'single' | 'grid-2' | 'grid-3' | 'grid-4' | 'list' | 'spotlight' | 'featured' | 'mixed';

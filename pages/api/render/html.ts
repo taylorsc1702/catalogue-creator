@@ -12,6 +12,7 @@ type Item = {
   publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

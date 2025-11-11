@@ -13,6 +13,7 @@ type Item = {
   sku?: string; icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
+  footerNote?: string;
 };
 
 // const SITE = process.env.SITE_BASE_URL || "https://b27202-c3.myshopify.com";

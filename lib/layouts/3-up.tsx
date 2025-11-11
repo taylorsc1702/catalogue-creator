@@ -9,6 +9,9 @@ export function create3UpLayoutHandler(): LayoutHandler {
     getPerPage: () => 3,
     
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
+      const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
+      const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
+
       return (
         <div key={index} style={{ 
           border: "2px solid #E9ECEF", 
@@ -61,110 +64,139 @@ export function create3UpLayoutHandler(): LayoutHandler {
             flexDirection: "column", 
             gap: 4,
             flex: 1,
-            minWidth: 0
+            minWidth: 0,
+            minHeight: "100%"
           }}>
-            <a 
-              href={generateProductUrl(item.handle)}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                fontWeight: 700, 
-                fontSize: 14,
-                color: "#2C3E50",
-                lineHeight: 1.2,
-                textDecoration: "none",
-                display: "block",
-                marginBottom: 2
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
-            >
-              {item.title}
-            </a>
-            {item.subtitle && (
-              <div style={{ 
-                fontSize: 12, 
-                color: "#7F8C8D",
-                fontStyle: "italic",
-                lineHeight: 1.2,
-                marginBottom: 2
-              }}>
-                {item.subtitle}
-              </div>
-            )}
-            {item.author && (
-              <div style={{ 
-                fontSize: 11, 
-                color: "#667eea",
-                fontWeight: 600,
-                marginBottom: 4
-              }}>
-                👤 {item.author}
-              </div>
-            )}
-            {item.releaseDate && (() => {
-              const { formattedDate, badgeType } = formatDateAndBadge(item.releaseDate);
-              return (
-                <div style={{
-                  fontSize: 10,
-                  color: "#6C757D",
-                  marginBottom: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  flexWrap: "wrap"
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <a 
+                href={generateProductUrl(item.handle)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  fontWeight: 700, 
+                  fontSize: 14,
+                  color: "#2C3E50",
+                  lineHeight: 1.2,
+                  textDecoration: "none",
+                  display: "block",
+                  marginBottom: 2
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#667eea"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#2C3E50"}
+              >
+                {item.title}
+              </a>
+              {item.subtitle && (
+                <div style={{ 
+                  fontSize: 12, 
+                  color: "#7F8C8D",
+                  fontStyle: "italic",
+                  lineHeight: 1.2,
+                  marginBottom: 2
                 }}>
-                  <span>📅 {formattedDate}</span>
-                  {badgeType && (
-                    <span style={{
-                      fontSize: 12,
-                      padding: "4px 8px",
-                      borderRadius: 4,
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      backgroundColor: badgeType === 'current' ? "#28A745" : "#007BFF",
-                      color: "white",
-                    }}>
-                      {badgeType}
-                    </span>
-                  )}
-                  {item.icauth && (
-                    <span style={{
-                      fontSize: 8,
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      backgroundColor: "#FFD700",
-                      color: "black"
-                    }}>
-                      AUS-{item.icauth}
-                    </span>
-                  )}
+                  {item.subtitle}
                 </div>
-              );
-            })()}
-            <div style={{ 
-              fontSize: 10, 
-              color: "#6C757D",
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap"
-            }}>
-              {item.binding && <span>📖 {item.binding}</span>}
-              {item.pages && <span>📄 {item.pages} pages</span>}
-              {item.dimensions && <span>📐 {item.dimensions}</span>}
+              )}
+              {item.author && (
+                <div style={{ 
+                  fontSize: 11, 
+                  color: "#667eea",
+                  fontWeight: 600,
+                  marginBottom: 4
+                }}>
+                  👤 {item.author}
+                </div>
+              )}
+              {item.releaseDate && (() => {
+                const { formattedDate, badgeType } = formatDateAndBadge(item.releaseDate);
+                return (
+                  <div style={{
+                    fontSize: 10,
+                    color: "#6C757D",
+                    marginBottom: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    flexWrap: "wrap"
+                  }}>
+                    <span>📅 {formattedDate}</span>
+                    {badgeType && (
+                      <span style={{
+                        fontSize: 12,
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        backgroundColor: badgeType === 'current' ? "#28A745" : "#007BFF",
+                        color: "white",
+                      }}>
+                        {badgeType}
+                      </span>
+                    )}
+                    {item.icauth && (
+                      <span style={{
+                        fontSize: 8,
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        backgroundColor: "#FFD700",
+                        color: "black"
+                      }}>
+                        AUS-{item.icauth}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+              <div style={{ 
+                fontSize: 10, 
+                color: "#6C757D",
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap"
+              }}>
+                {item.binding && <span>📖 {item.binding}</span>}
+                {item.pages && <span>📄 {item.pages} pages</span>}
+                {item.dimensions && <span>📐 {item.dimensions}</span>}
+              </div>
+              <div style={{ 
+                fontSize: 10, 
+                color: "#6C757D",
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap"
+              }}>
+                {item.imprint && <span>🏢 {item.imprint}</span>}
+                {item.weight && <span>⚖️ {item.weight}</span>}
+              </div>
             </div>
-            <div style={{ 
-              fontSize: 10, 
-              color: "#6C757D",
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap"
-            }}>
-              {item.imprint && <span>🏢 {item.imprint}</span>}
-              {item.weight && <span>⚖️ {item.weight}</span>}
-            </div>
+            {descriptionText && (
+              <div style={{
+                flexGrow: 1,
+                marginTop: 6,
+                fontSize: 11,
+                lineHeight: 1.45,
+                color: "#495057",
+                whiteSpace: "pre-line",
+                overflow: "hidden"
+              }}>
+                {descriptionText}
+              </div>
+            )}
+            {hasFooterNote && (
+              <div style={{
+                marginTop: 8,
+                fontSize: 10,
+                color: "#343A40",
+                background: "#F1F3F5",
+                padding: "6px 8px",
+                borderRadius: 6,
+                whiteSpace: "pre-line"
+              }}>
+                {item.footerNote}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -178,11 +210,16 @@ export function create3UpLayoutHandler(): LayoutHandler {
             <img src="${esc(item.imageUrl || 'https://via.placeholder.com/96x144?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
           <div class="product-details">
-            <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
-            ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-            ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">By ${esc(item.author)}</div>` : ""}
-            ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
-            ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+            <div class="product-header">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+              ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
+              ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">By ${esc(item.author)}</div>` : ""}
+              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+            </div>
+            <div class="product-description-wrapper">
+              ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+            </div>
+            ${item.footerNote ? `<div class="product-note">${esc(item.footerNote).replace(/\n/g, '<br>')}</div>` : ""}
             <div class="product-specs">
               ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
               ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
@@ -290,6 +327,25 @@ export function create3UpLayoutHandler(): LayoutHandler {
         }));
       }
 
+      if (item.footerNote) {
+        const noteLines = item.footerNote.split(/\r?\n/);
+        paragraphs.push(new Paragraph({
+          children: noteLines.flatMap((line, idx) => {
+            const runs = [new TextRun({
+              text: line,
+              size: 11,
+              color: "343A40",
+              italics: true,
+            })];
+            if (idx < noteLines.length - 1) {
+              runs.push(new TextRun({ break: 1 }));
+            }
+            return runs;
+          }),
+          spacing: { after: 200 },
+        }));
+      }
+
       // Specs
       const specs = [item.binding, item.pages && `${item.pages} pages`, item.dimensions].filter(Boolean);
       if (specs.length > 0) {
@@ -371,7 +427,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
         gap: 8px;
         margin-bottom: 0;
         page-break-inside: avoid;
-        height: fit-content;
+        height: 100%;
+        min-height: 0;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
       }
@@ -385,6 +442,16 @@ export function create3UpLayoutHandler(): LayoutHandler {
         object-fit: cover;
         border: 1px solid #ddd;
         border-radius: 4px;
+      }
+      .product-details {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .product-header {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
       .product-title {
         font-size: 22px;
@@ -407,12 +474,29 @@ export function create3UpLayoutHandler(): LayoutHandler {
         margin-bottom: 4px;
         font-family: 'Calibri', sans-serif;
       }
+      .product-description-wrapper {
+        flex: 1 1 auto;
+        margin-top: 6px;
+        display: flex;
+      }
       .product-description {
+        flex: 1 1 auto;
         font-size: 17px;
         line-height: 1.4;
         color: #495057;
         margin-bottom: 4px;
         font-family: 'Calibri', sans-serif;
+        overflow: hidden;
+      }
+      .product-note {
+        margin-top: 8px;
+        font-size: 15px;
+        color: #343A40;
+        background: #F1F3F5;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-family: 'Calibri', sans-serif;
+        white-space: pre-line;
       }
       .product-specs {
         display: flex;
