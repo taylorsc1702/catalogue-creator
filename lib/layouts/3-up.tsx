@@ -11,8 +11,6 @@ export function create3UpLayoutHandler(): LayoutHandler {
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
       const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
       const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
-      const cardHeight = 280;
-
       return (
         <div key={index} style={{ 
           border: "2px solid #E9ECEF", 
@@ -25,7 +23,6 @@ export function create3UpLayoutHandler(): LayoutHandler {
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          height: `${cardHeight}px`,
           alignItems: "stretch"
         }}>
           <div style={{ 
@@ -427,7 +424,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         gap: 12px;
         margin-bottom: 0;
         page-break-inside: avoid;
-        height: 280px;
+        height: 260px;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
         border: 1px solid #E9ECEF;
