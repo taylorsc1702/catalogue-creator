@@ -11,7 +11,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
       const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
       const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
-      const cardMinHeight = 260;
+      const cardHeight = 280;
 
       return (
         <div key={index} style={{ 
@@ -25,7 +25,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
           transition: "all 0.2s ease",
           position: "relative",
           overflow: "hidden",
-          minHeight: `${cardMinHeight}px`,
+          height: `${cardHeight}px`,
           alignItems: "stretch"
         }}>
           <div style={{ 
@@ -171,17 +171,14 @@ export function create3UpLayoutHandler(): LayoutHandler {
             </div>
 
             {descriptionText && (
-              <div style={{ flex: 1, minHeight: 0, marginTop: 6, display: "flex" }}>
+              <div style={{ flex: 1, minHeight: 0, marginTop: 6 }}>
                 <div style={{
                   fontSize: 11,
                   lineHeight: 1.45,
                   color: "#495057",
                   whiteSpace: "pre-line",
                   overflow: "hidden",
-                  display: "-webkit-box",
-                  WebkitBoxOrient: "vertical",
-                  WebkitLineClamp: hasFooterNote ? 6 : 12,
-                  flex: 1
+                  height: "100%"
                 }}>
                   {descriptionText}
                 </div>
@@ -216,8 +213,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
             <div class="product-header">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">By ${esc(item.author)}</div>` : ""}
-              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+              ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
+              ${item.icauth ? `<span class="icauth-badge">${esc(item.icauth)}</span>` : ""}
               <div class="product-specs">
                 ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
                 ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
@@ -430,10 +427,13 @@ export function create3UpLayoutHandler(): LayoutHandler {
         gap: 12px;
         margin-bottom: 0;
         page-break-inside: avoid;
-        min-height: 280px;
-        height: 100%;
+        height: 280px;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
+        border: 1px solid #E9ECEF;
+        border-radius: 12px;
+        padding: 12px;
+        box-sizing: border-box;
       }
       .product-image {
         flex-shrink: 0;
@@ -505,17 +505,15 @@ export function create3UpLayoutHandler(): LayoutHandler {
         flex: 1 1 auto;
         min-height: 0;
         margin-top: 8px;
+        overflow: hidden;
       }
       .product-description {
         font-size: 17px;
         line-height: 1.4;
         color: #495057;
         font-family: 'Calibri', sans-serif;
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 60;
         white-space: pre-line;
+        overflow: hidden;
         height: 100%;
       }
       .product-note {
