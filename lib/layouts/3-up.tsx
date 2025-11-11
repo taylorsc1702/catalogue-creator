@@ -174,8 +174,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
                   lineHeight: 1.45,
                   color: "#495057",
                   whiteSpace: "pre-line",
-                  overflow: "hidden",
-                  height: "100%"
+                  overflow: "visible"
                 }}>
                   {descriptionText}
                 </div>
@@ -424,7 +423,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
         gap: 12px;
         margin-bottom: 0;
         page-break-inside: avoid;
-        height: 260px;
+        min-height: 260px;
+        height: auto;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
         border: 1px solid #E9ECEF;
@@ -502,7 +502,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         flex: 1 1 auto;
         min-height: 0;
         margin-top: 8px;
-        overflow: hidden;
+        overflow: visible;
       }
       .product-description {
         font-size: 17px;
@@ -510,8 +510,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         color: #495057;
         font-family: 'Calibri', sans-serif;
         white-space: pre-line;
-        overflow: hidden;
-        height: 100%;
+        overflow: visible;
       }
       .product-note {
         margin-top: 8px;
