@@ -499,13 +499,16 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   function saveEditedContent(newText: string) {
     if (editingItemIndex === null || editingField === null) return;
     
-    setEditedContent(prev => ({
-      ...prev,
-      [editingItemIndex]: {
-        ...prev[editingItemIndex],
-        [editingField]: newText
-      }
-    }));
+    setEditedContent(prev => {
+      const next = {
+        ...prev,
+        [editingItemIndex]: {
+          ...prev[editingItemIndex],
+          [editingField]: newText
+        }
+      };
+      return next;
+    });
     
     closeEditModal();
   }
@@ -4981,10 +4984,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           const itemLayoutSelection = itemLayouts[i] || layout;
           const effectiveLayout = resolveLayoutForTruncation(itemLayoutSelection as BuilderLayout | ItemLayoutOption | undefined);
           const truncations = getItemTruncations(itemForPreview, effectiveLayout, hasAnyCustomLayouts || isMixedView);
-          const hasTruncationIssues =
-            (truncations.description?.isTruncated ?? false) ||
-            (truncations.authorBio?.isTruncated ?? false);
-          const shouldShowBadges = (isMixedView || hasAnyCustomLayouts || showOrderEditor) && hasTruncationIssues;
+          const shouldShowBadges = (isMixedView || hasAnyCustomLayouts || showOrderEditor);
           const noteEligible = effectiveLayout === 3 && (isMixedView || showOrderEditor);
           const noteValue = itemForPreview.footerNote ?? '';
           return (
@@ -5000,7 +5000,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
           }}>
             {layoutHandler.createPreview(itemForPreview, i, generateProductUrl)}
             
-            {/* Truncation indicators - show when items have custom layouts (mixed view) or in preview/reorder modal */}
+            {/* Truncation indicators - always show truncation status */}
             {shouldShowBadges && (
               <div style={{
                 position: 'absolute',
@@ -5029,7 +5029,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                       transition: 'all 0.2s ease'
                     }}
-                    title={`Description truncated: ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
+                    title={`Description: ${truncations.description.percentOver > 75 ? 'Severely over limit' : truncations.description.percentOver > 50 ? 'Significantly over limit' : truncations.description.percentOver > 25 ? 'Slightly over limit' : 'Within limit'}. ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.05)';
                       e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
@@ -5063,7 +5063,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                       transition: 'all 0.2s ease'
                     }}
-                    title={`Author bio truncated: ${truncations.authorBio.originalLength} chars (limit: ${truncations.authorBio.limit}). Click to edit.`}
+                    title={`Author bio: ${truncations.authorBio.percentOver > 75 ? 'Severely over limit' : truncations.authorBio.percentOver > 50 ? 'Significantly over limit' : truncations.authorBio.percentOver > 25 ? 'Slightly over limit' : 'Within limit'}. ${truncations.authorBio.originalLength} chars (limit: ${truncations.authorBio.limit}). Click to edit.`}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.05)';
                       e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
