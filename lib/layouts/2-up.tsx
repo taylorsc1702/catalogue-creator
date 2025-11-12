@@ -193,7 +193,7 @@ export function create2UpLayoutHandler(): LayoutHandler {
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
               ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-              ${item.icillus ? `<div class="meta-item"><strong>ICILLUS:</strong> ${esc(item.icillus)}</div>` : ""}
+              ${item.icillus ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
             </div>
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
             ${barcodeHtml || ''}

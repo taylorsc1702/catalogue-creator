@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
+const HEADER_MAX_HEIGHT_PX = 120;
+
 export function create3UpLayoutHandler(): LayoutHandler {
   return {
     name: '3-up',
@@ -66,7 +68,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
             minWidth: 0,
             minHeight: 0
           }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: HEADER_MAX_HEIGHT_PX, overflow: "hidden" }}>
               <a 
                 href={generateProductUrl(item.handle)}
                 target="_blank"
@@ -453,6 +455,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
         display: flex;
         flex-direction: column;
         gap: 4px;
+        max-height: ${HEADER_MAX_HEIGHT_PX}px;
+        overflow: hidden;
       }
       .product-title {
         font-size: 22px;
