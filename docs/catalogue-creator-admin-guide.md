@@ -160,6 +160,7 @@ Admins can script automated catalogue creation by calling the existing HTTP endp
 
 ## Troubleshooting & Tips
 
+- **Password resets** – The `/reset-password` page now handles password updates once Supabase has established a recovery session. Make sure Supabase’s Site URL is `https://catalogues.woodslane.com.au` and add both `https://catalogues.woodslane.com.au/auth/callback?redirect_to=/reset-password` and any Vercel fallback domains to the Auth → URL Configuration redirect list. Update the reset-password email template to link to `{{ .SiteURL }}/auth/callback?redirect_to=/reset-password`.
 - **No Items Returned** – Check domain toggle, tag spelling, or whether Shopify products are published.
 - **Descriptions Clip Too Soon** – Review layout height; cards default to `min-height: 260px`. Adjust layout CSS or remove overflow clamps where necessary.
 - **Catalogue Not Saving** – Ensure you’re logged in as an admin; refresh token if session expired.

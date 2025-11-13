@@ -13,6 +13,24 @@ export function create3UpLayoutHandler(): LayoutHandler {
     createPreview: (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
       const descriptionText = item.description ? item.description.replace(/<[^>]*>/g, '') : '';
       const hasFooterNote = !!(item.footerNote && item.footerNote.trim().length > 0);
+      const { formattedDate: releaseFormatted, badgeType } = formatDateAndBadge(item.releaseDate);
+      const releaseValue = releaseFormatted ? `${releaseFormatted}${badgeType ? ` (${badgeType.toUpperCase()})` : ''}` : '';
+      const illustrationValue = item.icillus || item.illustrations;
+      const metadataEntries = [
+        item.vendor ? { label: 'Publisher', value: item.vendor } : null,
+        item.imprint ? { label: 'Imprint', value: item.imprint } : null,
+        (item.imidis || item.discount) ? { label: 'Discount', value: (item.imidis || item.discount)! } : null,
+        item.binding ? { label: 'Binding', value: item.binding } : null,
+        item.pages ? { label: 'Pages', value: item.pages } : null,
+        item.dimensions ? { label: 'Dimensions', value: item.dimensions } : null,
+        releaseValue ? { label: 'Release Date', value: releaseValue } : null,
+        item.weight ? { label: 'Weight', value: item.weight } : null,
+        illustrationValue ? { label: 'Illustrations', value: illustrationValue } : null,
+        item.sku ? { label: 'ISBN', value: item.sku } : null,
+        item.icrkdt ? { label: 'Barcode', value: item.icrkdt } : null
+      ].filter((entry): entry is { label: string; value: string } => !!entry && !!entry.value?.toString().trim().length);
+      const priceEntry = item.price ? `AUD$ ${item.price}` : null;
+
       return (
         <div key={index} style={{ 
           border: "2px solid #E9ECEF", 
@@ -31,7 +49,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
             flexShrink: 0,
             width: "96px",
             display: "flex",
-            alignItems: "flex-start"
+            alignItems: "flex-start",
+            justifyContent: "center"
           }}>
             <Image 
               src={item.imageUrl || "https://via.placeholder.com/96x144?text=No+Image"} 
@@ -46,27 +65,13 @@ export function create3UpLayoutHandler(): LayoutHandler {
               }}
             />
           </div>
-          {item.price && (
-            <div style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: 6,
-              fontSize: 12,
-              fontWeight: 600
-            }}>
-              ${item.price}
-            </div>
-          )}
           <div style={{ 
             display: "flex", 
             flexDirection: "column", 
             flex: 1,
             minWidth: 0,
-            minHeight: 0
+            minHeight: 0,
+            gap: 8
           }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: HEADER_MAX_HEIGHT_PX, overflow: "hidden" }}>
               <a 
@@ -96,92 +101,45 @@ export function create3UpLayoutHandler(): LayoutHandler {
                   {item.subtitle}
                 </div>
               )}
-              {item.author && (
+              {(item.author || item.icauth) && (
                 <div style={{ 
                   fontSize: 11, 
-                  color: "#667eea",
-                  fontWeight: 600
+                  color: "#495057",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap"
                 }}>
-                  👤 {item.author}
+                  {item.author && <span>{item.author}</span>}
+                  {item.icauth && (
+                    <span style={{
+                      backgroundColor: "#FFD700",
+                      color: "black",
+                      padding: "2px 6px",
+                      borderRadius: 8,
+                      fontSize: 10,
+                      fontWeight: 600
+                    }}>
+                      {item.icauth}
+                    </span>
+                  )}
                 </div>
               )}
-              {item.releaseDate && (() => {
-                const { formattedDate, badgeType } = formatDateAndBadge(item.releaseDate);
-                return (
-                  <div style={{
-                    fontSize: 10,
-                    color: "#6C757D",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    flexWrap: "wrap"
-                  }}>
-                    <span>📅 {formattedDate}</span>
-                    {badgeType && (
-                      <span style={{
-                        fontSize: 12,
-                        padding: "4px 8px",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        backgroundColor: badgeType === 'current' ? "#28A745" : "#007BFF",
-                        color: "white",
-                      }}>
-                        {badgeType}
-                      </span>
-                    )}
-                    {item.icauth && (
-                      <span style={{
-                        fontSize: 8,
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        backgroundColor: "#FFD700",
-                        color: "black"
-                      }}>
-                        AUS-{item.icauth}
-                      </span>
-                    )}
-                  </div>
-                );
-              })()}
-              <div style={{ 
-                fontSize: 10, 
-                color: "#6C757D",
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap"
-              }}>
-                {item.binding && <span>📖 {item.binding}</span>}
-                {item.pages && <span>📄 {item.pages} pages</span>}
-                {item.dimensions && <span>📐 {item.dimensions}</span>}
-              </div>
-              <div style={{ 
-                fontSize: 10, 
-                color: "#6C757D",
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap"
-              }}>
-                {item.imprint && <span>🏢 {item.imprint}</span>}
-                {item.weight && <span>⚖️ {item.weight}</span>}
-              </div>
             </div>
 
             {descriptionText && (
-              <div style={{ flex: 1, minHeight: 0, marginTop: 6 }}>
+              <div style={{ flex: 1, minHeight: 0 }}>
                 <div style={{
                   fontSize: 11,
                   lineHeight: 1.45,
                   color: "#495057",
-                  whiteSpace: "pre-line",
-                  overflow: "visible"
+                  whiteSpace: "pre-line"
                 }}>
                   {descriptionText}
                 </div>
               </div>
             )}
+
             {hasFooterNote && (
               <div style={{
                 marginTop: 8,
@@ -196,40 +154,80 @@ export function create3UpLayoutHandler(): LayoutHandler {
               </div>
             )}
           </div>
+
+          <div style={{
+            flexShrink: 0,
+            width: 170,
+            background: "#F8F9FA",
+            borderRadius: 8,
+            padding: "10px 12px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8
+          }}>
+            {metadataEntries.map((entry) => (
+              <div key={`${entry.label}-${entry.value}`} style={{ fontSize: 11, color: "#495057", lineHeight: 1.4 }}>
+                <span style={{ fontWeight: 600, display: 'block' }}>{entry.label}</span>
+                <span>{entry.value}</span>
+              </div>
+            ))}
+            {priceEntry && (
+              <div style={{
+                marginTop: 'auto',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#2C3E50'
+              }}>
+                {priceEntry}
+              </div>
+            )}
+          </div>
         </div>
       );
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
+      const { formattedDate: releaseFormatted, badgeType } = formatDateAndBadge(item.releaseDate);
+      const releaseValue = releaseFormatted ? `${releaseFormatted}${badgeType ? ` (${badgeType.toUpperCase()})` : ''}` : (item.releaseDate || '');
+      const illustrationValue = item.icillus || item.illustrations;
+      const metadataHtml = [
+        item.vendor ? `<div class="meta-row"><span class="meta-label">Publisher</span><span class="meta-value">${esc(item.vendor)}</span></div>` : '',
+        item.imprint ? `<div class="meta-row"><span class="meta-label">Imprint</span><span class="meta-value">${esc(item.imprint)}</span></div>` : '',
+        (item.imidis || item.discount) ? `<div class="meta-row"><span class="meta-label">Discount</span><span class="meta-value">${esc(item.imidis || item.discount)}</span></div>` : '',
+        item.binding ? `<div class="meta-row"><span class="meta-label">Binding</span><span class="meta-value">${esc(item.binding)}</span></div>` : '',
+        item.pages ? `<div class="meta-row"><span class="meta-label">Pages</span><span class="meta-value">${esc(item.pages)}</span></div>` : '',
+        item.dimensions ? `<div class="meta-row"><span class="meta-label">Dimensions</span><span class="meta-value">${esc(item.dimensions)}</span></div>` : '',
+        releaseValue ? `<div class="meta-row"><span class="meta-label">Release Date</span><span class="meta-value">${esc(releaseValue)}</span></div>` : '',
+        item.weight ? `<div class="meta-row"><span class="meta-label">Weight</span><span class="meta-value">${esc(item.weight)}</span></div>` : '',
+        illustrationValue ? `<div class="meta-row"><span class="meta-label">Illustrations</span><span class="meta-value">${esc(illustrationValue)}</span></div>` : '',
+        (item.sku || item.handle) ? `<div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-value">${esc(item.sku || item.handle)}</span></div>` : '',
+        item.icrkdt ? `<div class="meta-row"><span class="meta-label">Barcode</span><span class="meta-value">${esc(item.icrkdt)}</span></div>` : ''
+      ].join('');
+
       return `
         <div class="product-card">
           <div class="product-image">
             <img src="${esc(item.imageUrl || 'https://via.placeholder.com/96x144?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
-          <div class="product-details">
+          <div class="product-main">
             <div class="product-header">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${item.author ? `<div class="product-author">By ${esc(item.author)}</div>` : ""}
-              ${item.icauth ? `<span class="icauth-badge">${esc(item.icauth)}</span>` : ""}
-              <div class="product-specs">
-                ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-                ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-                ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-              </div>
-              <div class="product-meta">
-                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
-                ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
-                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-              </div>
+              ${(item.author || item.icauth) ? `
+                <div class="product-author-line">
+                  ${item.author ? `<span class="product-author">${esc(item.author)}</span>` : ''}
+                  ${item.icauth ? `<span class="icauth-badge">${esc(item.icauth)}</span>` : ''}
+                </div>
+              ` : ''}
             </div>
             <div class="product-description-wrapper">
               ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
             </div>
             ${item.footerNote ? `<div class="product-note">${esc(item.footerNote).replace(/\n/g, '<br>')}</div>` : ""}
-            ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+          </div>
+          <div class="product-sidebar">
+            ${metadataHtml}
+            ${item.price ? `<div class="meta-row price"><span class="meta-label">Price</span><span class="meta-value">AUD$ ${esc(item.price)}</span></div>` : ""}
             ${barcodeHtml || ''}
           </div>
         </div>
@@ -422,116 +420,127 @@ export function create3UpLayoutHandler(): LayoutHandler {
       .product-card {
         display: flex;
         flex-direction: row;
-        gap: 12px;
+        gap: 16px;
         margin-bottom: 0;
         page-break-inside: avoid;
-        min-height: 260px;
-        height: auto;
+        min-height: 220px;
         font-family: 'Calibri', sans-serif;
         margin: 0 5px;
         border: 1px solid #E9ECEF;
         border-radius: 12px;
-        padding: 12px;
+        padding: 12px 16px;
         box-sizing: border-box;
+        background: #ffffff;
       }
       .product-image {
         flex-shrink: 0;
-        width: 72px;
+        width: 96px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
       }
       .book-cover {
-        width: 72px;
-        height: 108px;
+        width: 96px;
+        height: 144px;
         object-fit: cover;
         border: 1px solid #ddd;
-        border-radius: 4px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
       }
-      .product-details {
+      .product-main {
         flex: 1;
         display: flex;
         flex-direction: column;
         min-height: 0;
+        gap: 12px;
       }
       .product-header {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
         max-height: ${HEADER_MAX_HEIGHT_PX}px;
         overflow: hidden;
       }
       .product-title {
         font-size: 22px;
         font-weight: bold;
-        margin: 0 0 4px 0;
+        margin: 0;
         color: #2C3E50;
-        font-family: 'Calibri', sans-serif;
       }
       .product-subtitle {
-        font-size: 19px;
+        font-size: 18px;
         color: #7F8C8D;
         font-style: italic;
-        margin-bottom: 3px;
-        font-family: 'Calibri', sans-serif;
+        margin: 0;
       }
-      .product-author {
-        font-size: 18px;
-        color: #667eea;
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-family: 'Calibri', sans-serif;
-      }
-      .product-specs {
+      .product-author-line {
         display: flex;
+        align-items: center;
         gap: 8px;
         flex-wrap: wrap;
-        margin-bottom: 4px;
+        font-size: 15px;
+        color: #495057;
       }
-      .spec-item {
-        font-size: 14px;
-        color: #6C757D;
-        background: #F8F9FA;
+      .product-author-line .icauth-badge {
+        background: #FFD700;
+        color: #000;
         padding: 2px 6px;
-        border-radius: 4px;
-        font-family: 'Calibri', sans-serif;
-      }
-      .product-meta {
-        font-size: 14px;
-        color: #6C757D;
-        line-height: 1.3;
-        font-family: 'Calibri', sans-serif;
-      }
-      .meta-item {
-        margin-bottom: 2px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
       }
       .product-description-wrapper {
         flex: 1 1 auto;
         min-height: 0;
-        margin-top: 8px;
-        overflow: visible;
+        margin-top: 4px;
       }
       .product-description {
-        font-size: 17px;
+        font-size: 16px;
         line-height: 1.4;
         color: #495057;
-        font-family: 'Calibri', sans-serif;
         white-space: pre-line;
-        overflow: visible;
       }
       .product-note {
-        margin-top: 8px;
-        font-size: 15px;
+        font-size: 14px;
         color: #343A40;
         background: #F1F3F5;
         padding: 6px 8px;
         border-radius: 6px;
-        font-family: 'Calibri', sans-serif;
         white-space: pre-line;
       }
-      .product-price {
-        font-size: 19px;
-        font-weight: bold;
+      .product-sidebar {
+        flex-shrink: 0;
+        width: 170px;
+        background: #F8F9FA;
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 14px;
+        color: #495057;
+      }
+      .meta-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.35;
+      }
+      .meta-label {
+        font-weight: 600;
+        text-transform: none;
+      }
+      .meta-value {
+        font-weight: 400;
+      }
+      .meta-row.price {
+        margin-top: auto;
+        font-size: 16px;
+        font-weight: 700;
         color: #2C3E50;
-        margin-top: 4px;
-        font-family: 'Calibri', sans-serif;
+      }
+      .product-sidebar .barcode-wrapper {
+        margin-top: 6px;
       }
     `
   };
