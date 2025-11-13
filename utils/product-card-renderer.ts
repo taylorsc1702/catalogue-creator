@@ -270,42 +270,28 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
   const plainDescription = item.description ? htmlToPlainText(item.description) : '';
   const truncatedDesc = plainDescription.length > 1400 ? plainDescription.substring(0, 1397) + '...' : plainDescription;
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
-  const releaseDate = item.releaseDate ? formatDate(item.releaseDate) : '';
-  const illustrationValue = item.icillus || item.illustrations;
-  const metadataHtml = [
-    item.vendor ? `<div class="detail-item"><span class="detail-label">Publisher</span><span class="detail-value">${esc(item.vendor)}</span></div>` : '',
-    item.imprint ? `<div class="detail-item"><span class="detail-label">Imprint</span><span class="detail-value">${esc(item.imprint)}</span></div>` : '',
-    (item.imidis || item.discount) ? `<div class="detail-item"><span class="detail-label">Discount</span><span class="detail-value">${esc(item.imidis || item.discount)}</span></div>` : '',
-    item.binding ? `<div class="detail-item"><span class="detail-label">Binding</span><span class="detail-value">${esc(item.binding)}</span></div>` : '',
-    item.pages ? `<div class="detail-item"><span class="detail-label">Pages</span><span class="detail-value">${esc(item.pages)}</span></div>` : '',
-    item.dimensions ? `<div class="detail-item"><span class="detail-label">Dimensions</span><span class="detail-value">${esc(item.dimensions)}</span></div>` : '',
-    releaseDate ? `<div class="detail-item"><span class="detail-label">Release Date</span><span class="detail-value">${esc(releaseDate)}</span></div>` : '',
-    item.weight ? `<div class="detail-item"><span class="detail-label">Weight</span><span class="detail-value">${esc(item.weight)}</span></div>` : '',
-    illustrationValue ? `<div class="detail-item"><span class="detail-label">Illustrations</span><span class="detail-value">${esc(illustrationValue)}</span></div>` : '',
-    (item.sku || item.handle) ? `<div class="detail-item"><span class="detail-label">ISBN</span><span class="detail-value">${esc(item.sku || item.handle)}</span></div>` : '',
-    item.icrkdt ? `<div class="detail-item"><span class="detail-label">Barcode</span><span class="detail-value">${esc(item.icrkdt)}</span></div>` : ''
-  ].join('');
-  const priceBlock = item.price ? `<div class="detail-item price"><span class="detail-label">Price</span><span class="detail-value">AUD$ ${esc(item.price)}</span></div>` : '';
   
   return `
-    <div class="product-card layout-3up">
+    <div class="product-card layout-3-row">
       <div class="product-image-3up">
         <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
       </div>
-      <div class="product-main-3up">
+      <div class="product-content-3up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
         ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${(item.author || item.icauth) ? `
-          <div class="product-author-line">
-            ${item.author ? `<span class="product-author">${esc(formatAuthor(item.author))}</span>` : ''}
-            ${item.icauth ? `<span class="icauth-badge">${esc(item.icauth)}</span>` : ''}
-          </div>
-        ` : ''}
+        ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
         ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
       </div>
-      <div class="product-aside-3up">
-        ${metadataHtml}
-        ${priceBlock}
+      <div class="product-details-3up">
+        ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
+        ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
+        ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
+        ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
+        ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
+        ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
+        ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
     </div>

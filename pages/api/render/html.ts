@@ -603,43 +603,29 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       }
       if (layout === 3) {
         const plainDescription = item.description ? htmlToPlainText(item.description) : '';
-        const truncatedDesc = plainDescription.length > 1400 ? plainDescription.substring(0, 1397) + '...' : plainDescription;
-        const releaseDate = item.releaseDate ? formatDate(item.releaseDate) : '';
-        const illustrationValue = item.icillus || item.illustrations;
-        const metadataHtml = [
-          item.vendor ? `<div class="detail-item"><span class="detail-label">Publisher</span><span class="detail-value">${esc(item.vendor)}</span></div>` : '',
-          item.imprint ? `<div class="detail-item"><span class="detail-label">Imprint</span><span class="detail-value">${esc(item.imprint)}</span></div>` : '',
-          (item.imidis || item.discount) ? `<div class="detail-item"><span class="detail-label">Discount</span><span class="detail-value">${esc(item.imidis || item.discount)}</span></div>` : '',
-          item.binding ? `<div class="detail-item"><span class="detail-label">Binding</span><span class="detail-value">${esc(item.binding)}</span></div>` : '',
-          item.pages ? `<div class="detail-item"><span class="detail-label">Pages</span><span class="detail-value">${esc(item.pages)}</span></div>` : '',
-          item.dimensions ? `<div class="detail-item"><span class="detail-label">Dimensions</span><span class="detail-value">${esc(item.dimensions)}</span></div>` : '',
-          releaseDate ? `<div class="detail-item"><span class="detail-label">Release Date</span><span class="detail-value">${esc(releaseDate)}</span></div>` : '',
-          item.weight ? `<div class="detail-item"><span class="detail-label">Weight</span><span class="detail-value">${esc(item.weight)}</span></div>` : '',
-          illustrationValue ? `<div class="detail-item"><span class="detail-label">Illustrations</span><span class="detail-value">${esc(illustrationValue)}</span></div>` : '',
-          (item.sku || item.handle) ? `<div class="detail-item"><span class="detail-label">ISBN</span><span class="detail-value">${esc(item.sku || item.handle)}</span></div>` : '',
-          item.icrkdt ? `<div class="detail-item"><span class="detail-label">Barcode</span><span class="detail-value">${esc(item.icrkdt)}</span></div>` : ''
-        ].join('');
-        const priceBlock = item.price ? `<div class="detail-item price"><span class="detail-label">Price</span><span class="detail-value">AUD$ ${esc(item.price)}</span></div>` : '';
+        const truncatedDesc = plainDescription.length > 1000 ? plainDescription.substring(0, 997) + '...' : plainDescription;
         
         return `
-          <div class="product-card layout-3up">
+          <div class="product-card layout-3-row">
             <div class="product-image-3up">
               <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
             </div>
-            <div class="product-main-3up">
+            <div class="product-content-3up">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-              ${(item.author || item.icauth) ? `
-                <div class="product-author-line">
-                  ${item.author ? `<span class="product-author">${esc(formatAuthor(item.author))}</span>` : ''}
-                  ${item.icauth ? `<span class="icauth-badge">${esc(item.icauth)}</span>` : ''}
-                </div>
-              ` : ''}
+              ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
               ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
             </div>
-            <div class="product-aside-3up">
-              ${metadataHtml}
-              ${priceBlock}
+            <div class="product-details-3up">
+              ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
+              ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
+              ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
+              ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
+              ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
+              ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
+              ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
               ${barcodeHtml}
             </div>
           </div>
@@ -1615,15 +1601,16 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   /* Layout 3: Horizontal row (Image | Content | Details) */
-  .layout-3up {
+  .layout-3-row {
     display: grid;
-    grid-template-columns: 212px 1fr 170px;
-    gap: 14px;
-    padding: 12px;
+    grid-template-columns: 212px 1fr 100px;
+    gap: 10px;
+    padding: 10px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    min-height: 200px;
+    min-height: 180px;
     max-width: 100%;
+    overflow: hidden;
   }
   
   .product-image-3up {
@@ -1633,101 +1620,91 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .product-image-3up .book-cover {
-    width: 200px;
-    height: 260px;
+    width: 206px;
+    height: 274px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
-  .product-main-3up {
+  .product-content-3up {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    font-family: 'Calibri', sans-serif;
+    gap: 0;
+    max-width: 90%;
   }
   
-  .product-main-3up .product-title {
+  .product-content-3up .product-title {
     font-size: 14px;
     font-weight: bold;
     color: #000;
     margin: 0;
     line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
-  .product-main-3up .product-subtitle {
+  .product-content-3up .product-subtitle {
     font-size: 12px;
     font-style: italic;
     color: #666;
     margin: 0;
     line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
-  .product-author-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .product-content-3up .product-author {
     font-size: 12px;
     color: #444;
-    flex-wrap: wrap;
-  }
-  
-  .product-author-line .icauth-badge {
-    background-color: #FFD700;
-    color: #000;
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Calibri', sans-serif;
   }
   
   .product-description-3up {
     font-size: 11px;
     color: #333;
-    line-height: 1.35;
+    line-height: 1.3;
+    margin-top: 6px;
     padding: 6px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
+    max-height: 120px;
+    overflow: hidden;
     text-align: justify;
-  }
-  
-  .product-aside-3up {
-    background: #F8F9FA;
-    border-radius: 8px;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     font-family: 'Calibri', sans-serif;
-    font-size: 11px;
-    color: #495057;
   }
   
-  .product-aside-3up .detail-item {
+  .product-details-3up {
     display: flex;
     flex-direction: column;
-    line-height: 1.35;
+    gap: 2px;
+    font-size: 10px;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 6px;
+    background: #ffffff;
+    font-family: 'Calibri', sans-serif;
   }
   
-  .product-aside-3up .detail-label {
-    font-weight: 600;
-    text-transform: none;
+  .product-details-3up .detail-value {
+    padding: 2px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    line-height: 1.3;
   }
   
-  .product-aside-3up .detail-value {
-    margin-top: 1px;
+  .product-details-3up .detail-value:last-child {
+    border-bottom: none;
   }
   
-  .product-aside-3up .detail-item.price {
-    margin-top: auto;
-    font-size: 13px;
-    font-weight: 700;
-    color: #2C3E50;
-  }
-  
-  .product-aside-3up .barcode-wrapper {
+  .product-details-3up .barcode {
     margin-top: 8px;
+    padding: 0;
+  }
+  
+  .product-details-3up .barcode img {
+    max-width: 100%;
+    height: auto;
   }
   
   .barcode-fallback {
@@ -1958,29 +1935,61 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
 
   /* Print styles - hide borders and boxes for clean printing */
   @media print {
-    .layout-3up {
-       border: none !important;
-       box-shadow: none !important;
-     }
-     
-     .product-description-3up {
-       border: none !important;
-       background: transparent !important;
-     }
-     
-     .product-aside-3up {
-       border: none !important;
-       background: transparent !important;
-     }
-     
-     .product-aside-3up .detail-item {
-       border: none !important;
-     }
-     
-     .product-table td {
-       font-size: 9pt;
-       padding: 1pt 2pt !important;
-     }
+    .layout-3-row {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .product-description-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up .detail-value {
+      border-bottom: none !important;
+    }
+    
+    .barcode-fallback {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .book-cover {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .internal-thumbnail {
+      border: none !important;
+    }
+    
+    .author-bio {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .internals-section {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .internals-thumbnails {
+      border: none !important;
+    }
+    
+    /* Fix table layout height in print */
+    .page.layout-table {
+      height: auto !important;
+      min-height: auto !important;
+      grid-template-rows: auto auto !important;
+      grid-template-areas: "header" "content" !important;
+      gap: 0 !important;
+    }
   }
   
   /* Other layouts: Standard vertical card */
@@ -2554,16 +2563,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .page.layout-1 .product-image .image-landscape {
     max-height: 300px;
     width: 100%;
-  }
-  .layout-3up {
-    page-break-inside: avoid;
-  }
-  .layout-3up .product-description-3up {
-    max-height: none;
-    overflow: visible;
-  }
-  .layout-3up .product-aside-3up {
-    min-height: 100%;
   }
 </style>
 <script>
