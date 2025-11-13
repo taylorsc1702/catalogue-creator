@@ -7,6 +7,7 @@ import { layoutRegistry } from '@/lib/layout-registry';
 import { getItemTruncations, type LayoutType } from '@/utils/truncation-detector';
 import SavedCataloguesPanel from "@/components/catalogues/SavedCataloguesPanel";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/router";
 import type { CatalogueDetails, CatalogueSavePayload, CatalogueSummary, HyperlinkToggle } from "@/types/catalogues";
 
 const createDefaultEmailLogoLinks = () => [
@@ -299,6 +300,7 @@ export default function Home() {
 
   const session = useSession();
   const supabaseClient = useSupabaseClient();
+  const router = useRouter();
   const [profileRole, setProfileRole] = useState<"admin" | "general" | null>(null);
   const [domainAccess, setDomainAccess] = useState<DomainAccessMap | null>(null);
 const [allowedVendors, setAllowedVendors] = useState<string[] | null>(null);
@@ -2311,6 +2313,20 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setEmailGenerating(false);
     }
   }
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        router.replace("/reset-password");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router, supabaseClient]);
 
   if (!session) {
     return (
