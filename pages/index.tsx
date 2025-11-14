@@ -2052,6 +2052,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   async function generatePDF(type: 'mixed' | 'single'): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
+        const itemsToUse = getItemsWithEdits();
         // Create a hidden iframe to load the HTML and generate PDF
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
@@ -2064,12 +2065,12 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         const loadHtml = async () => {
           let htmlUrl = '';
           if (type === 'mixed') {
-            const layoutAssignments = items.map((_, i) => itemLayouts[i] || layout);
+            const layoutAssignments = itemsToUse.map((_, i) => itemLayouts[i] || layout);
             const resp = await fetch("/api/render/mixed", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ 
-                items,
+                items: itemsToUse,
                 layoutAssignments,
                 showFields: { authorBio: true },
                 hyperlinkToggle,
@@ -2103,7 +2104,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ 
-                items,
+                items: itemsToUse,
                 layout,
                 showFields: { authorBio: layout === 1 || layout === '1L' },
                 hyperlinkToggle,
