@@ -2134,131 +2134,155 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
           iframe.src = htmlUrl;
           
-          iframe.onload = () => {
-            setTimeout(() => {
-              // Use html2canvas and jsPDF to generate PDF
-              const script = document.createElement('script');
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-              script.onload = () => {
-                const pdfScript = document.createElement('script');
-                pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js';
-                pdfScript.onload = () => {
-                  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                  if (!iframeDoc) {
-                    reject(new Error('Could not access iframe document'));
-                    return;
-                  }
-                  
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const html2canvasLib = (window as Record<string, any>).html2canvas;
-                  if (!html2canvasLib) {
-                    reject(new Error('html2canvas library not loaded'));
-                    return;
-                  }
-                  
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const jsPDF = (window as Record<string, any>).jspdf?.jsPDF;
-                  if (!jsPDF) {
-                    reject(new Error('jsPDF library not loaded'));
-                    return;
-                  }
-                  
-                  const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                  });
-                  
-                  // Find all page elements (including cover pages)
-                  const bodyEl = iframeDoc.body;
-                  const pages = bodyEl.querySelectorAll('.page, .cover-page');
-                  
-                  if (pages.length === 0) {
-                    reject(new Error('No pages found in HTML'));
-                    return;
-                  }
-                  
-                  // Process each page individually
-                  const processPage = async (pageIndex: number): Promise<void> => {
-                    if (pageIndex >= pages.length) {
-                      // All pages processed
-                      const pdfBase64 = pdf.output('datauristring');
-                      document.body.removeChild(iframe);
-                      URL.revokeObjectURL(htmlUrl);
-                      resolve(pdfBase64);
-                      return;
-                    }
-                    
-                    const page = pages[pageIndex];
-                    
-                    try {
-                      const canvas = await html2canvasLib(page, {
-                        scale: 2, // Doubled for better resolution
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        removeContainer: false,
-                        width: 1588, // A4 width in pixels at 192dpi (794 * 2)
-                        height: 2246, // A4 height in pixels at 192dpi (1123 * 2)
-                        allowTaint: true,
-                        foreignObjectRendering: true,
-                        imageTimeout: 15000,
-                        onclone: (clonedDoc: Document) => {
-                          // Add PDF generation class to body
-                          clonedDoc.body.classList.add('pdf-generation');
-                          
-                          // Ensure all page elements have white background
-                          const clonedPage = clonedDoc.querySelector('.page, .cover-page') as HTMLElement;
-                          if (clonedPage) {
-                            clonedPage.style.backgroundColor = '#ffffff';
-                            clonedPage.style.background = '#ffffff';
-                          }
-                          
-                          // Ensure body has white background
-                          clonedDoc.body.style.backgroundColor = '#ffffff';
-                          clonedDoc.body.style.background = '#ffffff';
-                          
-                          // Force all elements to have white background
-                          const allElements = clonedDoc.querySelectorAll('*');
-                          allElements.forEach(el => {
-                            const htmlEl = el as HTMLElement;
-                            if (htmlEl.style.backgroundColor === '#f5f5f5' || htmlEl.style.background === '#f5f5f5') {
-                              htmlEl.style.backgroundColor = '#ffffff';
-                              htmlEl.style.background = '#ffffff';
-                            }
-                          });
+          iframe.onload = async () => {
+            const loadScript = (src: string) =>
+              new Promise<void>((resolveScript, rejectScript) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => resolveScript();
+                script.onerror = () => rejectScript(new Error(`Failed to load ${src}`));
+                document.head.appendChild(script);
+              });
+
+            const cleanup = () => {
+              if (iframe.parentNode) {
+                document.body.removeChild(iframe);
+              }
+              URL.revokeObjectURL(htmlUrl);
+            };
+
+            try {
+              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js');
+
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+              if (!iframeDoc) {
+                throw new Error('Could not access iframe document');
+              }
+
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const html2canvasLib = (window as Record<string, any>).html2canvas;
+              if (!html2canvasLib) {
+                throw new Error('html2canvas library not loaded');
+              }
+
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const jsPDF = (window as Record<string, any>).jspdf?.jsPDF;
+              if (!jsPDF) {
+                throw new Error('jsPDF library not loaded');
+              }
+
+              const waitForImages = async () => {
+                const images = Array.from(iframeDoc.querySelectorAll('img'));
+                await Promise.all(
+                  images.map(
+                    (img) =>
+                      new Promise<void>((resolveImg) => {
+                        if (img.complete && img.naturalWidth > 0) {
+                          resolveImg();
+                          return;
                         }
-                      });
-                      
-                      // Convert to JPEG with higher quality for better resolution
-                      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                      
-                      // Add page to PDF (except for the first page which is already created)
-                      if (pageIndex > 0) {
-                        pdf.addPage();
-                      }
-                      
-                      // Add image to PDF
-                      const imgWidth = 210; // A4 width in mm
-                      const imgHeight = 297; // A4 height in mm
-                      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'MEDIUM');
-                      
-                      // Process next page
-                      setTimeout(() => processPage(pageIndex + 1), 100);
-                      
-                    } catch (error) {
-                      reject(new Error(`Failed to process page ${pageIndex + 1}: ${error}`));
-                    }
-                  };
-                  
-                  // Start processing pages
-                  processPage(0);
-                };
-                document.head.appendChild(pdfScript);
+                        const finalize = () => resolveImg();
+                        img.addEventListener('load', finalize, { once: true });
+                        img.addEventListener('error', finalize, { once: true });
+                      })
+                  )
+                );
               };
-              document.head.appendChild(script);
-            }, 2000); // Wait for images to load
+
+              const blobToDataUrl = (blob: Blob) =>
+                new Promise<string>((resolveBlob, rejectBlob) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolveBlob(reader.result as string);
+                  reader.onerror = () => rejectBlob(new Error('Failed to read blob'));
+                  reader.readAsDataURL(blob);
+                });
+
+              const inlineImages = async () => {
+                const images = Array.from(iframeDoc.querySelectorAll('img'));
+                await Promise.all(
+                  images.map(async (img) => {
+                    const src = img.getAttribute('src');
+                    if (!src || src.startsWith('data:')) return;
+                    try {
+                      const resp = await fetch(src);
+                      if (!resp.ok) {
+                        throw new Error(`Image request failed with status ${resp.status}`);
+                      }
+                      const blob = await resp.blob();
+                      const dataUrl = await blobToDataUrl(blob);
+                      img.setAttribute('src', dataUrl);
+                    } catch (imageError) {
+                      console.warn('Failed to inline image for PDF generation', src, imageError);
+                    }
+                  })
+                );
+              };
+
+              await waitForImages();
+              await inlineImages();
+
+              const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+                compress: true,
+              });
+
+              const bodyEl = iframeDoc.body;
+              const pages = Array.from(bodyEl.querySelectorAll('.page, .cover-page')) as HTMLElement[];
+
+              if (pages.length === 0) {
+                throw new Error('No pages found in HTML');
+              }
+
+              const a4Width = 210;
+              const a4Height = 297;
+
+              for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+                const page = pages[pageIndex];
+                const pageWidth = page.scrollWidth || page.clientWidth || 794;
+                const pageHeight = page.scrollHeight || page.clientHeight || 1123;
+
+                const canvas = await html2canvasLib(page, {
+                  scale: 2,
+                  useCORS: true,
+                  logging: false,
+                  backgroundColor: '#ffffff',
+                  width: pageWidth,
+                  height: pageHeight,
+                  windowWidth: pageWidth,
+                  windowHeight: pageHeight,
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+                if (pageIndex > 0) {
+                  pdf.addPage();
+                }
+
+                let renderWidth = a4Width;
+                let renderHeight = (pageHeight / pageWidth) * renderWidth;
+
+                if (renderHeight > a4Height) {
+                  const scaleRatio = a4Height / renderHeight;
+                  renderHeight = a4Height;
+                  renderWidth = renderWidth * scaleRatio;
+                }
+
+                const xOffset = (a4Width - renderWidth) / 2;
+                const yOffset = (a4Height - renderHeight) / 2;
+
+                pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'MEDIUM');
+              }
+
+              const pdfBase64 = pdf.output('datauristring');
+              cleanup();
+              resolve(pdfBase64);
+            } catch (error) {
+              cleanup();
+              reject(error instanceof Error ? error : new Error('Failed to generate PDF'));
+            }
           };
         };
 
