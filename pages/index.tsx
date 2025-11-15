@@ -2243,6 +2243,17 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                 const page = pages[pageIndex];
                 const pageWidth = page.scrollWidth || page.clientWidth || 794;
                 const pageHeight = page.scrollHeight || page.clientHeight || 1123;
+                const pageRect = page.getBoundingClientRect();
+                const anchorTargets = Array.from(page.querySelectorAll('a[href]')).map((anchor) => {
+                  const rect = anchor.getBoundingClientRect();
+                  return {
+                    href: anchor.getAttribute('href') || '',
+                    x: rect.left - pageRect.left,
+                    y: rect.top - pageRect.top,
+                    width: rect.width,
+                    height: rect.height,
+                  };
+                });
 
                 const canvas = await html2canvasLib(page, {
                   scale: 2,
@@ -2272,8 +2283,22 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
                 const xOffset = (a4Width - renderWidth) / 2;
                 const yOffset = (a4Height - renderHeight) / 2;
-
                 pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'MEDIUM');
+
+                const xScale = renderWidth / pageWidth;
+                const yScale = renderHeight / pageHeight;
+                anchorTargets.forEach((target) => {
+                  if (!target.href || target.width === 0 || target.height === 0) return;
+                  const linkX = xOffset + target.x * xScale;
+                  const linkY = yOffset + target.y * yScale;
+                  const linkWidth = target.width * xScale;
+                  const linkHeight = target.height * yScale;
+                  try {
+                    pdf.link(linkX, linkY, linkWidth, linkHeight, { url: target.href });
+                  } catch {
+                    // Ignore individual link failures
+                  }
+                });
               }
 
               const pdfBase64 = pdf.output('datauristring');
