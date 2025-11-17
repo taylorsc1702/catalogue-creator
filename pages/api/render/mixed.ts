@@ -983,6 +983,36 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     flex: 1;
   }
   
+  .previous-editions-box {
+    background: #FFF9E6;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    border: 1px solid #FFE082;
+  }
+  
+  .previous-editions-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #F57C00;
+  }
+  
+  .previous-editions-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .previous-edition-cover {
+    width: 100%;
+    max-width: 150px;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
   .internals-section-full {
     margin-top: auto;
     padding-top: 20px;
