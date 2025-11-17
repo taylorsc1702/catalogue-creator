@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
+import { LayoutHandler, Item, esc, formatDateAndBadge, getDiscountProductDetails } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
 export function create2UpLayoutHandler(): LayoutHandler {
@@ -190,6 +190,8 @@ export function create2UpLayoutHandler(): LayoutHandler {
               ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
             </div>
             <div class="product-meta">
+              ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}

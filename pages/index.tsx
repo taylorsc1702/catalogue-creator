@@ -127,10 +127,12 @@ type Item = {
   imprint?: string; dimensions?: string; releaseDate?: string; weight?: string;
   icrkdt?: string; icillus?: string; illustrations?: string; edition?: string;
   icauth?: string; // Australian author metafield
-  publicity?: string; reviews?: string;
+  publicity?: string; reviews?: string; imidis?: string; discount?: string;
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
   footerNote?: string;
+  previousEditionIsbn?: string;
+  previousEditionImageUrl?: string;
 };
 
 type DomainAccessMap = {
@@ -227,6 +229,9 @@ export default function Home() {
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-4)
+  const [previousEditionIsbns, setPreviousEditionIsbns] = useState<{[key: number]: string}>({}); // Previous edition ISBNs per item
+  const [previousEditionImages, setPreviousEditionImages] = useState<{[key: number]: string}>({}); // Previous edition image URLs per item
+  const [loadingPreviousEditions, setLoadingPreviousEditions] = useState<{[key: number]: boolean}>({}); // Loading state for fetching images
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
   const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Default number of internals to display for 1L layout (1-4)
@@ -473,12 +478,19 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   const getItemsWithEdits = (): Item[] => {
     return items.map((item, index) => {
       const edits = editedContent[index];
-      if (!edits) return item;
-      return {
+      const previousIsbn = previousEditionIsbns[index];
+      const previousImage = previousEditionImages[index];
+      const baseItem = edits ? {
         ...item,
         description: edits.description !== undefined ? edits.description : item.description,
         authorBio: edits.authorBio !== undefined ? edits.authorBio : item.authorBio,
         footerNote: edits.footerNote !== undefined ? edits.footerNote : item.footerNote
+      } : item;
+      
+      return {
+        ...baseItem,
+        previousEditionIsbn: previousIsbn || item.previousEditionIsbn,
+        previousEditionImageUrl: previousImage || item.previousEditionImageUrl
       };
     });
   };
@@ -496,6 +508,62 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setEditingItemIndex(null);
     setEditingField(null);
   }
+
+  // Fetch previous edition image by ISBN
+  const fetchPreviousEditionImage = async (index: number, isbn: string) => {
+    if (!isbn || !isbn.trim()) {
+      setPreviousEditionImages(prev => {
+        const updated = { ...prev };
+        delete updated[index];
+        return updated;
+      });
+      return;
+    }
+
+    setLoadingPreviousEditions(prev => ({ ...prev, [index]: true }));
+    try {
+      const response = await fetch('/api/products/by-isbn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isbn: isbn.trim() })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPreviousEditionImages(prev => ({ ...prev, [index]: data.imageUrl }));
+      } else {
+        const error = await response.json();
+        console.error('Failed to fetch previous edition:', error);
+        setPreviousEditionImages(prev => {
+          const updated = { ...prev };
+          delete updated[index];
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching previous edition:', error);
+      setPreviousEditionImages(prev => {
+        const updated = { ...prev };
+        delete updated[index];
+        return updated;
+      });
+    } finally {
+      setLoadingPreviousEditions(prev => {
+        const updated = { ...prev };
+        delete updated[index];
+        return updated;
+      });
+    }
+  };
+
+  // Handle previous edition ISBN change
+  const handlePreviousEditionIsbnChange = (index: number, isbn: string) => {
+    setPreviousEditionIsbns(prev => ({ ...prev, [index]: isbn }));
+    // Debounce the fetch - wait 1 second after user stops typing
+    setTimeout(() => {
+      fetchPreviousEditionImage(index, isbn);
+    }, 1000);
+  };
 
   // Save edited content
   function saveEditedContent(newText: string) {
@@ -620,6 +688,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setItemInternalsCount1L({});
     setInternalsCount1L(2);
     setEditedContent({});
+    setPreviousEditionIsbns({});
+    setPreviousEditionImages({});
     setEmailTemplate("single");
     setEmailTemplateAssignments({});
     setEmailBannerImageUrl("");
@@ -697,6 +767,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         settings: {
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           editedContent,
+          previousEditionIsbns,
+          previousEditionImages,
           emailConfig: {
             template: emailTemplate,
             assignments: emailTemplateAssignments,
@@ -875,6 +947,15 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         settingsRecord["editedContent"],
         isEditedItemContent
       );
+      
+      const previousEditionIsbnsNormalized = normalizeRecordValues<string>(
+        settingsRecord["previousEditionIsbns"],
+        (value): value is string => typeof value === "string"
+      );
+      const previousEditionImagesNormalized = normalizeRecordValues<string>(
+        settingsRecord["previousEditionImages"],
+        (value): value is string => typeof value === "string"
+      );
 
       const sectionOrderValue = emailRecord["sectionOrder"];
       const sectionOrder =
@@ -904,6 +985,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setInternalsCount1L(typeof layoutRecord["internalsCount1L"] === "number" ? (layoutRecord["internalsCount1L"] as number) : 2);
       setItems(Array.isArray(data.items) ? (data.items as Item[]) : []);
       setEditedContent(editedContentNormalized);
+      setPreviousEditionIsbns(previousEditionIsbnsNormalized);
+      setPreviousEditionImages(previousEditionImagesNormalized);
       setUtmSource(getString(utmRecord, "utmSource") ?? "");
       setUtmMedium(getString(utmRecord, "utmMedium") ?? "");
       setUtmCampaign(getString(utmRecord, "utmCampaign") ?? "");
@@ -3699,7 +3782,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} previousEditionIsbns={previousEditionIsbns} handlePreviousEditionIsbnChange={handlePreviousEditionIsbnChange} loadingPreviousEditions={loadingPreviousEditions} previousEditionImages={previousEditionImages} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
@@ -4987,7 +5070,7 @@ function EditModal({
   );
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote }: {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, loadingPreviousEditions, previousEditionImages }: {
   items: Item[]; 
   layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -5013,6 +5096,10 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   openEditModal?: (itemIndex: number, field: 'description' | 'authorBio') => void;
   editedContent: { [key: number]: EditedItemContent };
   setItemFooterNote: (index: number, note: string) => void;
+  previousEditionIsbns: {[key: number]: string};
+  handlePreviousEditionIsbnChange: (index: number, isbn: string) => void;
+  loadingPreviousEditions: {[key: number]: boolean};
+  previousEditionImages: {[key: number]: string};
 }) {
   // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
   void hyperlinkToggle; // Explicitly mark as intentionally unused here
@@ -5045,7 +5132,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             ...it,
             ...(edits?.description !== undefined ? { description: edits.description } : {}),
             ...(edits?.authorBio !== undefined ? { authorBio: edits.authorBio } : {}),
-            ...(edits?.footerNote !== undefined ? { footerNote: edits.footerNote } : {})
+            ...(edits?.footerNote !== undefined ? { footerNote: edits.footerNote } : {}),
+            previousEditionIsbn: previousEditionIsbns[i] || it.previousEditionIsbn,
+            previousEditionImageUrl: previousEditionImages[i] || it.previousEditionImageUrl
           };
           const itemLayoutSelection = itemLayouts[i] || layout;
           const effectiveLayout = resolveLayoutForTruncation(itemLayoutSelection as BuilderLayout | ItemLayoutOption | undefined);
@@ -5318,6 +5407,31 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                   >
                     2-int
                   </button>
+                </div>
+                
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                  <span style={{ fontSize: 11, color: "#6C757D" }}>Previous Edition ISBN:</span>
+                  <input
+                    type="text"
+                    placeholder="Enter ISBN"
+                    value={previousEditionIsbns[i] || ""}
+                    onChange={(e) => handlePreviousEditionIsbnChange(i, e.target.value)}
+                    style={{
+                      width: 120,
+                      padding: "4px 8px",
+                      border: "1px solid #DEE2E6",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      background: loadingPreviousEditions[i] ? "#FFF3CD" : "white"
+                    }}
+                    disabled={loadingPreviousEditions[i]}
+                  />
+                  {loadingPreviousEditions[i] && (
+                    <span style={{ fontSize: 10, color: "#6C757D" }}>Loading...</span>
+                  )}
+                  {previousEditionImages[i] && !loadingPreviousEditions[i] && (
+                    <span style={{ fontSize: 10, color: "#28a745" }}>✓ Image loaded</span>
+                  )}
                 </div>
                 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>

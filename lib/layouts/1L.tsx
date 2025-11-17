@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { LayoutHandler, Item, esc, formatDateAndBadge, htmlToText } from '../layout-handlers';
+import { LayoutHandler, Item, esc, formatDateAndBadge, htmlToText, getDiscountProductDetails } from '../layout-handlers';
 import { Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
 export function create1LLayoutHandler(): LayoutHandler {
@@ -234,6 +234,16 @@ export function create1LLayoutHandler(): LayoutHandler {
                 </div>
               </div>
             ` : ''}
+            
+            <!-- Previous Editions -->
+            ${item.previousEditionImageUrl ? `
+              <div class="previous-editions-box">
+                <div class="previous-editions-title">Previous Editions:</div>
+                <div class="previous-editions-image">
+                  <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
+                </div>
+              </div>
+            ` : ''}
           </div>
 
           <!-- Right Column -->
@@ -257,6 +267,7 @@ export function create1LLayoutHandler(): LayoutHandler {
 
             <!-- Product Details Grid -->
             <div class="product-details-grid">
+              ${getDiscountProductDetails(item.discount) ? `<div class="detail-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ''}
               ${item.vendor ? `<div class="detail-item"><strong>Vendor:</strong> ${esc(item.vendor)}</div>` : ''}
               ${item.dimensions ? `<div class="detail-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ''}
               ${item.releaseDate ? `
@@ -607,6 +618,35 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: block !important;
         font-size: 16px;
         line-height: 1.6;
+      }
+      
+      .previous-editions-box {
+        background: #F0F8FF;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 16px;
+        border: 1px solid #B0D4FF;
+      }
+      
+      .previous-editions-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #0D47A1;
+        font-size: 14px;
+      }
+      
+      .previous-editions-image {
+        display: flex;
+        justify-content: center;
+      }
+      
+      .previous-edition-cover {
+        width: 80px;
+        height: 120px;
+        object-fit: contain;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       
       /* 1L uses same internals structure as layout 1-up, but with 2 bigger landscape-optimized images spanning full width */

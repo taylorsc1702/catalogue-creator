@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
+import { LayoutHandler, Item, esc, formatDateAndBadge, getDiscountProductDetails } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
 const HEADER_MAX_HEIGHT_PX = 120;
@@ -220,6 +220,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
               </div>
               <div class="product-meta">
+                ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+                ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
                 ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
                 ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
                 ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}

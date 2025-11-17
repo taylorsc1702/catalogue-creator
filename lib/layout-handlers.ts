@@ -11,6 +11,8 @@ export type Item = {
   imageUrl?: string; additionalImages?: string[];
   handle: string; vendor?: string; tags?: string[];
   footerNote?: string;
+  previousEditionIsbn?: string;
+  previousEditionImageUrl?: string;
 };
 
 export interface LayoutHandler {
@@ -94,5 +96,27 @@ export function formatDateAndBadge(releaseDate?: string): { formattedDate: strin
     return { formattedDate, badgeType };
   } catch {
     return { formattedDate: releaseDate, badgeType: null };
+  }
+}
+
+// Helper function to get discount-based product details text
+export function getDiscountProductDetails(discount?: string): string {
+  if (!discount) return '';
+  const discountUpper = discount.trim().toUpperCase();
+  switch (discountUpper) {
+    case 'A':
+      return 'Trade Australian';
+    case 'B':
+      return 'TEXT';
+    case 'E':
+      return 'Trade International';
+    case 'F':
+      return 'Acad and Professional';
+    case 'J':
+      return 'Short Discount A';
+    case 'L':
+      return 'Short Discount B';
+    default:
+      return '';
   }
 }
