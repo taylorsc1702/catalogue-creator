@@ -8,11 +8,11 @@ const InternalImageWithOrientation = ({ src, alt, width, height, style }: { src:
   const [orientation, setOrientation] = useState<'landscape' | 'portrait' | 'square' | null>(null);
   
   useEffect(() => {
-    const img = new Image();
+    const img = document.createElement('img');
     img.onload = () => {
-      if (img.width > img.height) {
+      if (img.naturalWidth > img.naturalHeight) {
         setOrientation('landscape');
-      } else if (img.height > img.width) {
+      } else if (img.naturalHeight > img.naturalWidth) {
         setOrientation('portrait');
       } else {
         setOrientation('square');
@@ -284,17 +284,6 @@ export function create1LLayoutHandler(): LayoutHandler {
               </div>
             ` : ''}
             
-            <!-- Previous Editions -->
-            ${item.previousEditionImageUrl ? `
-              <div class="previous-editions-box">
-                <div class="previous-editions-title">Previous Editions:</div>
-                <div class="previous-editions-image">
-                  <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
-                  ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
-                </div>
-              </div>
-            ` : ''}
-            
             <!-- More from this Author -->
             ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
               <div class="more-from-author-box">
@@ -333,6 +322,7 @@ export function create1LLayoutHandler(): LayoutHandler {
             <!-- Product Details Grid -->
             <div class="product-details-grid">
               ${getDiscountProductDetails(item.discount) ? `<div class="detail-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ''}
+              ${item.previousEditionIsbn ? `<div class="detail-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ''}
               ${item.vendor ? `<div class="detail-item"><strong>Vendor:</strong> ${esc(item.vendor)}</div>` : ''}
               ${item.dimensions ? `<div class="detail-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ''}
               ${item.releaseDate ? `
@@ -441,32 +431,6 @@ export function create1LLayoutHandler(): LayoutHandler {
                           text: htmlToText(item.authorBio),
                           size: 12,
                           color: "1565C0",
-                        }),
-                      ],
-                      spacing: { after: 300 },
-                    }),
-                  ] : []),
-                  
-                  // Previous Editions
-                  ...(item.previousEditionImageUrl ? [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: "Previous Editions:",
-                          bold: true,
-                          size: 14,
-                          color: "0D47A1",
-                        }),
-                      ],
-                      spacing: { after: 200 },
-                    }),
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: item.previousEditionIsbn ? `ISBN: ${item.previousEditionIsbn}` : "Image available",
-                          size: 12,
-                          color: "666666",
-                          italics: true,
                         }),
                       ],
                       spacing: { after: 300 },
@@ -602,6 +566,8 @@ export function create1LLayoutHandler(): LayoutHandler {
                     children: [
                       new TextRun({
                         text: [
+                          getDiscountProductDetails(item.discount) ? `Product Details: ${getDiscountProductDetails(item.discount)}` : '',
+                          item.previousEditionIsbn ? `Previous Edition: ${item.previousEditionIsbn}` : '',
                           item.vendor ? `Vendor: ${item.vendor}` : '',
                           item.dimensions ? `Dimensions: ${item.dimensions}` : '',
                           item.releaseDate ? `Release Date: ${item.releaseDate}` : '',
@@ -735,42 +701,6 @@ export function create1LLayoutHandler(): LayoutHandler {
         display: block !important;
         font-size: 16px;
         line-height: 1.6;
-      }
-      
-      .previous-editions-box {
-        background: #F0F8FF;
-        padding: 16px;
-        border-radius: 8px;
-        margin-top: 16px;
-        border: 1px solid #B0D4FF;
-      }
-      
-      .previous-editions-title {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #0D47A1;
-        font-size: 14px;
-      }
-      
-      .previous-editions-image {
-        display: flex;
-        justify-content: center;
-      }
-      
-      .previous-edition-cover {
-        width: 80px;
-        height: 120px;
-        object-fit: contain;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      
-      .previous-edition-isbn {
-        margin-top: 8px;
-        font-size: 11px;
-        color: #666;
-        text-align: center;
       }
       
       .more-from-author-box {

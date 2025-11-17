@@ -253,15 +253,6 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
               <div class="author-bio-content">${esc(displayBio)}</div>
             </div>
           ` : ""}
-          ${item.previousEditionImageUrl ? `
-            <div class="previous-editions-box">
-              <div class="previous-editions-title">Previous Editions:</div>
-              <div class="previous-editions-image">
-                <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
-                ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
-              </div>
-            </div>
-          ` : ""}
           ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
             <div class="more-from-author-box">
               <div class="more-from-author-title">More from this Author:</div>
@@ -286,6 +277,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
           <div class="product-details-row">
             <div class="product-meta">
               ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
@@ -536,15 +528,6 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
               <div class="author-bio-content">${esc(displayBio)}</div>
             </div>
           ` : ""}
-          ${item.previousEditionImageUrl ? `
-            <div class="previous-editions-box">
-              <div class="previous-editions-title">Previous Editions:</div>
-              <div class="previous-editions-image">
-                <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
-                ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
-              </div>
-            </div>
-          ` : ""}
           ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
             <div class="more-from-author-box">
               <div class="more-from-author-title">More from this Author:</div>
@@ -569,6 +552,7 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
           <div class="product-details-row">
             <div class="product-meta">
               ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}

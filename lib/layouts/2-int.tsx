@@ -8,11 +8,11 @@ const InternalImageWithOrientation = ({ src, alt, width, height, style }: { src:
   const [orientation, setOrientation] = useState<'landscape' | 'portrait' | 'square' | null>(null);
   
   useEffect(() => {
-    const img = new Image();
+    const img = document.createElement('img');
     img.onload = () => {
-      if (img.width > img.height) {
+      if (img.naturalWidth > img.naturalHeight) {
         setOrientation('landscape');
-      } else if (img.height > img.width) {
+      } else if (img.naturalHeight > img.naturalWidth) {
         setOrientation('portrait');
       } else {
         setOrientation('square');

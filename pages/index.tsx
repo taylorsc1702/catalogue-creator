@@ -687,7 +687,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         updated.footerNote = note;
       }
       if (Object.keys(updated).length === 0) {
-        const { [index]: _removed, ...rest } = prev;
+        const { [index]: _, ...rest } = prev;
         return rest;
       }
       return { ...prev, [index]: updated };
