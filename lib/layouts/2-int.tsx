@@ -1,7 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { LayoutHandler, Item, esc, formatDateAndBadge, getDiscountProductDetails } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
+
+// Component to detect and display image orientation
+const InternalImageWithOrientation = ({ src, alt, width, height, style }: { src: string; alt: string; width: number; height: number; style?: React.CSSProperties }) => {
+  const [orientation, setOrientation] = useState<'landscape' | 'portrait' | 'square' | null>(null);
+  
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width > img.height) {
+        setOrientation('landscape');
+      } else if (img.height > img.width) {
+        setOrientation('portrait');
+      } else {
+        setOrientation('square');
+      }
+    };
+    img.onerror = () => setOrientation(null);
+    img.src = src;
+  }, [src]);
+  
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        style={style}
+      />
+      {orientation && (
+        <div style={{
+          position: 'absolute',
+          top: 2,
+          right: 2,
+          background: orientation === 'landscape' ? '#667eea' : '#28a745',
+          color: 'white',
+          fontSize: 8,
+          fontWeight: 700,
+          padding: '2px 4px',
+          borderRadius: 3,
+          lineHeight: 1,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+        }}>
+          {orientation === 'landscape' ? 'L' : orientation === 'portrait' ? 'P' : 'S'}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export type Orientation = 'portrait' | 'landscape';
 
@@ -185,7 +234,7 @@ export function create2IntLayoutHandler(orientation: Orientation = 'portrait'): 
                 gap: 8
               }}>
                 {item.additionalImages.slice(0, 2).map((img, idx) => (
-                  <Image 
+                  <InternalImageWithOrientation 
                     key={idx}
                     src={img} 
                     alt={`Internal preview ${idx + 1}`}
