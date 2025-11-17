@@ -482,7 +482,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     return items.map((item, index) => {
       const edits = editedContent[index];
       const previousIsbn = previousEditionIsbns[index];
-      const previousImage = previousEditionImages[index];
       const baseItem = edits ? {
         ...item,
         description: edits.description !== undefined ? edits.description : item.description,
@@ -726,7 +725,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setInternalsCount1L(2);
     setEditedContent({});
     setPreviousEditionIsbns({});
-    setPreviousEditionImages({});
     setMoreFromAuthorIsbns({});
     setMoreFromAuthorImages({});
     setEmailTemplate("single");
@@ -808,7 +806,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           editedContent,
           previousEditionIsbns,
-          previousEditionImages,
           moreFromAuthorIsbns,
           moreFromAuthorImages,
           emailConfig: {
@@ -994,11 +991,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         settingsRecord["previousEditionIsbns"],
         (value): value is string => typeof value === "string"
       );
-      const previousEditionImagesNormalized = normalizeRecordValues<string>(
-        settingsRecord["previousEditionImages"],
-        (value): value is string => typeof value === "string"
-      );
-      
       const moreFromAuthorIsbnsNormalized = normalizeRecordValues<string[]>(
         settingsRecord["moreFromAuthorIsbns"],
         (value): value is string[] => Array.isArray(value) && value.every(v => typeof v === "string")
@@ -1042,7 +1034,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setItems(Array.isArray(data.items) ? (data.items as Item[]) : []);
       setEditedContent(editedContentNormalized);
       setPreviousEditionIsbns(previousEditionIsbnsNormalized);
-      setPreviousEditionImages(previousEditionImagesNormalized);
       setMoreFromAuthorIsbns(moreFromAuthorIsbnsNormalized);
       setMoreFromAuthorImages(moreFromAuthorImagesNormalized);
       setUtmSource(getString(utmRecord, "utmSource") ?? "");
@@ -3863,7 +3854,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} previousEditionIsbns={previousEditionIsbns} handlePreviousEditionIsbnChange={handlePreviousEditionIsbnChange} loadingPreviousEditions={loadingPreviousEditions} previousEditionImages={previousEditionImages} moreFromAuthorIsbns={moreFromAuthorIsbns} handleMoreFromAuthorIsbnChange={handleMoreFromAuthorIsbnChange} loadingMoreFromAuthor={loadingMoreFromAuthor} moreFromAuthorImages={moreFromAuthorImages} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} previousEditionIsbns={previousEditionIsbns} handlePreviousEditionIsbnChange={handlePreviousEditionIsbnChange} moreFromAuthorIsbns={moreFromAuthorIsbns} handleMoreFromAuthorIsbnChange={handleMoreFromAuthorIsbnChange} loadingMoreFromAuthor={loadingMoreFromAuthor} moreFromAuthorImages={moreFromAuthorImages} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
@@ -5151,7 +5142,7 @@ function EditModal({
   );
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, loadingPreviousEditions, previousEditionImages, moreFromAuthorIsbns, handleMoreFromAuthorIsbnChange, loadingMoreFromAuthor, moreFromAuthorImages }: {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, moreFromAuthorIsbns, handleMoreFromAuthorIsbnChange, loadingMoreFromAuthor, moreFromAuthorImages }: {
   items: Item[]; 
   layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -5179,8 +5170,6 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   setItemFooterNote: (index: number, note: string) => void;
   previousEditionIsbns: {[key: number]: string};
   handlePreviousEditionIsbnChange: (index: number, isbn: string) => void;
-  loadingPreviousEditions: {[key: number]: boolean};
-  previousEditionImages: {[key: number]: string};
   moreFromAuthorIsbns: {[key: number]: string[]};
   handleMoreFromAuthorIsbnChange: (index: number, isbnIndex: number, isbn: string) => void;
   loadingMoreFromAuthor: {[key: number]: boolean};
@@ -5219,7 +5208,6 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             ...(edits?.authorBio !== undefined ? { authorBio: edits.authorBio } : {}),
             ...(edits?.footerNote !== undefined ? { footerNote: edits.footerNote } : {}),
             previousEditionIsbn: previousEditionIsbns[i] || it.previousEditionIsbn,
-            previousEditionImageUrl: previousEditionImages[i] || it.previousEditionImageUrl,
             moreFromAuthorIsbns: moreFromAuthorIsbns[i] || it.moreFromAuthorIsbns || [],
             moreFromAuthorImages: moreFromAuthorImages[i] || it.moreFromAuthorImages || []
           };
@@ -5509,16 +5497,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       border: "1px solid #DEE2E6",
                       borderRadius: 4,
                       fontSize: 12,
-                      background: loadingPreviousEditions[i] ? "#FFF3CD" : "white"
+                      background: "white"
                     }}
-                    disabled={loadingPreviousEditions[i]}
                   />
-                  {loadingPreviousEditions[i] && (
-                    <span style={{ fontSize: 10, color: "#6C757D" }}>Loading...</span>
-                  )}
-                  {previousEditionImages[i] && !loadingPreviousEditions[i] && (
-                    <span style={{ fontSize: 10, color: "#28a745" }}>✓ Image loaded</span>
-                  )}
                 </div>
                 
                 {/* More from this Author ISBNs */}
