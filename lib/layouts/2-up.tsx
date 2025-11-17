@@ -190,17 +190,21 @@ export function create2UpLayoutHandler(): LayoutHandler {
               ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
             </div>
             <div class="product-meta">
-              ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
               ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-              ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns.length > 0 && item.moreFromAuthorIsbns[0] ? `
+              ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns.length > 0 && item.moreFromAuthorIsbns.some(isbn => isbn) ? `
                 <div class="meta-item">
                   <strong>More from this Author:</strong>
-                  ${item.moreFromAuthorImages && item.moreFromAuthorImages[0] ? `
-                    <div style="margin-top: 8px;">
-                      <img src="${esc(item.moreFromAuthorImages[0])}" alt="More from Author" style="width: 60px; height: 90px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 4px;">
-                      <div style="font-size: 10px; color: #666;">ISBN: ${esc(item.moreFromAuthorIsbns[0])}</div>
-                    </div>
-                  ` : `ISBN: ${esc(item.moreFromAuthorIsbns[0])}`}
+                  <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${item.moreFromAuthorIsbns.slice(0, 2).map((isbn, idx) => isbn ? `
+                      <div style="display: flex; flex-direction: column; align-items: center;">
+                        ${item.moreFromAuthorImages && item.moreFromAuthorImages[idx] ? `
+                          <img src="${esc(item.moreFromAuthorImages[idx])}" alt="More from Author ${idx + 1}" style="width: 60px; height: 90px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 4px;">
+                        ` : ''}
+                        <div style="font-size: 10px; color: #666;">ISBN: ${esc(isbn)}</div>
+                      </div>
+                    ` : '').join('')}
+                  </div>
                 </div>
               ` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
@@ -322,7 +326,7 @@ export function create2UpLayoutHandler(): LayoutHandler {
 
       // Meta information
       const metaItems = [];
-      if (getDiscountProductDetails(item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.discount)}`);
+      if (getDiscountProductDetails(item.imidis || item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.imidis || item.discount)}`);
       if (item.previousEditionIsbn) metaItems.push(`Previous Edition: ${item.previousEditionIsbn}`);
       if (item.imprint) metaItems.push(`Publisher: ${item.imprint}`);
       if (item.releaseDate) metaItems.push(`Release Date: ${item.releaseDate}`);

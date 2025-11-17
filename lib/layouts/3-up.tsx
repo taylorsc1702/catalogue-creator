@@ -220,7 +220,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
               </div>
               <div class="product-meta">
-                ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+                ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
                 ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
                 ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
                 ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
@@ -364,7 +364,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
 
       // Meta information
       const metaItems = [];
-      if (getDiscountProductDetails(item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.discount)}`);
+      if (getDiscountProductDetails(item.imidis || item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.imidis || item.discount)}`);
       if (item.previousEditionIsbn) metaItems.push(`Previous Edition: ${item.previousEditionIsbn}`);
       if (item.imprint) metaItems.push(`Publisher: ${item.imprint}`);
       if (item.releaseDate) metaItems.push(`Release Date: ${item.releaseDate}`);

@@ -132,7 +132,6 @@ type Item = {
   handle: string; vendor?: string; tags?: string[];
   footerNote?: string;
   previousEditionIsbn?: string;
-  previousEditionImageUrl?: string;
   moreFromAuthorIsbns?: string[];
   moreFromAuthorImages?: string[];
 };
@@ -233,9 +232,7 @@ export default function Home() {
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-4)
   const [previousEditionIsbns, setPreviousEditionIsbns] = useState<{[key: number]: string}>({}); // Previous edition ISBNs per item
-  const [previousEditionImages, setPreviousEditionImages] = useState<{[key: number]: string}>({}); // Previous edition image URLs per item
-  const [loadingPreviousEditions, setLoadingPreviousEditions] = useState<{[key: number]: boolean}>({}); // Loading state for fetching images
-  const [moreFromAuthorIsbns, setMoreFromAuthorIsbns] = useState<{[key: number]: string[]}>({}); // More from author ISBNs per item (up to 3 for 1/1L, 1 for 2-up/2-int)
+  const [moreFromAuthorIsbns, setMoreFromAuthorIsbns] = useState<{[key: number]: string[]}>({}); // More from author ISBNs per item (up to 3 for 1/1L, 2 for 2-up/2-int)
   const [moreFromAuthorImages, setMoreFromAuthorImages] = useState<{[key: number]: string[]}>({}); // More from author images per item
   const [loadingMoreFromAuthor, setLoadingMoreFromAuthor] = useState<{[key: number]: boolean}>({}); // Loading state for fetching more from author images
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
@@ -499,7 +496,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       return {
         ...baseItem,
         previousEditionIsbn: previousIsbn || item.previousEditionIsbn,
-        previousEditionImageUrl: previousImage || item.previousEditionImageUrl,
         moreFromAuthorIsbns: moreFromAuthorIsbnsForItem,
         moreFromAuthorImages: moreFromAuthorImagesForItem
       };
@@ -521,59 +517,9 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   }
 
   // Fetch previous edition image by ISBN
-  const fetchPreviousEditionImage = async (index: number, isbn: string) => {
-    if (!isbn || !isbn.trim()) {
-      setPreviousEditionImages(prev => {
-        const updated = { ...prev };
-        delete updated[index];
-        return updated;
-      });
-      return;
-    }
-
-    setLoadingPreviousEditions(prev => ({ ...prev, [index]: true }));
-    try {
-      const response = await fetch('/api/products/by-isbn', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isbn: isbn.trim() })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPreviousEditionImages(prev => ({ ...prev, [index]: data.imageUrl }));
-      } else {
-        const error = await response.json();
-        console.error('Failed to fetch previous edition:', error);
-        setPreviousEditionImages(prev => {
-          const updated = { ...prev };
-          delete updated[index];
-          return updated;
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching previous edition:', error);
-      setPreviousEditionImages(prev => {
-        const updated = { ...prev };
-        delete updated[index];
-        return updated;
-      });
-    } finally {
-      setLoadingPreviousEditions(prev => {
-        const updated = { ...prev };
-        delete updated[index];
-        return updated;
-      });
-    }
-  };
-
   // Handle previous edition ISBN change
   const handlePreviousEditionIsbnChange = (index: number, isbn: string) => {
     setPreviousEditionIsbns(prev => ({ ...prev, [index]: isbn }));
-    // Debounce the fetch - wait 1 second after user stops typing
-    setTimeout(() => {
-      fetchPreviousEditionImage(index, isbn);
-    }, 1000);
   };
 
   // Fetch image for a "More from this author" ISBN

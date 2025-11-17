@@ -321,7 +321,7 @@ export function create1LLayoutHandler(): LayoutHandler {
 
             <!-- Product Details Grid -->
             <div class="product-details-grid">
-              ${getDiscountProductDetails(item.discount) ? `<div class="detail-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ''}
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ''}
               ${item.previousEditionIsbn ? `<div class="detail-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ''}
               ${item.vendor ? `<div class="detail-item"><strong>Vendor:</strong> ${esc(item.vendor)}</div>` : ''}
               ${item.dimensions ? `<div class="detail-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ''}
@@ -566,7 +566,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                     children: [
                       new TextRun({
                         text: [
-                          getDiscountProductDetails(item.discount) ? `Product Details: ${getDiscountProductDetails(item.discount)}` : '',
+                          getDiscountProductDetails(item.imidis || item.discount) ? `Product Details: ${getDiscountProductDetails(item.imidis || item.discount)}` : '',
                           item.previousEditionIsbn ? `Previous Edition: ${item.previousEditionIsbn}` : '',
                           item.vendor ? `Vendor: ${item.vendor}` : '',
                           item.dimensions ? `Dimensions: ${item.dimensions}` : '',
