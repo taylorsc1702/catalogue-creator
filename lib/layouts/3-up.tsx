@@ -39,7 +39,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
               width={96}
               height={144}
               style={{ 
-                objectFit: "cover", 
+                objectFit: "contain", 
                 borderRadius: 6, 
                 background: "#F8F9FA",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
@@ -51,12 +51,13 @@ export function create3UpLayoutHandler(): LayoutHandler {
               position: "absolute",
               top: 8,
               right: 8,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
+              background: "#ffffff",
+              color: "#000000",
               padding: "4px 8px",
               borderRadius: 6,
               fontSize: 12,
-              fontWeight: 600
+              fontWeight: 600,
+              border: "1px solid #E9ECEF"
             }}>
               ${item.price}
             </div>
@@ -441,7 +442,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
       .book-cover {
         width: 72px;
         height: 108px;
-        object-fit: cover;
+        object-fit: contain;
         border: 1px solid #ddd;
         border-radius: 4px;
       }
@@ -529,9 +530,15 @@ export function create3UpLayoutHandler(): LayoutHandler {
       .product-price {
         font-size: 19px;
         font-weight: bold;
-        color: #2C3E50;
+        color: #000000;
         margin-top: 4px;
         font-family: 'Calibri', sans-serif;
+      }
+      @media print {
+        .product-card {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
     `
   };

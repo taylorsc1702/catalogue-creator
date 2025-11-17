@@ -222,12 +222,6 @@ function generateEmailHtml(
     return urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
   };
 
-  const truncateDescription = (desc?: string, maxLength: number = 200): string => {
-    if (!desc) return '';
-    if (desc.length <= maxLength) return desc;
-    return desc.substring(0, maxLength - 3) + '...';
-  };
-
   const formatDate = (date?: string): string => {
     if (!date) return '';
     try {
@@ -867,14 +861,6 @@ function generateCompleteEmailHtml(
   const esc = (s?: string) => (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   
   // ABN numbers
-  const abnNumbers: Record<HyperlinkToggle, string> = {
-    woodslane: 'ABN: 76 003 677 549',
-    woodslanehealth: 'ABN: 76 003 677 549',
-    woodslaneeducation: 'ABN: 76 003 677 549',
-    woodslanepress: 'ABN: 76 054 568 688'
-  };
-  
-  const abn = abnNumbers[hyperlinkToggle || 'woodslane'];
   const toggle = hyperlinkToggle || 'woodslane';
   
   // Get base URL for unsubscribe link
@@ -1195,7 +1181,7 @@ function generateCompleteEmailHtml(
   // Products section HTML wrapper
   const productsSection = `
     <!-- Products -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;" class="container">
       <tr>
         <td align="center" style="padding: 20px 0;">
           ${content}
@@ -1295,8 +1281,61 @@ function generateCompleteEmailHtml(
     body, table, td {font-family: Arial, sans-serif !important;}
   </style>
   <![endif]-->
-</head>
-<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
+        <head>
+          <style type="text/css">
+            @media only screen and (max-width: 600px) {
+              .container {
+                width: 100% !important;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+              }
+              .product-grid {
+                width: 100% !important;
+                display: block !important;
+              }
+              .product-grid td {
+                display: block !important;
+                width: 100% !important;
+                padding: 10px 0 !important;
+              }
+              .product-grid img {
+                margin: 0 auto 12px auto !important;
+                display: block !important;
+              }
+              .product-actions {
+                text-align: center !important;
+              }
+              .stack {
+                width: 100% !important;
+                display: block !important;
+              }
+              .stack td {
+                display: block !important;
+                width: 100% !important;
+              }
+              .banner-link {
+                display: block !important;
+                margin: 6px auto !important;
+                text-align: center !important;
+              }
+              .logo-row img {
+                margin-bottom: 12px !important;
+              }
+              .product-title {
+                font-size: 18px !important;
+              }
+              .product-description {
+                font-size: 13px !important;
+              }
+              .cta-button {
+                width: 100% !important;
+                text-align: center !important;
+                display: block !important;
+              }
+            }
+          </style>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5;">
     <tr>
       <td align="center" style="padding: 0;">

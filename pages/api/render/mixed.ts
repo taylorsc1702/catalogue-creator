@@ -308,7 +308,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
                 <td style=\"padding:8px 6px;text-align:center\"><img src=\"${esc(it.imageUrl || 'https://via.placeholder.com/40x60?text=No+Image')}\" style=\"width:40px;height:60px;object-fit:cover;border:1px solid #ddd;border-radius:4px\"/></td>
                 <td style=\"padding:8px 6px\">${esc(it.author || '-')}</td>
                 <td style=\"padding:8px 6px\">${esc(it.title)}</td>
-                <td style=\"padding:8px 6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
+                <td style=\"padding:8px 6px;color:#000000;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
                 <td style=\"padding:8px 6px;color:#666\">${esc(it.imprint || '-')}</td>
                 <td style=\"padding:8px 6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:110px;height:auto\\\"/>` : ''}</td>
                 <td style=\"padding:8px 6px\"><div style=\"width:50px;height:30px;border:2px solid #333;border-radius:4px;margin:0 auto\"></div></td>
@@ -343,7 +343,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
                 <td style=\"padding:6px;font-family:'Courier New',monospace;color:#666\">${esc(it.handle)}</td>
                 <td style=\"padding:6px\">${esc(it.author || '-')}</td>
                 <td style=\"padding:6px\">${esc(it.title)}</td>
-                <td style=\"padding:6px;color:#d63384;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
+                <td style=\"padding:6px;color:#000000;font-weight:600;text-align:right\">${it.price ? 'AUD$ '+esc(it.price) : '-'}</td>
                 <td style=\"padding:6px;color:#666\">${esc(it.imprint || '-')}</td>
                 <td style=\"padding:6px;text-align:center\">${appendedBarcodeDataUrls[idx] ? `<img src=\\\"${appendedBarcodeDataUrls[idx]}\\\" style=\\\"max-width:95px;height:auto\\\"/>` : ''}</td>
                 <td style=\"padding:6px;text-align:center\"><div style=\"width:40px;height:25px;border:2px solid #333;border-radius:3px;margin:0 auto\"></div></td>
@@ -706,7 +706,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .product-price {
     font-size: 11px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
     margin-bottom: 4px;
   }
   .page.layout-1 .product-price {
@@ -819,7 +819,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .layout-2-vertical .product-price {
     font-size: 14px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
     margin-bottom: 4px;
     font-family: 'Calibri', sans-serif;
   }
@@ -940,7 +940,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .layout-1-full .product-price {
     font-size: 16px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
   }
   
   .layout-1-full .author-bio {
@@ -1166,7 +1166,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .page.layout-1 .product-price {
     font-size: 16px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
     margin-bottom: 8px;
   }
   
@@ -1484,6 +1484,10 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     
     body {
       background: #ffffff !important;
+    }
+    .product-card {
+      border: none !important;
+      box-shadow: none !important;
     }
   }
   

@@ -46,12 +46,13 @@ export function create1LLayoutHandler(): LayoutHandler {
               position: "absolute",
               top: 8,
               right: 8,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
+              background: "#ffffff",
+              color: "#000000",
               padding: "4px 8px",
               borderRadius: 6,
               fontSize: 12,
-              fontWeight: 600
+              fontWeight: 600,
+              border: "1px solid #E9ECEF"
             }}>
               ${item.price}
             </div>
@@ -604,6 +605,8 @@ export function create1LLayoutHandler(): LayoutHandler {
         overflow: visible !important;
         height: auto !important;
         display: block !important;
+        font-size: 16px;
+        line-height: 1.6;
       }
       
       /* 1L uses same internals structure as layout 1-up, but with 2 bigger landscape-optimized images spanning full width */
@@ -754,12 +757,19 @@ export function create1LLayoutHandler(): LayoutHandler {
       
       .price-section {
         margin-left: auto;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #ffffff;
+        color: #000000;
         padding: 12px 20px;
         border-radius: 8px;
         font-size: 20px;
         font-weight: 600;
+        border: 1px solid #E9ECEF;
+      }
+      @media print {
+        .product-card, .layout-1L-content {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
       
       

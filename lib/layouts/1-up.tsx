@@ -47,12 +47,13 @@ export function create1UpLayoutHandler(): LayoutHandler {
               position: "absolute",
               top: 8,
               right: 8,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
+              background: "#ffffff",
+              color: "#000000",
               padding: "4px 8px",
               borderRadius: 6,
               fontSize: 12,
-              fontWeight: 600
+              fontWeight: 600,
+              border: "1px solid #E9ECEF"
             }}>
               ${item.price}
             </div>
@@ -597,6 +598,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
         overflow: visible !important;
         height: auto !important;
         display: block !important;
+        font-size: 14px;
+        line-height: 1.6;
       }
       
       .internals-section {
@@ -720,12 +723,19 @@ export function create1UpLayoutHandler(): LayoutHandler {
       
       .price-section {
         margin-left: auto;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #ffffff;
+        color: #000000;
         padding: 12px 20px;
         border-radius: 8px;
         font-size: 18px;
         font-weight: 600;
+        border: 1px solid #E9ECEF;
+      }
+      @media print {
+        .product-card, .layout-1up-content {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
       
       

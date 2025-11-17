@@ -93,13 +93,14 @@ export function createListLayoutHandler(): LayoutHandler {
               </div>
               {item.price && (
                 <div style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
+                  background: "#ffffff",
+                  color: "#000000",
                   padding: "8px 12px",
                   borderRadius: 8,
                   fontSize: 16,
                   fontWeight: 600,
-                  marginLeft: 16
+                  marginLeft: 16,
+                  border: "1px solid #E9ECEF"
                 }}>
                   AUD$ {item.price}
                 </div>
@@ -490,13 +491,20 @@ export function createListLayoutHandler(): LayoutHandler {
       }
       
       .list-price {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #ffffff;
+        color: #000000;
         padding: 8px 12px;
         border-radius: 8px;
         font-size: 16px;
         font-weight: 600;
         margin-left: 16px;
+        border: 1px solid #E9ECEF;
+      }
+      @media print {
+        .list-item {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
       
       .list-description {

@@ -46,12 +46,13 @@ export function create8UpLayoutHandler(): LayoutHandler {
               position: "absolute",
               top: 8,
               right: 8,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
+              background: "#ffffff",
+              color: "#000000",
               padding: "4px 8px",
               borderRadius: 6,
               fontSize: 12,
-              fontWeight: 600
+              fontWeight: 600,
+              border: "1px solid #E9ECEF"
             }}>
               ${item.price}
             </div>
@@ -431,8 +432,14 @@ export function create8UpLayoutHandler(): LayoutHandler {
       .product-price {
         font-size: 14px;
         font-weight: bold;
-        color: #2C3E50;
+        color: #000000;
         margin-top: 8px;
+      }
+      @media print {
+        .product-card {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
     `
   };

@@ -71,13 +71,14 @@ export function createCompactListLayoutHandler(): LayoutHandler {
               </a>
               {item.price && (
                 <div style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
+                  background: "#ffffff",
+                  color: "#000000",
                   padding: "4px 8px",
                   borderRadius: 6,
                   fontSize: 12,
                   fontWeight: 600,
-                  marginLeft: 12
+                  marginLeft: 12,
+                  border: "1px solid #E9ECEF"
                 }}>
                   AUD$ {item.price}
                 </div>
@@ -385,13 +386,20 @@ export function createCompactListLayoutHandler(): LayoutHandler {
       }
       
       .compact-list-price {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #ffffff;
+        color: #000000;
         padding: 4px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
         margin-left: 12px;
+        border: 1px solid #E9ECEF;
+      }
+      @media print {
+        .compact-list-item {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
       
       .compact-list-subtitle {

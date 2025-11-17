@@ -211,6 +211,17 @@ export function createTableLayoutHandler(): LayoutHandler {
         margin: 0 !important;
         border-spacing: 0 !important;
       }
+      @media print {
+        .product-table td, .product-table th {
+          border: none !important;
+        }
+        .table-header {
+          border: none !important;
+        }
+        .table-cell {
+          border: none !important;
+        }
+      }
     `,
     getPerPage: () => 50
   };

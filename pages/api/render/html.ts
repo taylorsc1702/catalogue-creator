@@ -1144,7 +1144,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .layout-1-full .product-price {
     font-size: 16px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
   }
   
   .internals-section-full {
@@ -1597,7 +1597,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .page.layout-1 .product-price {
     font-size: 16px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
   }
   
   /* Layout 3: Horizontal row (Image | Content | Details) */
@@ -2173,7 +2173,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .product-price {
     font-size: 11px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
     margin-bottom: 4px;
   }
   
@@ -2306,7 +2306,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .layout-2-vertical .product-price {
     font-size: 14px;
     font-weight: bold;
-    color: #d63384;
+    color: #000000;
     margin-bottom: 4px;
     font-family: 'Calibri', sans-serif;
   }
@@ -2355,6 +2355,11 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     .page-header {
       page-break-after: avoid;
       page-break-inside: avoid;
+    }
+    
+    .product-card {
+      border: none !important;
+      box-shadow: none !important;
     }
     
     .layout-1L-full {
