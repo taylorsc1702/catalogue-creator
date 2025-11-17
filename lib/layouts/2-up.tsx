@@ -192,6 +192,17 @@ export function create2UpLayoutHandler(): LayoutHandler {
             <div class="product-meta">
               ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
               ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+              ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns.length > 0 && item.moreFromAuthorIsbns[0] ? `
+                <div class="meta-item">
+                  <strong>More from this Author:</strong>
+                  ${item.moreFromAuthorImages && item.moreFromAuthorImages[0] ? `
+                    <div style="margin-top: 8px;">
+                      <img src="${esc(item.moreFromAuthorImages[0])}" alt="More from Author" style="width: 60px; height: 90px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 4px;">
+                      <div style="font-size: 10px; color: #666;">ISBN: ${esc(item.moreFromAuthorIsbns[0])}</div>
+                    </div>
+                  ` : `ISBN: ${esc(item.moreFromAuthorIsbns[0])}`}
+                </div>
+              ` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}

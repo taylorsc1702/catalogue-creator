@@ -133,6 +133,8 @@ type Item = {
   footerNote?: string;
   previousEditionIsbn?: string;
   previousEditionImageUrl?: string;
+  moreFromAuthorIsbns?: string[];
+  moreFromAuthorImages?: string[];
 };
 
 type DomainAccessMap = {
@@ -220,6 +222,7 @@ export default function Home() {
   const [handleList, setHandleList] = useState("");
   const [layout, setLayout] = useState<1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("EAN-13");
+  const [twoIntOrientation, setTwoIntOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
@@ -232,6 +235,9 @@ export default function Home() {
   const [previousEditionIsbns, setPreviousEditionIsbns] = useState<{[key: number]: string}>({}); // Previous edition ISBNs per item
   const [previousEditionImages, setPreviousEditionImages] = useState<{[key: number]: string}>({}); // Previous edition image URLs per item
   const [loadingPreviousEditions, setLoadingPreviousEditions] = useState<{[key: number]: boolean}>({}); // Loading state for fetching images
+  const [moreFromAuthorIsbns, setMoreFromAuthorIsbns] = useState<{[key: number]: string[]}>({}); // More from author ISBNs per item (up to 3 for 1/1L, 1 for 2-up/2-int)
+  const [moreFromAuthorImages, setMoreFromAuthorImages] = useState<{[key: number]: string[]}>({}); // More from author images per item
+  const [loadingMoreFromAuthor, setLoadingMoreFromAuthor] = useState<{[key: number]: boolean}>({}); // Loading state for fetching more from author images
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
   const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Default number of internals to display for 1L layout (1-4)
@@ -487,10 +493,15 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         footerNote: edits.footerNote !== undefined ? edits.footerNote : item.footerNote
       } : item;
       
+      const moreFromAuthorIsbnsForItem = moreFromAuthorIsbns[index] || item.moreFromAuthorIsbns || [];
+      const moreFromAuthorImagesForItem = moreFromAuthorImages[index] || item.moreFromAuthorImages || [];
+      
       return {
         ...baseItem,
         previousEditionIsbn: previousIsbn || item.previousEditionIsbn,
-        previousEditionImageUrl: previousImage || item.previousEditionImageUrl
+        previousEditionImageUrl: previousImage || item.previousEditionImageUrl,
+        moreFromAuthorIsbns: moreFromAuthorIsbnsForItem,
+        moreFromAuthorImages: moreFromAuthorImagesForItem
       };
     });
   };
@@ -562,6 +573,84 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     // Debounce the fetch - wait 1 second after user stops typing
     setTimeout(() => {
       fetchPreviousEditionImage(index, isbn);
+    }, 1000);
+  };
+
+  // Fetch image for a "More from this author" ISBN
+  const fetchMoreFromAuthorImage = async (index: number, isbnIndex: number, isbn: string) => {
+    if (!isbn || !isbn.trim()) {
+      setMoreFromAuthorImages(prev => {
+        const updated = { ...prev };
+        if (updated[index]) {
+          const newImages = [...updated[index]];
+          newImages[isbnIndex] = '';
+          updated[index] = newImages;
+        }
+        return updated;
+      });
+      return;
+    }
+
+    setLoadingMoreFromAuthor(prev => ({ ...prev, [index]: true }));
+    try {
+      const response = await fetch('/api/products/by-isbn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isbn: isbn.trim() })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMoreFromAuthorImages(prev => {
+          const updated = { ...prev };
+          if (!updated[index]) updated[index] = [];
+          const newImages = [...updated[index]];
+          newImages[isbnIndex] = data.imageUrl || '';
+          updated[index] = newImages;
+          return updated;
+        });
+      } else {
+        setMoreFromAuthorImages(prev => {
+          const updated = { ...prev };
+          if (!updated[index]) updated[index] = [];
+          const newImages = [...updated[index]];
+          newImages[isbnIndex] = '';
+          updated[index] = newImages;
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching more from author image:', error);
+      setMoreFromAuthorImages(prev => {
+        const updated = { ...prev };
+        if (!updated[index]) updated[index] = [];
+        const newImages = [...updated[index]];
+        newImages[isbnIndex] = '';
+        updated[index] = newImages;
+        return updated;
+      });
+    } finally {
+      setLoadingMoreFromAuthor(prev => {
+        const updated = { ...prev };
+        delete updated[index];
+        return updated;
+      });
+    }
+  };
+
+  // Handle more from author ISBN change
+  const handleMoreFromAuthorIsbnChange = (index: number, isbnIndex: number, isbn: string) => {
+    setMoreFromAuthorIsbns(prev => {
+      const updated = { ...prev };
+      if (!updated[index]) updated[index] = [];
+      const newIsbns = [...updated[index]];
+      newIsbns[isbnIndex] = isbn;
+      updated[index] = newIsbns;
+      return updated;
+    });
+    // Debounce the fetch - wait 1 second after user stops typing
+    setTimeout(() => {
+      fetchMoreFromAuthorImage(index, isbnIndex, isbn);
     }, 1000);
   };
 
@@ -681,6 +770,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setHyperlinkToggle("woodslane");
     setLayout(4);
     setBarcodeType("EAN-13");
+    setTwoIntOrientation('portrait');
+    layoutRegistry.setTwoIntOrientation('portrait');
     setItems([]);
     setItemLayouts({});
     setItemBarcodeTypes({});
@@ -690,6 +781,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setEditedContent({});
     setPreviousEditionIsbns({});
     setPreviousEditionImages({});
+    setMoreFromAuthorIsbns({});
+    setMoreFromAuthorImages({});
     setEmailTemplate("single");
     setEmailTemplateAssignments({});
     setEmailBannerImageUrl("");
@@ -762,6 +855,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           itemAuthorBioToggle,
           itemInternalsCount1L,
           internalsCount1L,
+          twoIntOrientation,
         },
         items,
         settings: {
@@ -769,6 +863,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           editedContent,
           previousEditionIsbns,
           previousEditionImages,
+          moreFromAuthorIsbns,
+          moreFromAuthorImages,
           emailConfig: {
             template: emailTemplate,
             assignments: emailTemplateAssignments,
@@ -956,6 +1052,16 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         settingsRecord["previousEditionImages"],
         (value): value is string => typeof value === "string"
       );
+      
+      const moreFromAuthorIsbnsNormalized = normalizeRecordValues<string[]>(
+        settingsRecord["moreFromAuthorIsbns"],
+        (value): value is string[] => Array.isArray(value) && value.every(v => typeof v === "string")
+      );
+      
+      const moreFromAuthorImagesNormalized = normalizeRecordValues<string[]>(
+        settingsRecord["moreFromAuthorImages"],
+        (value): value is string[] => Array.isArray(value) && value.every(v => typeof v === "string")
+      );
 
       const sectionOrderValue = emailRecord["sectionOrder"];
       const sectionOrder =
@@ -983,10 +1089,16 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setItemAuthorBioToggle(itemAuthorBioToggleNormalized);
       setItemInternalsCount1L(itemInternalsCountNormalized);
       setInternalsCount1L(typeof layoutRecord["internalsCount1L"] === "number" ? (layoutRecord["internalsCount1L"] as number) : 2);
+      const savedOrientation = getString(layoutRecord, "twoIntOrientation");
+      const resolvedOrientation = (savedOrientation === 'portrait' || savedOrientation === 'landscape') ? savedOrientation : 'portrait';
+      setTwoIntOrientation(resolvedOrientation);
+      layoutRegistry.setTwoIntOrientation(resolvedOrientation);
       setItems(Array.isArray(data.items) ? (data.items as Item[]) : []);
       setEditedContent(editedContentNormalized);
       setPreviousEditionIsbns(previousEditionIsbnsNormalized);
       setPreviousEditionImages(previousEditionImagesNormalized);
+      setMoreFromAuthorIsbns(moreFromAuthorIsbnsNormalized);
+      setMoreFromAuthorImages(moreFromAuthorImagesNormalized);
       setUtmSource(getString(utmRecord, "utmSource") ?? "");
       setUtmMedium(getString(utmRecord, "utmMedium") ?? "");
       setUtmCampaign(getString(utmRecord, "utmCampaign") ?? "");
@@ -2176,7 +2288,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                   coverImageUrls,
                   catalogueName: coverCatalogueName || catalogueName
                 },
-                urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, pageIndex: p.pageIndex }))
+                urlPages: urlPages.filter(p => p.url.trim()).map(p => ({ url: p.url, title: p.title, pageIndex: p.pageIndex })),
+                twoIntOrientation
               })
             });
             const html = await resp.text();
@@ -2492,7 +2605,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                 margin: 0,
               }}
             >
-              📚 Catalogue Creator
+              Woodslane Catalogue Creator
             </h1>
             <p
               style={{
@@ -2608,7 +2721,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent"
           }}>
-            📚 Catalogue Creator
+            Woodslane Catalogue Creator
           </h1>
           <p style={{ 
             color: "#7F8C8D", 
@@ -3040,6 +3153,28 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           </select>
         )}
         <button onClick={()=>setLayout('2-int')} style={btn(layout==='2-int')}>2-int</button>
+        {layout === '2-int' && (
+          <select
+            value={twoIntOrientation}
+            onChange={(e) => {
+              const newOrientation = e.target.value as 'portrait' | 'landscape';
+              setTwoIntOrientation(newOrientation);
+              layoutRegistry.setTwoIntOrientation(newOrientation);
+            }}
+            style={{
+              marginLeft: 8,
+              padding: "6px 12px",
+              fontSize: 12,
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              background: "white",
+              cursor: "pointer"
+            }}
+          >
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        )}
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
         <button onClick={()=>setLayout('table')} style={btn(layout==='table')}>📊 Table</button>
@@ -3782,7 +3917,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
 
 
       <hr style={{ margin: "32px 0", border: "none", height: "2px", background: "linear-gradient(90deg, transparent, #E9ECEF, transparent)" }} />
-      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} previousEditionIsbns={previousEditionIsbns} handlePreviousEditionIsbnChange={handlePreviousEditionIsbnChange} loadingPreviousEditions={loadingPreviousEditions} previousEditionImages={previousEditionImages} />
+      <Preview items={items} layout={layout} showOrderEditor={showOrderEditor} moveItemUp={moveItemUp} moveItemDown={moveItemDown} moveItemToPosition={moveItemToPosition} itemLayouts={itemLayouts} setItemLayout={setItemLayout} clearItemLayout={clearItemLayout} itemBarcodeTypes={itemBarcodeTypes} setItemBarcodeType={setItemBarcodeType} clearItemBarcodeType={clearItemBarcodeType} itemAuthorBioToggle={itemAuthorBioToggle} setItemAuthorBioToggle={setItemAuthorBioEnabled} clearItemAuthorBioToggle={clearItemAuthorBioToggle} itemInternalsCount1L={itemInternalsCount1L} setItemInternalsCount1L={setItemInternalsCount1LValue} clearItemInternalsCount1L={clearItemInternalsCount1L} internalsCount1L={internalsCount1L} hyperlinkToggle={hyperlinkToggle} generateProductUrl={generateProductUrl} isMixedView={isMixedView} openEditModal={openEditModal} editedContent={editedContent} setItemFooterNote={setItemFooterNote} previousEditionIsbns={previousEditionIsbns} handlePreviousEditionIsbnChange={handlePreviousEditionIsbnChange} loadingPreviousEditions={loadingPreviousEditions} previousEditionImages={previousEditionImages} moreFromAuthorIsbns={moreFromAuthorIsbns} handleMoreFromAuthorIsbnChange={handleMoreFromAuthorIsbnChange} loadingMoreFromAuthor={loadingMoreFromAuthor} moreFromAuthorImages={moreFromAuthorImages} />
       
       {/* Edit Modal */}
       {editModalOpen && editingItemIndex !== null && editingField !== null && <EditModal 
@@ -5070,7 +5205,7 @@ function EditModal({
   );
 }
 
-function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, loadingPreviousEditions, previousEditionImages }: {
+function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, loadingPreviousEditions, previousEditionImages, moreFromAuthorIsbns, handleMoreFromAuthorIsbnChange, loadingMoreFromAuthor, moreFromAuthorImages }: {
   items: Item[]; 
   layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
@@ -5100,6 +5235,10 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   handlePreviousEditionIsbnChange: (index: number, isbn: string) => void;
   loadingPreviousEditions: {[key: number]: boolean};
   previousEditionImages: {[key: number]: string};
+  moreFromAuthorIsbns: {[key: number]: string[]};
+  handleMoreFromAuthorIsbnChange: (index: number, isbnIndex: number, isbn: string) => void;
+  loadingMoreFromAuthor: {[key: number]: boolean};
+  moreFromAuthorImages: {[key: number]: string[]};
 }) {
   // Note: hyperlinkToggle is used indirectly through generateProductUrl which is already bound to it
   void hyperlinkToggle; // Explicitly mark as intentionally unused here
@@ -5134,7 +5273,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
             ...(edits?.authorBio !== undefined ? { authorBio: edits.authorBio } : {}),
             ...(edits?.footerNote !== undefined ? { footerNote: edits.footerNote } : {}),
             previousEditionIsbn: previousEditionIsbns[i] || it.previousEditionIsbn,
-            previousEditionImageUrl: previousEditionImages[i] || it.previousEditionImageUrl
+            previousEditionImageUrl: previousEditionImages[i] || it.previousEditionImageUrl,
+            moreFromAuthorIsbns: moreFromAuthorIsbns[i] || it.moreFromAuthorIsbns || [],
+            moreFromAuthorImages: moreFromAuthorImages[i] || it.moreFromAuthorImages || []
           };
           const itemLayoutSelection = itemLayouts[i] || layout;
           const effectiveLayout = resolveLayoutForTruncation(itemLayoutSelection as BuilderLayout | ItemLayoutOption | undefined);
@@ -5433,6 +5574,63 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     <span style={{ fontSize: 10, color: "#28a745" }}>✓ Image loaded</span>
                   )}
                 </div>
+                
+                {/* More from this Author ISBNs */}
+                {((itemLayoutSelection === 1 || itemLayoutSelection === '1L') ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: "#6C757D" }}>More from Author (up to 3):</span>
+                    {[0, 1, 2].map((isbnIdx) => (
+                      <div key={isbnIdx} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <input
+                          type="text"
+                          placeholder={`ISBN ${isbnIdx + 1}`}
+                          value={moreFromAuthorIsbns[i]?.[isbnIdx] || ""}
+                          onChange={(e) => handleMoreFromAuthorIsbnChange(i, isbnIdx, e.target.value)}
+                          style={{
+                            width: 100,
+                            padding: "4px 8px",
+                            border: "1px solid #DEE2E6",
+                            borderRadius: 4,
+                            fontSize: 12,
+                            background: loadingMoreFromAuthor[i] ? "#FFF3CD" : "white"
+                          }}
+                          disabled={loadingMoreFromAuthor[i]}
+                        />
+                        {moreFromAuthorImages[i]?.[isbnIdx] && (
+                          <span style={{ fontSize: 9, color: "#28a745" }}>✓</span>
+                        )}
+                      </div>
+                    ))}
+                    {loadingMoreFromAuthor[i] && (
+                      <span style={{ fontSize: 10, color: "#6C757D" }}>Loading...</span>
+                    )}
+                  </div>
+                ) : (itemLayoutSelection === 2 || itemLayoutSelection === '2-int') ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
+                    <span style={{ fontSize: 11, color: "#6C757D" }}>More from Author ISBN:</span>
+                    <input
+                      type="text"
+                      placeholder="Enter ISBN"
+                      value={moreFromAuthorIsbns[i]?.[0] || ""}
+                      onChange={(e) => handleMoreFromAuthorIsbnChange(i, 0, e.target.value)}
+                      style={{
+                        width: 120,
+                        padding: "4px 8px",
+                        border: "1px solid #DEE2E6",
+                        borderRadius: 4,
+                        fontSize: 12,
+                        background: loadingMoreFromAuthor[i] ? "#FFF3CD" : "white"
+                      }}
+                      disabled={loadingMoreFromAuthor[i]}
+                    />
+                    {loadingMoreFromAuthor[i] && (
+                      <span style={{ fontSize: 10, color: "#6C757D" }}>Loading...</span>
+                    )}
+                    {moreFromAuthorImages[i]?.[0] && (
+                      <span style={{ fontSize: 10, color: "#28a745" }}>✓ Image loaded</span>
+                    )}
+                  </div>
+                ) : null)}
                 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
                   <span style={{ fontSize: 11, color: "#6C757D" }}>Barcode:</span>

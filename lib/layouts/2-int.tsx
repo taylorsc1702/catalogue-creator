@@ -3,7 +3,17 @@ import Image from 'next/image';
 import { LayoutHandler, Item, esc, formatDateAndBadge, getDiscountProductDetails } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
-export function create2IntLayoutHandler(): LayoutHandler {
+export type Orientation = 'portrait' | 'landscape';
+
+export function create2IntLayoutHandler(orientation: Orientation = 'portrait'): LayoutHandler {
+  // Image dimensions based on orientation
+  const previewImageWidth = orientation === 'landscape' ? 120 : 80;
+  const previewImageHeight = orientation === 'landscape' ? 80 : 120;
+  const htmlImageWidth = orientation === 'landscape' ? 90 : 60;
+  const htmlImageHeight = orientation === 'landscape' ? 60 : 90;
+  const docxImageWidth = orientation === 'landscape' ? 180 : 120;
+  const docxImageHeight = orientation === 'landscape' ? 120 : 180;
+  
   return {
     name: '2-int',
     getPerPage: () => 2,
@@ -26,13 +36,13 @@ export function create2IntLayoutHandler(): LayoutHandler {
         }}>
           <div style={{ 
             flexShrink: 0,
-            width: "80px"
+            width: `${previewImageWidth}px`
           }}>
             <Image 
-              src={item.imageUrl || "https://via.placeholder.com/80x120?text=No+Image"} 
+              src={item.imageUrl || `https://via.placeholder.com/${previewImageWidth}x${previewImageHeight}?text=No+Image`} 
               alt={item.title}
-              width={80}
-              height={120}
+              width={previewImageWidth}
+              height={previewImageHeight}
               style={{ 
                 objectFit: "cover", 
                 borderRadius: 6, 
@@ -201,7 +211,7 @@ export function create2IntLayoutHandler(): LayoutHandler {
       return `
         <div class="product-card">
           <div class="product-image">
-            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/80x120?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
+            <img src="${esc(item.imageUrl || `https://via.placeholder.com/${htmlImageWidth}x${htmlImageHeight}?text=No+Image`)}" alt="${esc(item.title)}" class="book-cover">
           </div>
           <div class="product-details">
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
@@ -217,6 +227,17 @@ export function create2IntLayoutHandler(): LayoutHandler {
             <div class="product-meta">
               ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
               ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+              ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns.length > 0 && item.moreFromAuthorIsbns[0] ? `
+                <div class="meta-item">
+                  <strong>More from this Author:</strong>
+                  ${item.moreFromAuthorImages && item.moreFromAuthorImages[0] ? `
+                    <div style="margin-top: 8px;">
+                      <img src="${esc(item.moreFromAuthorImages[0])}" alt="More from Author" style="width: 60px; height: 90px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 4px;">
+                      <div style="font-size: 10px; color: #666;">ISBN: ${esc(item.moreFromAuthorIsbns[0])}</div>
+                    </div>
+                  ` : `ISBN: ${esc(item.moreFromAuthorIsbns[0])}`}
+                </div>
+              ` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
               ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
@@ -247,8 +268,8 @@ export function create2IntLayoutHandler(): LayoutHandler {
           const imageRun = new ImageRun({
             data: imageData.base64,
             transformation: {
-              width: 120, // Same as 2-up
-              height: 180,
+              width: docxImageWidth,
+              height: docxImageHeight,
             },
             type: "png",
           });
@@ -439,11 +460,11 @@ export function create2IntLayoutHandler(): LayoutHandler {
       }
       .product-image {
         flex-shrink: 0;
-        width: 60px;
+        width: ${htmlImageWidth}px;
       }
       .book-cover {
-        width: 60px;
-        height: 90px;
+        width: ${htmlImageWidth}px;
+        height: ${htmlImageHeight}px;
         object-fit: cover;
         border: 1px solid #ddd;
         border-radius: 4px;

@@ -14,7 +14,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages } = req.body as {
+    const { items, layoutAssignments, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages, twoIntOrientation } = req.body as {
       items: Item[]; 
       layoutAssignments: (1|'1L'|2|'2-int'|3|4|8)[]; 
       showFields: Record<string, boolean>;
@@ -40,13 +40,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       appendView?: 'none' | 'list' | 'compact-list' | 'table';
       appendInsertIndex?: number | null;
       urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>;
+      twoIntOrientation?: 'portrait' | 'landscape';
     };
     
     if (!items?.length) throw new Error("No items provided");
     if (!layoutAssignments?.length) throw new Error("No layout assignments provided");
     if (items.length !== layoutAssignments.length) throw new Error("Items and layout assignments must be same length");
     
-    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages);
+    const html = await renderMixedHtml(items, layoutAssignments, showFields || {}, hyperlinkToggle, itemBarcodeTypes, barcodeType, bannerColor, websiteName, pageHeaders, utmParams, coverData, appendView, appendInsertIndex, itemInternalsCount1L, internalsCount1L, urlPages, twoIntOrientation);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
   } catch (err) {
@@ -64,7 +65,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   backCoverText2: string;
   coverImageUrls: string[]; // New: Direct image URLs
   catalogueName: string;
-}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>) {
+}, appendView?: 'none' | 'list' | 'compact-list' | 'table', appendInsertIndex?: number | null, itemInternalsCount1L?: {[key: number]: number}, internalsCount1L?: number, urlPages?: Array<{url: string; title?: string; pageIndex?: number | null}>, twoIntOrientation?: 'portrait' | 'landscape') {
   const options: RenderOptions & { itemInternalsCount1L?: {[key: number]: number}; internalsCount1L?: number } = {
     showFields,
     hyperlinkToggle,
@@ -72,7 +73,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     barcodeType: barcodeType || "None",
     utmParams,
     itemInternalsCount1L: itemInternalsCount1L,
-    internalsCount1L: internalsCount1L || 2
+    internalsCount1L: internalsCount1L || 2,
+    twoIntOrientation: twoIntOrientation || 'portrait'
   };
 
   // Group items by their layout requirements
@@ -1011,6 +1013,56 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
+  }
+  
+  .previous-edition-isbn {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+  }
+  
+  .more-from-author-box {
+    background: #FFF9E6;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    border: 1px solid #FFE082;
+  }
+  
+  .more-from-author-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #F57C00;
+  }
+  
+  .more-from-author-images {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .more-from-author-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .more-from-author-cover {
+    width: 80px;
+    height: 120px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .more-from-author-isbn {
+    font-size: 11px;
+    color: #666;
+    text-align: center;
   }
   
   .internals-section-full {

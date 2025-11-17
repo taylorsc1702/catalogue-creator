@@ -13,6 +13,8 @@ export type Item = {
   handle: string; vendor?: string; tags?: string[];
   previousEditionIsbn?: string;
   previousEditionImageUrl?: string;
+  moreFromAuthorIsbns?: string[];
+  moreFromAuthorImages?: string[];
 };
 
 export type HyperlinkToggle = 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
@@ -33,6 +35,7 @@ export interface RenderOptions {
   itemBarcodeTypes?: {[key: number]: BarcodeType};
   barcodeType: BarcodeType;
   utmParams?: UtmParams;
+  twoIntOrientation?: 'portrait' | 'landscape';
 }
 
 // Utility functions
@@ -255,6 +258,20 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
               <div class="previous-editions-title">Previous Editions:</div>
               <div class="previous-editions-image">
                 <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
+                ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
+              </div>
+            </div>
+          ` : ""}
+          ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
+            <div class="more-from-author-box">
+              <div class="more-from-author-title">More from this Author:</div>
+              <div class="more-from-author-images">
+                ${item.moreFromAuthorImages.map((img, idx) => img ? `
+                  <div class="more-from-author-item">
+                    <img src="${esc(img)}" alt="More from Author ${idx + 1}" class="more-from-author-cover">
+                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
+                  </div>
+                ` : '').join('')}
               </div>
             </div>
           ` : ""}
@@ -451,10 +468,15 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
   const truncatedDesc = item.description ? (item.description.length > 650 ? item.description.substring(0, 647) + '...' : item.description) : '';
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
+  // Image dimensions based on orientation
+  const orientation = options.twoIntOrientation || 'portrait';
+  const imageWidth = orientation === 'landscape' ? 90 : 60;
+  const imageHeight = orientation === 'landscape' ? 60 : 90;
+  
   return `
     <div class="product-card layout-2-vertical">
       <div class="product-image-2up">
-        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-2up">
+        <img src="${esc(item.imageUrl || `https://via.placeholder.com/${imageWidth}x${imageHeight}?text=No+Image`)}" alt="${esc(item.title)}" class="book-cover-2up" style="width: ${imageWidth}px; height: ${imageHeight}px;">
       </div>
       <div class="product-content-2up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
@@ -519,6 +541,20 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
               <div class="previous-editions-title">Previous Editions:</div>
               <div class="previous-editions-image">
                 <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
+                ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
+              </div>
+            </div>
+          ` : ""}
+          ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
+            <div class="more-from-author-box">
+              <div class="more-from-author-title">More from this Author:</div>
+              <div class="more-from-author-images">
+                ${item.moreFromAuthorImages.map((img, idx) => img ? `
+                  <div class="more-from-author-item">
+                    <img src="${esc(img)}" alt="More from Author ${idx + 1}" class="more-from-author-cover">
+                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
+                  </div>
+                ` : '').join('')}
               </div>
             </div>
           ` : ""}

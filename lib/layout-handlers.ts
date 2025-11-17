@@ -13,6 +13,8 @@ export type Item = {
   footerNote?: string;
   previousEditionIsbn?: string;
   previousEditionImageUrl?: string;
+  moreFromAuthorIsbns?: string[]; // Array of ISBNs for "More from this author" (up to 3 for 1/1L, 1 for 2-up/2-int)
+  moreFromAuthorImages?: string[]; // Array of image URLs corresponding to the ISBNs
 };
 
 export interface LayoutHandler {

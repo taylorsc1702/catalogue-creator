@@ -14,6 +14,7 @@ export type LayoutType = '1-up' | '1L' | '2-up' | '2-int' | '3-up' | '4-up' | '8
 
 class LayoutRegistry {
   private handlers: Map<LayoutType, LayoutHandler> = new Map();
+  private twoIntOrientation: 'portrait' | 'landscape' = 'portrait';
 
   constructor() {
     this.registerDefaultHandlers();
@@ -24,13 +25,23 @@ class LayoutRegistry {
     this.handlers.set('1-up', create1UpLayoutHandler());
     this.handlers.set('1L', create1LLayoutHandler());
     this.handlers.set('2-up', create2UpLayoutHandler());
-    this.handlers.set('2-int', create2IntLayoutHandler());
+    this.handlers.set('2-int', create2IntLayoutHandler(this.twoIntOrientation));
     this.handlers.set('3-up', create3UpLayoutHandler());
     this.handlers.set('4-up', create4UpLayoutHandler());
     this.handlers.set('8-up', create8UpLayoutHandler());
     this.handlers.set('list', createListLayoutHandler());
     this.handlers.set('compact-list', createCompactListLayoutHandler());
     this.handlers.set('table', createTableLayoutHandler());
+  }
+
+  setTwoIntOrientation(orientation: 'portrait' | 'landscape') {
+    this.twoIntOrientation = orientation;
+    // Recreate the 2-int handler with new orientation
+    this.handlers.set('2-int', create2IntLayoutHandler(orientation));
+  }
+
+  getTwoIntOrientation(): 'portrait' | 'landscape' {
+    return this.twoIntOrientation;
   }
 
   getHandler(layout: LayoutType): LayoutHandler | undefined {

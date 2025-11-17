@@ -242,6 +242,22 @@ export function create1UpLayoutHandler(): LayoutHandler {
                 <div class="previous-editions-title">Previous Editions:</div>
                 <div class="previous-editions-image">
                   <img src="${esc(item.previousEditionImageUrl)}" alt="Previous Edition" class="previous-edition-cover">
+                  ${item.previousEditionIsbn ? `<div class="previous-edition-isbn">ISBN: ${esc(item.previousEditionIsbn)}</div>` : ''}
+                </div>
+              </div>
+            ` : ''}
+            
+            <!-- More from this Author -->
+            ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
+              <div class="more-from-author-box">
+                <div class="more-from-author-title">More from this Author:</div>
+                <div class="more-from-author-images">
+                  ${item.moreFromAuthorImages.map((img, idx) => img ? `
+                    <div class="more-from-author-item">
+                      <img src="${esc(img)}" alt="More from Author ${idx + 1}" class="more-from-author-cover">
+                      ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
+                    </div>
+                  ` : '').join('')}
                 </div>
               </div>
             ` : ''}
@@ -381,6 +397,58 @@ export function create1UpLayoutHandler(): LayoutHandler {
                       ],
                       spacing: { after: 300 },
                     }),
+                  ] : []),
+                  
+                  // Previous Editions
+                  ...(item.previousEditionImageUrl ? [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: "Previous Editions:",
+                          bold: true,
+                          size: 14,
+                          color: "0D47A1",
+                        }),
+                      ],
+                      spacing: { after: 200 },
+                    }),
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: item.previousEditionIsbn ? `ISBN: ${item.previousEditionIsbn}` : "Image available",
+                          size: 12,
+                          color: "666666",
+                          italics: true,
+                        }),
+                      ],
+                      spacing: { after: 300 },
+                    }),
+                  ] : []),
+                  
+                  // More from this Author
+                  ...(item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: "More from this Author:",
+                          bold: true,
+                          size: 14,
+                          color: "F57C00",
+                        }),
+                      ],
+                      spacing: { after: 200 },
+                    }),
+                    ...item.moreFromAuthorImages.map((img, idx) => img ? new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `ISBN: ${item.moreFromAuthorIsbns[idx]}` : `Book ${idx + 1}`,
+                          size: 12,
+                          color: "666666",
+                          italics: true,
+                        }),
+                      ],
+                      spacing: { after: 200 },
+                    }) : null).filter(Boolean) as Paragraph[],
                   ] : []),
                   
                   // Internals section
@@ -640,6 +708,57 @@ export function create1UpLayoutHandler(): LayoutHandler {
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .previous-edition-isbn {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #666;
+        text-align: center;
+      }
+      
+      .more-from-author-box {
+        background: #FFF9E6;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 16px;
+        border: 1px solid #FFE082;
+      }
+      
+      .more-from-author-title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #F57C00;
+        font-size: 14px;
+      }
+      
+      .more-from-author-images {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .more-from-author-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .more-from-author-cover {
+        width: 80px;
+        height: 120px;
+        object-fit: contain;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .more-from-author-isbn {
+        font-size: 11px;
+        color: #666;
+        text-align: center;
       }
       
       .internals-section {
