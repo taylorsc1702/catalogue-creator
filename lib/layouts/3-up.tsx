@@ -18,7 +18,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
           border: "2px solid #E9ECEF", 
           borderRadius: 12, 
           padding: 12, 
-          display: "flex", 
+          display: "grid",
+          gridTemplateColumns: "96px 1fr auto",
           gap: 12,
           background: "white",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
@@ -28,8 +29,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
           alignItems: "stretch"
         }}>
           <div style={{ 
-            flexShrink: 0,
-            width: "96px",
+            gridColumn: 1,
             display: "flex",
             alignItems: "flex-start"
           }}>
@@ -63,13 +63,14 @@ export function create3UpLayoutHandler(): LayoutHandler {
             </div>
           )}
           <div style={{ 
+            gridColumn: 2,
             display: "flex", 
             flexDirection: "column", 
             flex: 1,
             minWidth: 0,
             minHeight: 0
           }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: HEADER_MAX_HEIGHT_PX, overflow: "hidden" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
               <a 
                 href={generateProductUrl(item.handle)}
                 target="_blank"
@@ -158,16 +159,6 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 {item.pages && <span>📄 {item.pages} pages</span>}
                 {item.dimensions && <span>📐 {item.dimensions}</span>}
               </div>
-              <div style={{ 
-                fontSize: 10, 
-                color: "#6C757D",
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap"
-              }}>
-                {item.imprint && <span>🏢 {item.imprint}</span>}
-                {item.weight && <span>⚖️ {item.weight}</span>}
-              </div>
             </div>
 
             {descriptionText && (
@@ -197,6 +188,48 @@ export function create3UpLayoutHandler(): LayoutHandler {
               </div>
             )}
           </div>
+          <div style={{
+            gridColumn: 3,
+            flexShrink: 0,
+            width: 140,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            fontSize: 10,
+            color: "#6C757D",
+            lineHeight: 1.3
+          }}>
+            {getDiscountProductDetails(item.imidis || item.discount) && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Product Details:</strong> {getDiscountProductDetails(item.imidis || item.discount)}
+              </div>
+            )}
+            {item.previousEditionIsbn && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Previous Edition:</strong> {item.previousEditionIsbn}
+              </div>
+            )}
+            {item.imprint && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Publisher:</strong> {item.imprint}
+              </div>
+            )}
+            {item.releaseDate && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Release Date:</strong> {item.releaseDate}
+              </div>
+            )}
+            {item.weight && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Weight:</strong> {item.weight}
+              </div>
+            )}
+            {item.illustrations && (
+              <div style={{ marginBottom: 4 }}>
+                <strong>Illustrations:</strong> {item.illustrations}
+              </div>
+            )}
+          </div>
         </div>
       );
     },
@@ -208,7 +241,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
           <div class="product-image">
             <img src="${esc(item.imageUrl || 'https://via.placeholder.com/96x144?text=No+Image')}" alt="${esc(item.title)}" class="book-cover">
           </div>
-          <div class="product-details">
+          <div class="product-main-3up">
             <div class="product-header">
               <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
               ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
@@ -219,14 +252,6 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
                 ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
               </div>
-              <div class="product-meta">
-                ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-                ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-                ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
-                ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
-                ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-              </div>
             </div>
             <div class="product-description-wrapper">
               ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
@@ -234,6 +259,16 @@ export function create3UpLayoutHandler(): LayoutHandler {
             ${item.footerNote ? `<div class="product-note">${esc(item.footerNote).replace(/\n/g, '<br>')}</div>` : ""}
             ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
             ${barcodeHtml || ''}
+          </div>
+          <div class="product-aside-3up">
+            <div class="product-meta">
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+              ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+              ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
+              ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+              ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+            </div>
           </div>
         </div>
       `;
@@ -425,8 +460,8 @@ export function create3UpLayoutHandler(): LayoutHandler {
 
     getCssStyles: () => `
       .product-card {
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: 72px 1fr auto;
         gap: 12px;
         margin-bottom: 0;
         page-break-inside: avoid;
@@ -440,6 +475,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         box-sizing: border-box;
       }
       .product-image {
+        grid-column: 1;
         flex-shrink: 0;
         width: 72px;
       }
@@ -450,18 +486,26 @@ export function create3UpLayoutHandler(): LayoutHandler {
         border: 1px solid #ddd;
         border-radius: 4px;
       }
-      .product-details {
-        flex: 1;
+      .product-main-3up {
+        grid-column: 2;
         display: flex;
         flex-direction: column;
         min-height: 0;
+        flex: 1;
+      }
+      .product-aside-3up {
+        grid-column: 3;
+        flex-shrink: 0;
+        width: 140px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
       }
       .product-header {
         display: flex;
         flex-direction: column;
         gap: 4px;
-        max-height: ${HEADER_MAX_HEIGHT_PX}px;
-        overflow: hidden;
+        flex-shrink: 0;
       }
       .product-title {
         font-size: 22px;
@@ -503,15 +547,17 @@ export function create3UpLayoutHandler(): LayoutHandler {
         color: #6C757D;
         line-height: 1.3;
         font-family: 'Calibri', sans-serif;
+        width: 100%;
       }
       .meta-item {
-        margin-bottom: 2px;
+        margin-bottom: 4px;
       }
       .product-description-wrapper {
         flex: 1 1 auto;
         min-height: 0;
         margin-top: 8px;
-        overflow: visible;
+        display: flex;
+        flex-direction: column;
       }
       .product-description {
         font-size: 17px;
@@ -519,7 +565,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
         color: #495057;
         font-family: 'Calibri', sans-serif;
         white-space: pre-line;
-        overflow: visible;
+        flex: 1;
       }
       .product-note {
         margin-top: 8px;

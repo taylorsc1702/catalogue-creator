@@ -1222,7 +1222,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   
   .layout-3-row {
     display: grid;
-    grid-template-columns: 212px 1fr 100px;
+    grid-template-columns: 212px 1fr auto;
   gap: 10px;
   padding: 10px;
   border: 1px solid #e0e0e0;
@@ -1230,6 +1230,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   min-height: 180px;
   max-width: 100%;
   overflow: hidden;
+  align-items: stretch;
 }
   
 .product-image-3up {
@@ -1252,6 +1253,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     flex-direction: column;
     gap: 0;
     max-width: 90%;
+    min-height: 0;
+    flex: 1;
   }
   
   .product-content-3up .product-title {
@@ -1261,6 +1264,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     margin: 0;
     line-height: 1.2;
     font-family: 'Calibri', sans-serif;
+    flex-shrink: 0;
   }
   
   .product-content-3up .product-subtitle {
@@ -1270,6 +1274,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     margin: 0;
     line-height: 1.2;
     font-family: 'Calibri', sans-serif;
+    flex-shrink: 0;
   }
   
   .product-content-3up .product-author {
@@ -1278,6 +1283,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     margin: 0;
     line-height: 1.2;
     font-family: 'Calibri', sans-serif;
+    flex-shrink: 0;
   }
   
 .product-description-3up {
@@ -1288,8 +1294,8 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   padding: 6px;
   border: 1px solid #e0e0e0;
   background: #ffffff;
-  max-height: 120px;
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
   text-align: justify;
   font-family: 'Calibri', sans-serif;
 }
@@ -1297,6 +1303,9 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .product-details-3up {
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
+    width: 140px;
+    align-items: flex-start;
     gap: 2px;
     font-size: 10px;
     color: #333;
