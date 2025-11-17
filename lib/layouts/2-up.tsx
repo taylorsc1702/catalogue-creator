@@ -322,6 +322,8 @@ export function create2UpLayoutHandler(): LayoutHandler {
 
       // Meta information
       const metaItems = [];
+      if (getDiscountProductDetails(item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.discount)}`);
+      if (item.previousEditionIsbn) metaItems.push(`Previous Edition: ${item.previousEditionIsbn}`);
       if (item.imprint) metaItems.push(`Publisher: ${item.imprint}`);
       if (item.releaseDate) metaItems.push(`Release Date: ${item.releaseDate}`);
       if (item.weight) metaItems.push(`Weight: ${item.weight}`);

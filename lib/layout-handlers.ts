@@ -109,15 +109,17 @@ export function getDiscountProductDetails(discount?: string): string {
     case 'A':
       return 'Trade Australian';
     case 'B':
-      return 'TEXT';
+      return 'Text';
+    case 'D':
+      return 'Stationery Items';
     case 'E':
       return 'Trade International';
     case 'F':
-      return 'Acad and Professional';
+      return 'Academic & Professional';
     case 'J':
-      return 'Short Discount A';
+      return 'Very Short Discount A';
     case 'L':
-      return 'Short Discount B';
+      return 'Very Short Discount B';
     default:
       return '';
   }
