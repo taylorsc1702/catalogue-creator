@@ -262,12 +262,14 @@ export function create3UpLayoutHandler(): LayoutHandler {
           </div>
           <div class="product-aside-3up">
             <div class="product-meta">
-              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
               ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+              ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)}</div>` : ""}
               ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(item.releaseDate)}</div>` : ""}
-              ${item.weight ? `<div class="meta-item"><strong>Weight:</strong> ${esc(item.weight)}</div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
               ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+              ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
             </div>
           </div>
         </div>
@@ -399,11 +401,14 @@ export function create3UpLayoutHandler(): LayoutHandler {
 
       // Meta information
       const metaItems = [];
-      if (getDiscountProductDetails(item.imidis || item.discount)) metaItems.push(`Product Details: ${getDiscountProductDetails(item.imidis || item.discount)}`);
-      if (item.previousEditionIsbn) metaItems.push(`Previous Edition: ${item.previousEditionIsbn}`);
       if (item.imprint) metaItems.push(`Publisher: ${item.imprint}`);
+      if (getDiscountProductDetails(item.imidis || item.discount)) metaItems.push(`Discount: ${getDiscountProductDetails(item.imidis || item.discount)}`);
+      if (item.binding) metaItems.push(`Binding: ${item.binding}`);
+      if (item.pages) metaItems.push(`Pages: ${item.pages}`);
       if (item.releaseDate) metaItems.push(`Release Date: ${item.releaseDate}`);
-      if (item.weight) metaItems.push(`Weight: ${item.weight}`);
+      if (item.previousEditionIsbn) metaItems.push(`Previous Edition: ${item.previousEditionIsbn}`);
+      if (item.illustrations) metaItems.push(`Illustrations: ${item.illustrations}`);
+      if (item.dimensions) metaItems.push(`Dimensions: ${item.dimensions}`);
       
       if (metaItems.length > 0) {
         paragraphs.push(new Paragraph({
