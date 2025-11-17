@@ -331,12 +331,11 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
         ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">Product Details: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
         ${item.previousEditionIsbn ? `<div class="detail-value">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
         ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
-        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">Discount: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
         ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
         ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
         ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
         ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
-        ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.sku ? `<div class="detail-value">${esc(item.sku)}</div>` : ""}
         ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
