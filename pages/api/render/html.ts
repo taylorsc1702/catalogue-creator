@@ -77,6 +77,29 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   const esc = (s?: string) =>
     (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
   
+  const getDiscountProductDetails = (discount?: string): string => {
+    if (!discount) return '';
+    const discountUpper = discount.trim().toUpperCase();
+    switch (discountUpper) {
+      case 'A':
+        return 'Trade Australian';
+      case 'B':
+        return 'Text';
+      case 'D':
+        return 'Stationery Items';
+      case 'E':
+        return 'Trade International';
+      case 'F':
+        return 'Academic & Professional';
+      case 'J':
+        return 'Very Short Discount A';
+      case 'L':
+        return 'Very Short Discount B';
+      default:
+        return '';
+    }
+  };
+  
   const formatAuthor = (author?: string) => {
     if (!author) return '';
     // Remove "By " prefix if it already exists to avoid duplication
@@ -433,7 +456,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                 <div class="product-details-row">
                   <div class="product-meta">
                     ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                    ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                    ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
                     ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                     ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
                     ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
@@ -498,7 +521,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                 <div class="product-details-row">
                   <div class="product-meta">
                     ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-                    ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+                    ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
                     ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
                     ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
                     ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}

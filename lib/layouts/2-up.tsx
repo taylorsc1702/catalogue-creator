@@ -411,6 +411,13 @@ export function create2UpLayoutHandler(): LayoutHandler {
         border: 1px solid #ddd;
         border-radius: 4px;
       }
+      @media print {
+        .book-cover,
+        .product-image {
+          border: none !important;
+          box-shadow: none !important;
+        }
+      }
       .product-title {
         font-size: 16px;
         font-weight: bold;

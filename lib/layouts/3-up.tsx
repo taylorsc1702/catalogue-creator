@@ -543,6 +543,11 @@ export function create3UpLayoutHandler(): LayoutHandler {
           border: none !important;
           box-shadow: none !important;
         }
+        .book-cover,
+        .product-image {
+          border: none !important;
+          box-shadow: none !important;
+        }
       }
     `
   };

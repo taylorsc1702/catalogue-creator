@@ -328,10 +328,10 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
         ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
       </div>
       <div class="product-details-3up">
-        ${getDiscountProductDetails(item.discount) ? `<div class="detail-value">Product Details: ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">Product Details: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
         ${item.previousEditionIsbn ? `<div class="detail-value">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
         ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
-        ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
+        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">Discount: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
         ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
         ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
         ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
@@ -366,7 +366,7 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
         </div>
         <div class="product-meta">
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-          ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
@@ -403,7 +403,7 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
           ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
           ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
           ${item.icillus ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
@@ -446,7 +446,7 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
             ${item.imprint ? `<div class="meta-item-4up"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
             ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
             ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
-          ${item.imidis ? `<div class=\"meta-item-4up\"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class=\"meta-item-4up\"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
           </div>
         </div>
         <div class="barcode-section-right">
@@ -488,7 +488,7 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
           ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
           ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
           ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${item.imidis ? `<div class="meta-item"><strong>Discount:</strong> ${esc(item.imidis)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
           ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
           ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
           ${item.icillus ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
