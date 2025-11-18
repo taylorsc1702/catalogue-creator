@@ -566,7 +566,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                     children: [
                       new TextRun({
                         text: [
-                          getDiscountProductDetails(item.imidis || item.discount) ? `Product Details: ${getDiscountProductDetails(item.imidis || item.discount)}` : '',
+                          getDiscountProductDetails(item.imidis || item.discount) ? `Product Details` : '',
                           item.previousEditionIsbn ? `Previous Edition: ${item.previousEditionIsbn}` : '',
                           item.vendor ? `Vendor: ${item.vendor}` : '',
                           item.dimensions ? `Dimensions: ${item.dimensions}` : '',

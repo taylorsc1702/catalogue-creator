@@ -2208,8 +2208,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   /* 2-up vertical layout specific styles */
   .layout-2-vertical {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 3px;
     padding: 8px;
     border: 1px solid #e0e0e0;
     background: #ffffff;

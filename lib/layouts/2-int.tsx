@@ -74,7 +74,7 @@ export function create2IntLayoutHandler(orientation: Orientation = 'portrait'): 
           borderRadius: 12, 
           padding: 12, 
           display: "flex", 
-          gap: 6,
+          gap: 3,
           background: "white",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",

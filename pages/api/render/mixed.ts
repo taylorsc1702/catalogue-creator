@@ -543,7 +543,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   }
   .product-card {
     display: flex;
-    gap: 8px;
+    gap: 3px;
     margin-bottom: 0;
     page-break-inside: avoid;
     height: 100%;
