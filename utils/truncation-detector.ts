@@ -25,9 +25,10 @@ export const TRUNCATION_LIMITS: Record<string, TruncationLimits> = {
     description: 997
   },
   '3-up': {
-    // Mixed layout uses 1397, standalone uses 997
-    // We'll use 1397 for mixed (default) and can override
-    description: 1397
+    // Mixed layout: Description now has more space with 3-column grid
+    // Description column is wider and can extend to full card height
+    // Increased from 1397 to reflect the new layout structure
+    description: 1800
   },
   '3-up-standalone': {
     description: 997
