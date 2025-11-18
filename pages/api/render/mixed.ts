@@ -1223,7 +1223,7 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   .layout-3-row {
     display: grid;
     grid-template-columns: 212px 1fr auto;
-  gap: 10px;
+  gap: 6px;
   padding: 10px;
   border: 1px solid #e0e0e0;
   background: #ffffff;

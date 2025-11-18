@@ -15,7 +15,7 @@ export function create2UpLayoutHandler(): LayoutHandler {
           borderRadius: 12, 
           padding: 12, 
           display: "flex", 
-          gap: 12,
+          gap: 6,
           background: "white",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
@@ -389,7 +389,7 @@ export function create2UpLayoutHandler(): LayoutHandler {
       .product-card {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 3px;
         margin-bottom: 0;
         page-break-inside: avoid;
         height: fit-content;

@@ -20,7 +20,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
           padding: 12, 
           display: "grid",
           gridTemplateColumns: "96px 1fr auto",
-          gap: 12,
+          gap: 6,
           background: "white",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           transition: "all 0.2s ease",
@@ -467,7 +467,7 @@ export function create3UpLayoutHandler(): LayoutHandler {
       .product-card {
         display: grid;
         grid-template-columns: 72px 1fr auto;
-        gap: 12px;
+        gap: 6px;
         margin-bottom: 0;
         page-break-inside: avoid;
         min-height: 260px;

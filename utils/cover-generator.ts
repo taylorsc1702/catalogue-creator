@@ -403,6 +403,13 @@ export function generateCoverCSS(): string {
       box-shadow: none; /* remove shadow for screen and print */
     }
     
+    @media print {
+      .featured-book-image {
+        border: none !important;
+        border-radius: 0 !important;
+      }
+    }
+    
     .featured-book-placeholder {
       width: 100%;
       height: 100%;
