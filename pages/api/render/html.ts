@@ -455,6 +455,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                 ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
                 <div class="product-details-row">
                   <div class="product-meta">
+                    ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong></div>` : ""}
                     ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
                     ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
                     ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
@@ -520,6 +521,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
                 ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
                 <div class="product-details-row">
                   <div class="product-meta">
+                    ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong></div>` : ""}
                     ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
                     ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
                     ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
@@ -1516,18 +1518,24 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     line-height: 1.4;
   }
   
-  .page.layout-1 .author-bio.truncated .author-bio-content {
+  .page.layout-1 .author-bio.truncated .author-bio-content,
+  .page.layout-1L .author-bio.truncated .author-bio-content {
     display: -webkit-box;
     -webkit-line-clamp: 8;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    font-size: 11px;
+    line-height: 1.4;
   }
   
-  .page.layout-1 .author-bio.full .author-bio-content {
+  .page.layout-1 .author-bio.full .author-bio-content,
+  .page.layout-1L .author-bio.full .author-bio-content {
     display: block;
     -webkit-line-clamp: none;
     -webkit-box-orient: initial;
     overflow: visible;
+    font-size: 11px;
+    line-height: 1.4;
   }
   
   .page.layout-1 .internals-section {
