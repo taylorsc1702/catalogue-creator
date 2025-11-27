@@ -1478,8 +1478,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     background: #E3F2FD;
     padding: 10px;
     border-radius: 6px;
-    font-size: 10px;
-    line-height: 1.3;
+    font-size: 11px;
+    line-height: 1.4;
     margin-top: 16px;
     flex: 1;
     display: flex;
@@ -1512,6 +1512,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .layout-1-full .author-bio-content {
     color: #333;
     flex: 1;
+    font-size: 11px;
+    line-height: 1.4;
   }
   
   .page.layout-1 .author-bio.truncated .author-bio-content {
@@ -1982,13 +1984,16 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       background: transparent !important;
     }
     
-    .book-cover {
+    /* Remove all borders from images in print */
+    .book-cover,
+    .book-cover-2up,
+    .book-cover-4up,
+    .book-cover-large,
+    .internal-thumbnail,
+    .internal-thumbnail-full,
+    .internal-preview-image {
       border: none !important;
       box-shadow: none !important;
-    }
-    
-    .internal-thumbnail {
-      border: none !important;
     }
     
     .author-bio {

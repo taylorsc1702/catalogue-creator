@@ -284,7 +284,7 @@ function renderGoogleDocsHtml(
       max-height: 250pt;
       object-fit: contain;
       border-radius: 4pt;
-      border: 1pt solid #ddd;
+      border: none;
     }
     
     .page.layout-1 .author-bio {
@@ -329,7 +329,7 @@ function renderGoogleDocsHtml(
       height: 55pt;
       object-fit: cover;
       border-radius: 3pt;
-      border: 1pt solid #DEE2E6;
+      border: none;
     }
     
     .page.layout-1 .product-title {
@@ -404,7 +404,7 @@ function renderGoogleDocsHtml(
       width: 80pt;
       height: 120pt;
       object-fit: cover;
-      border: 1pt solid #cccccc;
+      border: none;
     }
     
     .page.layout-2 .book-cover {
@@ -603,9 +603,9 @@ function renderGoogleDocsHtml(
       width: 88pt;
       height: 132pt;
       object-fit: contain;
-      border: 1pt solid #ddd;
+      border: none;
       border-radius: 4pt;
-      box-shadow: 0 2pt 4pt rgba(0,0,0,0.1);
+      box-shadow: none;
     }
     
     .title-section {
@@ -718,6 +718,17 @@ function renderGoogleDocsHtml(
       
       .product-card {
         page-break-inside: avoid;
+      }
+      
+      /* Remove all borders from images in print */
+      .book-cover,
+      .book-cover-2up,
+      .book-cover-4up,
+      .internal-thumbnail,
+      .internal-thumbnail-full,
+      .internal-preview-image {
+        border: none !important;
+        box-shadow: none !important;
       }
     }
   </style>
