@@ -589,7 +589,45 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
 };
 
 export const renderProductCard8Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
-  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  // Generate barcode without ISBN text for 8-up layout
+  const itemBarcodeType = options.itemBarcodeTypes?.[globalIndex] || options.barcodeType;
+  let barcodeHtml = '';
+  
+  if (itemBarcodeType && itemBarcodeType !== "None") {
+    if (itemBarcodeType === "EAN-13") {
+      let barcodeCode = item.sku || '';
+      
+      if (!barcodeCode || barcodeCode.length < 10) {
+        const possibleISBN = item.sku || item.handle || '';
+        
+        if (possibleISBN && possibleISBN.match(/\d{13}/)) {
+          const match = possibleISBN.match(/\d{13}/);
+          barcodeCode = match ? match[0] : '1234567890123';
+        } else if (possibleISBN && possibleISBN.match(/\d{10,13}/)) {
+          const match = possibleISBN.match(/\d{10,13}/);
+          barcodeCode = match ? match[0].padStart(13, '0') : '1234567890123';
+        } else {
+          barcodeCode = '1234567890123';
+        }
+      }
+      
+      const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+      if (barcodeDataUrl) {
+        // No barcode-text div for 8-up layout
+        barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
+      }
+    } else if (itemBarcodeType === "QR Code") {
+      const productUrl = generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams);
+      const qrDataUrl = generateQRCode(productUrl);
+      if (qrDataUrl) {
+        barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">QR: ${esc(productUrl)}</div>`;
+      }
+    }
+  }
   
   return `
     <div class="product-card layout-8-vertical">

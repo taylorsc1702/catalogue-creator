@@ -2123,15 +2123,16 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    font-size: 6px;
-    line-height: 1.3;
+    gap: 3px;
+    font-size: 8px;
+    line-height: 1.4;
     text-align: center;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
   
   .product-biblio-8up .biblio-item {
     color: #333;
+    font-weight: 500;
   }
   
   .barcode-8up {
@@ -2496,20 +2497,19 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   .page.layout-8 .qr-code,
   .barcode-8up .qr-code {
-    width: 18px;
-    height: 18px;
+    width: 28px;
+    height: 28px;
   }
   
   .page.layout-8 .ean13-barcode,
   .barcode-8up .ean13-barcode {
-    width: 40px;
-    height: 16px;
+    width: 55px;
+    height: 24px;
   }
   
   .page.layout-8 .barcode-text,
   .barcode-8up .barcode-text {
-    font-size: 5px;
-    margin-top: 1px;
+    display: none;
   }
   
   @media print { 
