@@ -571,8 +571,72 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     width: 80px;
   }
   .page.layout-8 .product-image {
-    width: 40px;
+    width: 100%;
   }
+  
+  /* 8-up vertical layout styles */
+  .layout-8-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+  }
+  
+  .product-image-8up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  
+  .book-cover-8up {
+    width: 100%;
+    max-width: 120px;
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .product-title-8up {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .product-title-8up .product-title {
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0 4px;
+  }
+  
+  .product-biblio-8up {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 6px;
+    line-height: 1.3;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .product-biblio-8up .biblio-item {
+    color: #333;
+  }
+  
+  .barcode-8up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+  }
+  
   .book-cover {
     width: 60px;
     height: 90px;
@@ -593,10 +657,6 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
   width: 206px; /* align with 3-up image size */
   height: 274px;
 }
-  .page.layout-8 .book-cover {
-    width: 40px;
-    height: 60px;
-  }
   .product-details {
     flex: 1;
     display: flex;
@@ -840,7 +900,31 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     font-size: 13px;
   }
   .page.layout-8 .product-price {
-    font-size: 9px;
+    font-size: 8px;
+  }
+  
+  /* Optimize barcode sizes for 8-up layout */
+  .page.layout-8 .barcode,
+  .barcode-8up .barcode {
+    margin-top: 0;
+  }
+  
+  .page.layout-8 .qr-code,
+  .barcode-8up .qr-code {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .page.layout-8 .ean13-barcode,
+  .barcode-8up .ean13-barcode {
+    width: 40px;
+    height: 16px;
+  }
+  
+  .page.layout-8 .barcode-text,
+  .barcode-8up .barcode-text {
+    font-size: 5px;
+    margin-top: 1px;
   }
   .product-isbn {
     font-size: 8px;
@@ -1335,6 +1419,23 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     height: auto;
   }
   
+  /* Base barcode styles */
+  .barcode {
+    margin-top: auto;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  
+  .qr-code {
+    width: 33px;
+    height: 33px;
+  }
+  
+  .ean13-barcode {
+    width: 75px;
+    height: 30px;
+  }
+  
   .barcode-fallback {
     font-size: 8px;
     color: #666;
@@ -1542,6 +1643,38 @@ async function renderMixedHtml(items: Item[], layoutAssignments: (1|'1L'|2|'2-in
     .product-card {
       border: none !important;
       box-shadow: none !important;
+    }
+    
+    /* Remove all borders from images in print */
+    .book-cover,
+    .book-cover-2up,
+    .book-cover-4up,
+    .book-cover-8up,
+    .product-image-3up .book-cover,
+    .internal-thumbnail,
+    .internal-thumbnail-full,
+    .internal-preview-image {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .layout-3-row {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    .product-description-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up {
+      border: none !important;
+      background: transparent !important;
+    }
+    
+    .product-details-3up .detail-value {
+      border-bottom: none !important;
     }
   }
   

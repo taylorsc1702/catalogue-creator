@@ -588,6 +588,31 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
   `;
 };
 
+export const renderProductCard8Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  
+  return `
+    <div class="product-card layout-8-vertical">
+      <div class="product-image-8up">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-8up">
+      </div>
+      <div class="product-title-8up">
+        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+      </div>
+      <div class="product-biblio-8up">
+        ${item.author ? `<div class="biblio-item">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.imprint ? `<div class="biblio-item">${esc(item.imprint)}</div>` : ""}
+        ${item.sku ? `<div class="biblio-item">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.binding ? `<div class="biblio-item">${esc(item.binding)}</div>` : ""}
+        ${item.price ? `<div class="biblio-item">AUD$ ${esc(item.price)}</div>` : ""}
+      </div>
+      <div class="barcode-8up">
+        ${barcodeHtml}
+      </div>
+    </div>
+  `;
+};
+
 export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
   switch (layout) {
     case 1:
@@ -602,6 +627,8 @@ export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3
       return renderProductCard3Up(item, globalIndex, options);
     case 4:
       return renderProductCard4Up(item, globalIndex, options);
+    case 8:
+      return renderProductCard8Up(item, globalIndex, options);
     default:
       return renderProductCardStandard(item, globalIndex, options);
   }
