@@ -698,6 +698,30 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         `;
       }
 
+      // For 8-up layout, use vertical layout: Image (large) -> Title -> Biblio -> Small Barcode
+      if (layout === 8) {
+        return `
+          <div class="product-card layout-8-vertical">
+            <div class="product-image-8up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-8up">
+            </div>
+            <div class="product-title-8up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+            </div>
+            <div class="product-biblio-8up">
+              ${item.author ? `<div class="biblio-item">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${item.imprint ? `<div class="biblio-item">${esc(item.imprint)}</div>` : ""}
+              ${item.sku ? `<div class="biblio-item">ISBN: ${esc(item.sku)}</div>` : ""}
+              ${item.binding ? `<div class="biblio-item">${esc(item.binding)}</div>` : ""}
+              ${item.price ? `<div class="biblio-item">AUD$ ${esc(item.price)}</div>` : ""}
+            </div>
+            <div class="barcode-8up">
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
+
       // For other layouts, use standard card layout
       const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
       
@@ -1996,7 +2020,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     .book-cover,
     .book-cover-2up,
     .book-cover-4up,
+    .book-cover-8up,
     .book-cover-large,
+    .product-image-3up .book-cover,
     .internal-thumbnail,
     .internal-thumbnail-full,
     .internal-preview-image {
@@ -2050,7 +2076,70 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .page.layout-8 .product-image {
-    width: 40px;
+    width: 100%;
+  }
+  
+  /* 8-up vertical layout styles */
+  .layout-8-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+  }
+  
+  .product-image-8up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  
+  .book-cover-8up {
+    width: 100%;
+    max-width: 120px;
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .product-title-8up {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .product-title-8up .product-title {
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0 4px;
+  }
+  
+  .product-biblio-8up {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 6px;
+    line-height: 1.3;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .product-biblio-8up .biblio-item {
+    color: #333;
+  }
+  
+  .barcode-8up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
   }
   
   .book-cover {
@@ -2070,11 +2159,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .page.layout-3 .book-cover {
     width: 206px;
     height: 274px;
-  }
-  
-  .page.layout-8 .book-cover {
-    width: 40px;
-    height: 60px;
   }
   
   .product-details {
@@ -2364,7 +2448,28 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .page.layout-8 .product-price {
-    font-size: 9px;
+    font-size: 8px;
+  }
+  
+  .page.layout-8 .product-meta {
+    font-size: 6px;
+    margin-bottom: 4px;
+  }
+  
+  .page.layout-8 .meta-item {
+    font-size: 6px;
+    margin-bottom: 2px;
+    line-height: 1.2;
+  }
+  
+  .page.layout-8 .product-specs {
+    gap: 4px;
+    margin-bottom: 3px;
+  }
+  
+  .page.layout-8 .spec-item {
+    font-size: 5px;
+    padding: 1px 3px;
   }
   
   .barcode {
@@ -2381,6 +2486,30 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .ean13-barcode {
     width: 75px;
     height: 30px;
+  }
+  
+  /* Optimize barcode sizes for 8-up layout */
+  .page.layout-8 .barcode,
+  .barcode-8up .barcode {
+    margin-top: 0;
+  }
+  
+  .page.layout-8 .qr-code,
+  .barcode-8up .qr-code {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .page.layout-8 .ean13-barcode,
+  .barcode-8up .ean13-barcode {
+    width: 40px;
+    height: 16px;
+  }
+  
+  .page.layout-8 .barcode-text,
+  .barcode-8up .barcode-text {
+    font-size: 5px;
+    margin-top: 1px;
   }
   
   @media print { 
