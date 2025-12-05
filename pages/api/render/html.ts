@@ -644,10 +644,10 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
             <div class="product-details-3up">
               ${item.imprint ? `<div class="detail-value">${esc(item.imprint)}</div>` : ""}
-              ${item.imidis ? `<div class="detail-value">Discount: ${esc(item.imidis)}</div>` : ""}
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
               ${item.binding ? `<div class="detail-value">${esc(item.binding)}</div>` : ""}
               ${item.pages ? `<div class="detail-value">${esc(item.pages)} Pages</div>` : ""}
-              ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions)}</div>` : ""}
+              ${item.dimensions ? `<div class="detail-value">${esc(item.dimensions.replace(/\s*mm\s*/gi, '').trim())}</div>` : ""}
               ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
               ${item.sku ? `<div class="detail-value">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}

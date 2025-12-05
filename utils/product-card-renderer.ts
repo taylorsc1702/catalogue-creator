@@ -331,14 +331,14 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
         ${truncatedDesc ? `<div class="product-description-3up" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
       </div>
       <div class="product-details-3up">
-        ${item.imprint ? `<div class="detail-value" style="font-size: 12px;">Publisher: ${esc(item.imprint)}</div>` : ""}
-        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value" style="font-size: 12px;">Discount: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+        ${item.imprint ? `<div class="detail-value" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value" style="font-size: 12px;">${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
         ${item.binding ? `<div class="detail-value" style="font-size: 12px;">Binding: ${esc(item.binding)}</div>` : ""}
         ${item.pages ? `<div class="detail-value" style="font-size: 12px;">Pages: ${esc(item.pages)}</div>` : ""}
         ${item.releaseDate ? `<div class="detail-value" style="font-size: 12px;">${esc(formatDate(item.releaseDate))}</div>` : ""}
         ${item.previousEditionIsbn ? `<div class="detail-value" style="font-size: 12px;">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
         ${item.illustrations ? `<div class="detail-value" style="font-size: 12px;">Illustrations: ${esc(item.illustrations)}</div>` : ""}
-        ${item.dimensions ? `<div class="detail-value" style="font-size: 12px;">Dimensions: ${esc(item.dimensions)}</div>` : ""}
+        ${item.dimensions ? `<div class="detail-value" style="font-size: 12px;">${esc(item.dimensions.replace(/\s*mm\s*/gi, '').trim())}</div>` : ""}
         ${item.sku ? `<div class="detail-value" style="font-size: 12px;">${esc(item.sku)}</div>` : ""}
         ${item.price ? `<div class="detail-value" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
