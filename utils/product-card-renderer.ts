@@ -138,16 +138,16 @@ export const generateEAN13Barcode = (code: string, large: boolean = false) => {
       cleanCode = cleanCode.substring(0, 13);
     }
     
-    // Create a canvas element - double size for large barcodes
-    const canvasWidth = large ? 300 : 150;
-    const canvasHeight = large ? 120 : 60;
+    // Create a canvas element - 50% larger for large barcodes
+    const canvasWidth = large ? 225 : 150;
+    const canvasHeight = large ? 90 : 60;
     const canvas = createCanvas(canvasWidth, canvasHeight);
     
-    // Generate the barcode - double dimensions for large barcodes
+    // Generate the barcode - 50% larger dimensions for large barcodes
     JsBarcode(canvas, cleanCode, {
       format: "CODE128",
-      width: large ? 3 : 1.5,
-      height: large ? 80 : 40,
+      width: large ? 2.25 : 1.5,
+      height: large ? 60 : 40,
       displayValue: false,
       background: "#ffffff",
       lineColor: "#000000"

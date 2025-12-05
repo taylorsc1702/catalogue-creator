@@ -1123,7 +1123,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   .layout-1-full .left-column {
     flex-shrink: 0;
-    width: 250px;
+    width: 287.5px; /* 15% wider than 250px */
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -2321,11 +2321,17 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     justify-content: center;
     align-items: center;
     margin-bottom: 8px;
+    width: 100%;
+    min-height: 263px;
   }
   
   .book-cover-2up {
     width: 175px;
+    min-width: 175px;
     height: 263px;
+    min-height: 263px;
+    max-width: 175px;
+    max-height: 263px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 4px;
