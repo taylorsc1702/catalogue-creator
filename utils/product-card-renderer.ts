@@ -121,7 +121,7 @@ export const getDiscountProductDetails = (discount?: string): string => {
   }
 };
 
-export const generateEAN13Barcode = (code: string) => {
+export const generateEAN13Barcode = (code: string, large: boolean = false) => {
   try {
     // Clean the code - remove non-digits
     let cleanCode = code.replace(/[^0-9]/g, '');
@@ -138,14 +138,16 @@ export const generateEAN13Barcode = (code: string) => {
       cleanCode = cleanCode.substring(0, 13);
     }
     
-    // Create a canvas element
-    const canvas = createCanvas(150, 60);
+    // Create a canvas element - double size for large barcodes
+    const canvasWidth = large ? 300 : 150;
+    const canvasHeight = large ? 120 : 60;
+    const canvas = createCanvas(canvasWidth, canvasHeight);
     
-    // Generate the barcode
+    // Generate the barcode - double dimensions for large barcodes
     JsBarcode(canvas, cleanCode, {
       format: "CODE128",
-      width: 1.5,
-      height: 40,
+      width: large ? 3 : 1.5,
+      height: large ? 80 : 40,
       displayValue: false,
       background: "#ffffff",
       lineColor: "#000000"
@@ -181,7 +183,8 @@ export const htmlToPlainText = (html: string): string => {
 export const generateBarcodeHtml = (
   item: Item, 
   globalIndex: number, 
-  options: RenderOptions
+  options: RenderOptions,
+  large: boolean = false
 ): string => {
   const itemBarcodeType = options.itemBarcodeTypes?.[globalIndex] || options.barcodeType;
   
@@ -211,7 +214,7 @@ export const generateBarcodeHtml = (
       }
     }
     
-    const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+    const barcodeDataUrl = generateEAN13Barcode(barcodeCode, large);
     if (barcodeDataUrl) {
       return `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div><div class="barcode-text">${esc(barcodeCode)}</div>`;
     } else {
@@ -234,7 +237,7 @@ export const generateBarcodeHtml = (
 
 export const renderProductCard1Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
   const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
-  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options, true);
   
   // Calculate if we need to truncate author bio
   const hasInternals = item.additionalImages && item.additionalImages.length > 0;
@@ -262,7 +265,7 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
                 ${item.moreFromAuthorImages.map((img, idx) => img ? `
                   <div class="more-from-author-item">
                     <img src="${esc(img)}" alt="More from Author ${idx + 1}" class="more-from-author-cover">
-                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
+                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn" style="font-size: 12px;">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
                   </div>
                 ` : '').join('')}
               </div>
@@ -272,27 +275,27 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
         
         <div class="right-column">
           <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-          ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-          ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
-          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
-          ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+          ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+          ${item.author ? `<div class="product-author" style="font-size: 12px;">${esc(item.author)}</div>` : ""}
+          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+          ${item.description ? `<div class="product-description" style="font-size: 12px;">${esc(item.description)}</div>` : ""}
           <div class="product-details-row">
-            <div class="product-meta">
-              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong></div>` : ""}
-              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-              ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-              ${getDiscountProductDetails(item.imidis) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis))}</div>` : ""}
-              ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-              ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
-              ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
-              ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
-            ${item.icillus ? `<div class=\"meta-item\"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
-            ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
-              ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+            <div class="product-meta" style="font-size: 12px;">
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Product Details:</strong></div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item" style="font-size: 12px;"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+              ${item.imprint ? `<div class="meta-item" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+              ${getDiscountProductDetails(item.imidis) ? `<div class="meta-item" style="font-size: 12px;"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis))}</div>` : ""}
+              ${item.releaseDate ? `<div class="meta-item" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+              ${item.binding ? `<div class="meta-item" style="font-size: 12px;"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="meta-item" style="font-size: 12px;"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+              ${item.dimensions ? `<div class="meta-item" style="font-size: 12px;"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+            ${item.icillus ? `<div class=\"meta-item\" style=\"font-size: 12px;\"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
+            ${item.sku ? `<div class=\"meta-item\" style=\"font-size: 12px;\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
+              ${item.illustrations ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
             </div>
             <div class="barcode-right">${barcodeHtml}</div>
           </div>
-          ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+          ${item.price ? `<div class="product-price" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         </div>
       </div>
       
@@ -322,22 +325,22 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
       </div>
       <div class="product-content-3up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author" style="display: inline-block; margin-right: 8px; font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
         ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
-        ${truncatedDesc ? `<div class="product-description-3up">${esc(truncatedDesc)}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description-3up" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
       </div>
       <div class="product-details-3up">
-        ${item.imprint ? `<div class="detail-value">Publisher: ${esc(item.imprint)}</div>` : ""}
-        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value">Discount: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-        ${item.binding ? `<div class="detail-value">Binding: ${esc(item.binding)}</div>` : ""}
-        ${item.pages ? `<div class="detail-value">Pages: ${esc(item.pages)}</div>` : ""}
-        ${item.releaseDate ? `<div class="detail-value">${esc(formatDate(item.releaseDate))}</div>` : ""}
-        ${item.previousEditionIsbn ? `<div class="detail-value">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
-        ${item.illustrations ? `<div class="detail-value">Illustrations: ${esc(item.illustrations)}</div>` : ""}
-        ${item.dimensions ? `<div class="detail-value">Dimensions: ${esc(item.dimensions)}</div>` : ""}
-        ${item.sku ? `<div class="detail-value">${esc(item.sku)}</div>` : ""}
-        ${item.price ? `<div class="detail-value">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.imprint ? `<div class="detail-value" style="font-size: 12px;">Publisher: ${esc(item.imprint)}</div>` : ""}
+        ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="detail-value" style="font-size: 12px;">Discount: ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+        ${item.binding ? `<div class="detail-value" style="font-size: 12px;">Binding: ${esc(item.binding)}</div>` : ""}
+        ${item.pages ? `<div class="detail-value" style="font-size: 12px;">Pages: ${esc(item.pages)}</div>` : ""}
+        ${item.releaseDate ? `<div class="detail-value" style="font-size: 12px;">${esc(formatDate(item.releaseDate))}</div>` : ""}
+        ${item.previousEditionIsbn ? `<div class="detail-value" style="font-size: 12px;">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
+        ${item.illustrations ? `<div class="detail-value" style="font-size: 12px;">Illustrations: ${esc(item.illustrations)}</div>` : ""}
+        ${item.dimensions ? `<div class="detail-value" style="font-size: 12px;">Dimensions: ${esc(item.dimensions)}</div>` : ""}
+        ${item.sku ? `<div class="detail-value" style="font-size: 12px;">${esc(item.sku)}</div>` : ""}
+        ${item.price ? `<div class="detail-value" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
     </div>
@@ -355,22 +358,22 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
       </div>
       <div class="product-details">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
-        ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+        ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
         <div class="product-specs">
-          ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-          ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-          ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+          ${item.binding ? `<span class="spec-item" style="font-size: 12px;">${esc(item.binding)}</span>` : ""}
+          ${item.pages ? `<span class="spec-item" style="font-size: 12px;">${esc(item.pages)} pages</span>` : ""}
+          ${item.dimensions ? `<span class="spec-item" style="font-size: 12px;">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600; font-size: 12px;">${esc(item.icauth)}</span>` : ""}
         </div>
-        <div class="product-meta">
-          ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+        <div class="product-meta" style="font-size: 12px;">
+          ${item.imprint ? `<div class="meta-item" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+          ${item.illustrations ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
         </div>
-        ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.price ? `<div class="product-price" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
     </div>
@@ -380,7 +383,7 @@ export const renderProductCardStandard = (item: Item, globalIndex: number, optio
 export const renderProductCard2Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
   // Character limit set to 1500 (with spaces) - anything over won't fit on the page
   const truncatedDesc = item.description ? (item.description.length > 1500 ? item.description.substring(0, 1497) + '...' : item.description) : '';
-  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options, true);
   
   return `
     <div class="product-card layout-2-vertical">
@@ -389,26 +392,26 @@ export const renderProductCard2Up = (item: Item, globalIndex: number, options: R
       </div>
       <div class="product-content-2up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
-        ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+        ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
         <div class="product-specs">
-          ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-          ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-          ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+          ${item.binding ? `<span class="spec-item" style="font-size: 12px;">${esc(item.binding)}</span>` : ""}
+          ${item.pages ? `<span class="spec-item" style="font-size: 12px;">${esc(item.pages)} pages</span>` : ""}
+          ${item.dimensions ? `<span class="spec-item" style="font-size: 12px;">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600; font-size: 12px;">${esc(item.icauth)}</span>` : ""}
         </div>
-        <div class="product-meta">
-          ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
-          ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-          ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-          ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
-          ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-          ${item.icillus ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
+        <div class="product-meta" style="font-size: 12px;">
+          ${getDiscountProductDetails(item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+          ${item.previousEditionIsbn ? `<div class="meta-item" style="font-size: 12px;"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+          ${item.imprint ? `<div class="meta-item" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+          ${item.sku ? `<div class=\"meta-item\" style=\"font-size: 12px;\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
+          ${item.illustrations ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+          ${item.icillus ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
         </div>
-        ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.price ? `<div class="product-price" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         ${barcodeHtml}
       </div>
     </div>
@@ -427,26 +430,26 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
         </div>
         <div class="title-section">
           <h2 class="product-title-4up"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
-          ${item.subtitle ? `<div class="product-subtitle-4up">${esc(item.subtitle)}</div>` : ""}
-          ${item.author ? `<div class="product-author-4up">${esc(formatAuthor(item.author))}</div>` : ""}
-          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+          ${item.subtitle ? `<div class="product-subtitle-4up" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+          ${item.author ? `<div class="product-author-4up" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
         </div>
       </div>
       <div class="description-section">
-        ${truncatedDesc ? `<div class="product-description-4up">${esc(truncatedDesc)}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description-4up" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
       </div>
       <div class="bottom-section">
         <div class="product-details-left">
           <div class="product-specs-4up">
-            ${item.binding ? `<span class="spec-item-4up">${esc(item.binding)}</span>` : ""}
-            ${item.pages ? `<span class="spec-item-4up">${esc(item.pages)} pages</span>` : ""}
-            ${item.dimensions ? `<span class="spec-item-4up">${esc(item.dimensions)}</span>` : ""}
+            ${item.binding ? `<span class="spec-item-4up" style="font-size: 12px;">${esc(item.binding)}</span>` : ""}
+            ${item.pages ? `<span class="spec-item-4up" style="font-size: 12px;">${esc(item.pages)} pages</span>` : ""}
+            ${item.dimensions ? `<span class="spec-item-4up" style="font-size: 12px;">${esc(item.dimensions)}</span>` : ""}
           </div>
-          <div class="product-meta-4up">
-            ${item.imprint ? `<div class="meta-item-4up"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-            ${item.releaseDate ? `<div class="meta-item-4up"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-            ${item.price ? `<div class="meta-item-4up"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
-          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class=\"meta-item-4up\"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+          <div class="product-meta-4up" style="font-size: 12px;">
+            ${item.imprint ? `<div class="meta-item-4up" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+            ${item.releaseDate ? `<div class="meta-item-4up" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+            ${item.price ? `<div class="meta-item-4up" style="font-size: 12px;"><strong>Price:</strong> AUD$ ${esc(item.price)}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class=\"meta-item-4up\" style=\"font-size: 12px;\"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
           </div>
         </div>
         <div class="barcode-section-right">
@@ -460,7 +463,7 @@ export const renderProductCard4Up = (item: Item, globalIndex: number, options: R
 export const renderProductCard2Int = (item: Item, globalIndex: number, options: RenderOptions): string => {
   // Reduced by 150 characters from 800 to 650 to prevent cutoff in mixed layout
   const truncatedDesc = item.description ? (item.description.length > 650 ? item.description.substring(0, 647) + '...' : item.description) : '';
-  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options, true);
   
   // Image dimensions based on orientation
   const orientation = options.twoIntOrientation || 'portrait';
@@ -474,26 +477,26 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
       </div>
       <div class="product-content-2up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-        ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-        ${item.author ? `<div class="product-author">${esc(formatAuthor(item.author))}</div>` : ""}
-        ${truncatedDesc ? `<div class="product-description">${esc(truncatedDesc)}</div>` : ""}
+        ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+        ${item.author ? `<div class="product-author" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${truncatedDesc ? `<div class="product-description" style="font-size: 12px;">${esc(truncatedDesc)}</div>` : ""}
         <div class="product-specs">
-          ${item.binding ? `<span class="spec-item">${esc(item.binding)}</span>` : ""}
-          ${item.pages ? `<span class="spec-item">${esc(item.pages)} pages</span>` : ""}
-          ${item.dimensions ? `<span class="spec-item">${esc(item.dimensions)}</span>` : ""}
-          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600;">${esc(item.icauth)}</span>` : ""}
+          ${item.binding ? `<span class="spec-item" style="font-size: 12px;">${esc(item.binding)}</span>` : ""}
+          ${item.pages ? `<span class="spec-item" style="font-size: 12px;">${esc(item.pages)} pages</span>` : ""}
+          ${item.dimensions ? `<span class="spec-item" style="font-size: 12px;">${esc(item.dimensions)}</span>` : ""}
+          ${item.icauth ? `<span class="spec-item icauth-badge" style="background-color: #FFD700; color: black; padding: 2px 6px; border-radius: 8px; font-weight: 600; font-size: 12px;">${esc(item.icauth)}</span>` : ""}
         </div>
-        <div class="product-meta">
-          ${getDiscountProductDetails(item.discount) ? `<div class="meta-item"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
-          ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-          ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-          ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
-          ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
-          ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
-          ${item.icillus ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
+        <div class="product-meta" style="font-size: 12px;">
+          ${getDiscountProductDetails(item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Product Details:</strong> ${esc(getDiscountProductDetails(item.discount))}</div>` : ""}
+          ${item.previousEditionIsbn ? `<div class="meta-item" style="font-size: 12px;"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+          ${item.imprint ? `<div class="meta-item" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+          ${item.releaseDate ? `<div class="meta-item" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+          ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis || item.discount))}</div>` : ""}
+          ${item.sku ? `<div class=\"meta-item\" style=\"font-size: 12px;\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
+          ${item.illustrations ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+          ${item.icillus ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.icillus)}</div>` : ""}
         </div>
-        ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.price ? `<div class="product-price" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         ${item.additionalImages && item.additionalImages.length > 0 ? `
           <div class="internal-image-section">
             ${item.additionalImages.slice(0, 2).map((img, idx) => 
@@ -509,7 +512,7 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
 
 export const renderProductCard1L = (item: Item, globalIndex: number, options: RenderOptions): string => {
   const plainTextBio = item.authorBio ? htmlToPlainText(item.authorBio) : '';
-  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
+  const barcodeHtml = generateBarcodeHtml(item, globalIndex, options, true);
   
   // Calculate if we need to truncate author bio
   const hasInternals = item.additionalImages && item.additionalImages.length > 0;
@@ -537,7 +540,7 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
                 ${item.moreFromAuthorImages.map((img, idx) => img ? `
                   <div class="more-from-author-item">
                     <img src="${esc(img)}" alt="More from Author ${idx + 1}" class="more-from-author-cover">
-                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
+                    ${item.moreFromAuthorIsbns && item.moreFromAuthorIsbns[idx] ? `<div class="more-from-author-isbn" style="font-size: 12px;">ISBN: ${esc(item.moreFromAuthorIsbns[idx])}</div>` : ''}
                   </div>
                 ` : '').join('')}
               </div>
@@ -547,26 +550,26 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
         
         <div class="right-column">
           <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
-          ${item.subtitle ? `<div class="product-subtitle">${esc(item.subtitle)}</div>` : ""}
-          ${item.author ? `<div class="product-author">${esc(item.author)}</div>` : ""}
-          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 11px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
-          ${item.description ? `<div class="product-description">${esc(item.description)}</div>` : ""}
+          ${item.subtitle ? `<div class="product-subtitle" style="font-size: 12px;">${esc(item.subtitle)}</div>` : ""}
+          ${item.author ? `<div class="product-author" style="font-size: 12px;">${esc(item.author)}</div>` : ""}
+          ${item.icauth ? `<span class="icauth-badge" style="background-color: #FFD700; color: black; padding: 4px 8px; border-radius: 8px; display: inline-block; width: fit-content; font-size: 12px; font-weight: 600; margin-top: 4px;">${esc(item.icauth)}</span>` : ""}
+          ${item.description ? `<div class="product-description" style="font-size: 12px;">${esc(item.description)}</div>` : ""}
           <div class="product-details-row">
-            <div class="product-meta">
-              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item"><strong>Product Details:</strong></div>` : ""}
-              ${item.previousEditionIsbn ? `<div class="meta-item"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
-              ${item.imprint ? `<div class="meta-item"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
-              ${getDiscountProductDetails(item.imidis) ? `<div class="meta-item"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis))}</div>` : ""}
-              ${item.releaseDate ? `<div class="meta-item"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
-              ${item.binding ? `<div class="meta-item"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
-              ${item.pages ? `<div class="meta-item"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
-              ${item.dimensions ? `<div class="meta-item"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
-            ${item.sku ? `<div class=\"meta-item\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
-              ${item.illustrations ? `<div class="meta-item"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
+            <div class="product-meta" style="font-size: 12px;">
+              ${getDiscountProductDetails(item.imidis || item.discount) ? `<div class="meta-item" style="font-size: 12px;"><strong>Product Details:</strong></div>` : ""}
+              ${item.previousEditionIsbn ? `<div class="meta-item" style="font-size: 12px;"><strong>Previous Edition:</strong> ${esc(item.previousEditionIsbn)}</div>` : ""}
+              ${item.imprint ? `<div class="meta-item" style="font-size: 12px;"><strong>Publisher:</strong> ${esc(item.imprint)}</div>` : ""}
+              ${getDiscountProductDetails(item.imidis) ? `<div class="meta-item" style="font-size: 12px;"><strong>Discount:</strong> ${esc(getDiscountProductDetails(item.imidis))}</div>` : ""}
+              ${item.releaseDate ? `<div class="meta-item" style="font-size: 12px;"><strong>Release Date:</strong> ${esc(formatDate(item.releaseDate))}</div>` : ""}
+              ${item.binding ? `<div class="meta-item" style="font-size: 12px;"><strong>Binding:</strong> ${esc(item.binding)}</div>` : ""}
+              ${item.pages ? `<div class="meta-item" style="font-size: 12px;"><strong>Pages:</strong> ${esc(item.pages)} pages</div>` : ""}
+              ${item.dimensions ? `<div class="meta-item" style="font-size: 12px;"><strong>Dimensions:</strong> ${esc(item.dimensions)}</div>` : ""}
+            ${item.sku ? `<div class=\"meta-item\" style=\"font-size: 12px;\"><strong>ISBN:</strong> ${esc(item.sku)}</div>` : ""}
+              ${item.illustrations ? `<div class="meta-item" style="font-size: 12px;"><strong>Illustrations:</strong> ${esc(item.illustrations)}</div>` : ""}
             </div>
             <div class="barcode-right">${barcodeHtml}</div>
           </div>
-          ${item.price ? `<div class="product-price">AUD$ ${esc(item.price)}</div>` : ""}
+          ${item.price ? `<div class="product-price" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
         </div>
       </div>
       
@@ -638,11 +641,11 @@ export const renderProductCard8Up = (item: Item, globalIndex: number, options: R
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
       </div>
       <div class="product-biblio-8up">
-        ${item.author ? `<div class="biblio-item">${esc(formatAuthor(item.author))}</div>` : ""}
-        ${item.imprint ? `<div class="biblio-item">${esc(item.imprint)}</div>` : ""}
-        ${item.sku ? `<div class="biblio-item">ISBN: ${esc(item.sku)}</div>` : ""}
-        ${item.binding ? `<div class="biblio-item">${esc(item.binding)}</div>` : ""}
-        ${item.price ? `<div class="biblio-item">AUD$ ${esc(item.price)}</div>` : ""}
+        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+        ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
       </div>
       <div class="barcode-8up">
         ${barcodeHtml}
