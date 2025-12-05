@@ -1162,21 +1162,18 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .layout-1-full .product-subtitle {
-    font-size: 14px;
     color: #666;
     margin: 0;
     font-style: italic;
   }
   
   .layout-1-full .product-author {
-    font-size: 13px;
     color: #444;
     font-weight: 500;
     margin: 0;
   }
   
   .layout-1-full .product-description {
-    font-size: 11px;
     line-height: 1.4;
     color: #333;
     margin: 0;
@@ -1487,6 +1484,13 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     height: auto;
   }
   
+  /* Larger barcodes for 1-up and 1L layouts */
+  .layout-1-full .barcode-right .barcode img,
+  .layout-1L .barcode-right .barcode img {
+    max-width: 225px;
+    height: auto;
+  }
+  
   .page.layout-1 .product-image {
     width: 100%;
   }
@@ -1611,6 +1615,13 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     height: auto;
   }
   
+  /* Larger barcodes for 1-up and 1L layouts */
+  .layout-1-full .barcode-bottom-right .barcode img,
+  .layout-1L .barcode-bottom-right .barcode img {
+    max-width: 225px;
+    height: auto;
+  }
+  
   .page.layout-1 .product-title {
     font-size: 20px;
     font-weight: 700;
@@ -1620,7 +1631,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .page.layout-1 .product-subtitle {
-    font-size: 14px;
     color: #666;
     margin: 0;
     font-style: italic;
@@ -2384,7 +2394,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .layout-2-vertical .product-description {
-    font-size: 11px;
     color: #333;
     line-height: 1.3;
     margin: 4px 0;
@@ -2449,6 +2458,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     height: auto;
   }
   
+  /* Much larger barcodes for 2-up and 2-INT layouts */
+  .layout-2-vertical .ean13-barcode {
+    max-width: 225px;
+    height: auto;
+  }
+  
   .page.layout-3 .product-price {
     font-size: 15px;
     font-family: 'Calibri', sans-serif;
@@ -2493,6 +2508,14 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .ean13-barcode {
     width: 75px;
     height: 30px;
+  }
+  
+  /* Larger barcodes for 1-up, 1L, 2-up, and 2-INT layouts */
+  .layout-1-full .ean13-barcode,
+  .layout-1L .ean13-barcode,
+  .layout-2-vertical .ean13-barcode {
+    width: 225px;
+    height: 90px;
   }
   
   /* Optimize barcode sizes for 8-up layout */

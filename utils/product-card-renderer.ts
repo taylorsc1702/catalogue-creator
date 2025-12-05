@@ -473,7 +473,7 @@ export const renderProductCard2Int = (item: Item, globalIndex: number, options: 
   return `
     <div class="product-card layout-2-vertical">
       <div class="product-image-2up">
-        <img src="${esc(item.imageUrl || `https://via.placeholder.com/${imageWidth}x${imageHeight}?text=No+Image`)}" alt="${esc(item.title)}" class="book-cover-2up" style="width: ${imageWidth}px; height: ${imageHeight}px;">
+        <img src="${esc(item.imageUrl || `https://via.placeholder.com/${imageWidth}x${imageHeight}?text=No+Image`)}" alt="${esc(item.title)}" class="book-cover-2up">
       </div>
       <div class="product-content-2up">
         <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: #000; text-decoration: none;">${esc(item.title)}</a></h2>
