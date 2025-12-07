@@ -1508,7 +1508,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     background: #E3F2FD;
     padding: 10px;
     border-radius: 6px;
-    font-size: 11px;
     line-height: 1.4;
     margin-top: 16px;
     flex: 1;
@@ -1535,14 +1534,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .layout-1-full .author-bio-title {
     font-weight: 600;
     margin-bottom: 6px;
-    font-size: 10px;
     color: #1565C0;
   }
   
   .layout-1-full .author-bio-content {
     color: #333;
     flex: 1;
-    font-size: 11px;
     line-height: 1.4;
   }
   
@@ -1552,7 +1549,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     -webkit-line-clamp: 8;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    font-size: 11px;
     line-height: 1.4;
   }
   
@@ -1562,7 +1558,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     -webkit-line-clamp: none;
     -webkit-box-orient: initial;
     overflow: visible;
-    font-size: 11px;
     line-height: 1.4;
   }
   

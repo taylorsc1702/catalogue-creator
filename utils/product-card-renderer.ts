@@ -254,8 +254,8 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
           </div>
           ${options.showFields.authorBio && displayBio ? `
             <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
-              <div class="author-bio-title">Author Bio:</div>
-              <div class="author-bio-content">${esc(displayBio)}</div>
+              <div class="author-bio-title" style="font-size: 12px;">Author Bio:</div>
+              <div class="author-bio-content" style="font-size: 12px;">${esc(displayBio)}</div>
             </div>
           ` : ""}
           ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
@@ -529,8 +529,8 @@ export const renderProductCard1L = (item: Item, globalIndex: number, options: Re
           </div>
           ${options.showFields.authorBio && displayBio ? `
             <div class="author-bio ${shouldTruncateBio ? 'truncated' : 'full'}">
-              <div class="author-bio-title">Author Bio:</div>
-              <div class="author-bio-content">${esc(displayBio)}</div>
+              <div class="author-bio-title" style="font-size: 12px;">Author Bio:</div>
+              <div class="author-bio-content" style="font-size: 12px;">${esc(displayBio)}</div>
             </div>
           ` : ""}
           ${item.moreFromAuthorImages && item.moreFromAuthorImages.length > 0 && item.moreFromAuthorImages.some(img => img) ? `
