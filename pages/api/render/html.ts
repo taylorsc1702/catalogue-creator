@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams, coverData, itemInternalsCount1L, internalsCount1L, urlPages } = req.body as {
       items: Item[]; 
-      layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table'; 
+      layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 9 | 12 | 'list' | 'compact-list' | 'table'; 
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
+async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 6 | 8 | 9 | 12 | 'list' | 'compact-list' | 'table', show: Record<string, boolean>, hyperlinkToggle: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress', utmParams?: {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -722,6 +722,54 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
         `;
       }
 
+      // For 9-up layout (3x3 grid), use vertical layout similar to 8-up
+      if (layout === 9) {
+        return `
+          <div class="product-card layout-9-vertical">
+            <div class="product-image-9up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-9up">
+            </div>
+            <div class="product-title-9up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+            </div>
+            <div class="product-biblio-9up">
+              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+              ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+              ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+              ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
+            </div>
+            <div class="barcode-9up">
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      // For 12-up layout (4x3 grid), use vertical layout similar to 8-up but more compact
+      if (layout === 12) {
+        return `
+          <div class="product-card layout-12-vertical">
+            <div class="product-image-12up">
+              <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-12up">
+            </div>
+            <div class="product-title-12up">
+              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+            </div>
+            <div class="product-biblio-12up">
+              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+              ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+              ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+              ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+              ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
+            </div>
+            <div class="barcode-12up">
+              ${barcodeHtml}
+            </div>
+          </div>
+        `;
+      }
+
       // For other layouts, use standard card layout
       const truncatedDesc = item.description ? (item.description.length > 1000 ? item.description.substring(0, 997) + '...' : item.description) : '';
       
@@ -858,7 +906,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
       </div>`;
     }
     
-    const layoutClass = layout === 1 ? "layout-1" : layout === '1L' ? "layout-1L" : layout === 2 ? "layout-2" : layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : "layout-4";
+    const layoutClass = layout === 1 ? "layout-1" : layout === '1L' ? "layout-1L" : layout === 2 ? "layout-2" : layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 6 ? "layout-6" : layout === 8 ? "layout-8" : layout === 9 ? "layout-9" : layout === 12 ? "layout-12" : "layout-4";
     const cards = page.map((item, localIndex) => createProductCard(item, localIndex)).join("");
     
     // Fill empty slots for proper grid layout
@@ -1088,6 +1136,18 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 10mm;
+  }
+  
+  .page.layout-9 .page-content {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 8mm;
+  }
+  
+  .page.layout-12 .page-content {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 6mm;
   }
   
   /* Product card base styles */
@@ -1731,8 +1791,12 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     padding: 6px;
     border: 1px solid #e0e0e0;
     background: #ffffff;
-    max-height: 120px;
+    max-height: 110px;
     overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
     text-align: justify;
     font-family: 'Calibri', sans-serif;
   }
@@ -2026,6 +2090,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     .book-cover-2up,
     .book-cover-4up,
     .book-cover-8up,
+    .book-cover-9up,
+    .book-cover-12up,
     .book-cover-large,
     .product-image-3up .book-cover,
     .internal-thumbnail,
@@ -2080,7 +2146,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     width: 206px;
   }
   
-  .page.layout-8 .product-image {
+  .page.layout-8 .product-image,
+  .page.layout-9 .product-image,
+  .page.layout-12 .product-image {
     width: 100%;
   }
   
@@ -2108,6 +2176,128 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     object-fit: contain;
     border: none;
     border-radius: 4px;
+  }
+  
+  /* 9-up vertical layout styles (3x3 grid) */
+  .layout-9-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 6px;
+  }
+  
+  .product-image-9up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3px;
+  }
+  
+  .book-cover-9up {
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .product-title-9up {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 3px;
+  }
+  
+  .product-title-9up .product-title {
+    font-size: 8px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .product-biblio-9up {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+    margin-bottom: 3px;
+  }
+  
+  .product-biblio-9up .biblio-item {
+    font-size: 7px;
+    color: #333;
+    line-height: 1.2;
+  }
+  
+  .barcode-9up {
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+  }
+  
+  /* 12-up vertical layout styles (4x3 grid) */
+  .layout-12-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
+  }
+  
+  .product-image-12up {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2px;
+  }
+  
+  .book-cover-12up {
+    width: 100%;
+    max-width: 80px;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .product-title-12up {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 2px;
+  }
+  
+  .product-title-12up .product-title {
+    font-size: 7px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .product-biblio-12up {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: center;
+    margin-bottom: 2px;
+  }
+  
+  .product-biblio-12up .biblio-item {
+    font-size: 6px;
+    color: #333;
+    line-height: 1.2;
+  }
+  
+  .barcode-12up {
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
   }
   
   .product-title-8up {

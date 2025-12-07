@@ -210,7 +210,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`Downloaded ${itemsWithImages.filter(i => i.imageData).length} images and generated ${itemsWithImages.filter(i => i.barcodeData).length} barcodes successfully`);
 
     // Create pages with 1, 2, 3, or 4 products each based on layout
-    const productsPerPage = layout === 1 ? 1 : layout === 2 || layout === '2-int' ? 2 : layout === 3 ? 3 : 4;
+    const productsPerPage = layout === 1 ? 1 : layout === 2 || layout === '2-int' ? 2 : layout === 3 ? 3 : layout === 4 ? 4 : layout === 8 ? 8 : layout === 9 ? 9 : layout === 12 ? 12 : 4;
     const pages = [];
     
     // Helper function to create banner paragraph

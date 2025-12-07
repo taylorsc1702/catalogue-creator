@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Barcode API called with:', JSON.stringify(req.body, null, 2));
     const { items, layout = 4, includeBarcodes = true, barcodeType = "QR Code", itemBarcodeTypes = {}, discountCode, utmParams, hyperlinkToggle } = req.body as {
       items: Item[];
-      layout: 1 | 2 | '2-int' | 3 | 4 | 8;
+      layout: 1 | 2 | '2-int' | 3 | 4 | 8 | 9 | 12;
       includeBarcodes?: boolean;
       barcodeType?: "EAN-13" | "QR Code" | "None";
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (!items?.length) throw new Error("No items provided");
 
-    const cols = layout === 1 ? "1fr" : layout === 2 || layout === '2-int' ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : "1fr 1fr 1fr 1fr";
+    const cols = layout === 1 ? "1fr" : layout === 2 || layout === '2-int' ? "1fr 1fr" : layout === 3 ? "1fr 1fr 1fr" : layout === 4 ? "1fr 1fr" : layout === 8 ? "1fr 1fr 1fr 1fr" : layout === 9 ? "1fr 1fr 1fr" : layout === 12 ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr 1fr";
     const perPage = layout === '2-int' ? 2 : layout;
 
     const chunks: Item[][] = [];

@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { items, layout = 4, title = "Product Catalogue", showFields, hyperlinkToggle = 'woodslane', itemBarcodeTypes = {}, barcodeType = "None", bannerColor = '#F7981D', websiteName = 'www.woodslane.com.au', utmParams } = req.body as {
       items: Item[]; 
-      layout: 1 | 2 | '2-int' | 3 | 4 | 8; 
+      layout: 1 | 2 | '2-int' | 3 | 4 | 8 | 9 | 12; 
       title?: string;
       showFields?: Record<string, boolean>;
       hyperlinkToggle?: HyperlinkToggle;
@@ -121,7 +121,7 @@ function renderGoogleDocsHtml(
     const emptySlots = (layout === '2-int' ? 2 : layout) - page.length;
     const emptyCards = Array(emptySlots).fill('<div class="product-card empty"></div>').join("");
 
-    const layoutClass = layout === 1 ? "layout-1" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : "layout-8";
+    const layoutClass = layout === 1 ? "layout-1" : layout === 2 || layout === '2-int' ? "layout-2" : layout === 3 ? "layout-3" : layout === 4 ? "layout-4" : layout === 8 ? "layout-8" : layout === 9 ? "layout-9" : layout === 12 ? "layout-12" : "layout-4";
     return `<div class="page ${layoutClass}">
       <!-- Header Banner -->
       <div class="page-header" style="background-color: ${bannerColor}; color: white; text-align: center; padding: 8pt 0; font-weight: bold; font-size: 12pt;">

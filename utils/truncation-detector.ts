@@ -1,7 +1,7 @@
 // utils/truncation-detector.ts
 // Utility for detecting if text fields exceed layout-specific character limits
 
-export type LayoutType = 1 | '1L' | 2 | '2-int' | 3 | 4 | 8;
+export type LayoutType = 1 | '1L' | 2 | '2-int' | 3 | 4 | 8 | 9 | 12;
 
 export type TruncationLimits = {
   description?: number;
@@ -37,6 +37,12 @@ export const TRUNCATION_LIMITS: Record<string, TruncationLimits> = {
     description: 947
   },
   '8-up': {
+    description: 997
+  },
+  '9-up': {
+    description: 997
+  },
+  '12-up': {
     description: 997
   }
 };

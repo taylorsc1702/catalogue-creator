@@ -43,11 +43,11 @@ const isValidHexColor = (value: string) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(
 
 type FeedbackMessage = { type: "success" | "error"; text: string };
 
-type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | "list" | "compact-list" | "table";
-type ItemLayoutOption = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8;
+type BuilderLayout = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | 9 | 12 | "list" | "compact-list" | "table";
+type ItemLayoutOption = 1 | "1L" | 2 | "2-int" | 3 | 4 | 8 | 9 | 12;
 
-const ALLOWED_LAYOUTS: BuilderLayout[] = [1, "1L", 2, "2-int", 3, 4, 8, "list", "compact-list", "table"];
-const ALLOWED_ITEM_LAYOUTS: ItemLayoutOption[] = [1, "1L", 2, "2-int", 3, 4, 8];
+const ALLOWED_LAYOUTS: BuilderLayout[] = [1, "1L", 2, "2-int", 3, 4, 8, 9, 12, "list", "compact-list", "table"];
+const ALLOWED_ITEM_LAYOUTS: ItemLayoutOption[] = [1, "1L", 2, "2-int", 3, 4, 8, 9, 12];
 const ALLOWED_EMAIL_TEMPLATES = [
   "single",
   "grid-2",
@@ -115,7 +115,7 @@ const resolveLayoutForTruncation = (
   if (layoutValue === undefined) return 4;
   if (layoutValue === '1L') return '1L';
   if (layoutValue === '2-int') return '2-int';
-  if (layoutValue === 1 || layoutValue === 2 || layoutValue === 3 || layoutValue === 4 || layoutValue === 8) {
+  if (layoutValue === 1 || layoutValue === 2 || layoutValue === 3 || layoutValue === 4 || layoutValue === 8 || layoutValue === 9 || layoutValue === 12) {
     return layoutValue;
   }
   return 4;
@@ -219,7 +219,7 @@ export default function Home() {
   const [collectionId, setCollectionId] = useState("");
   const [publishingStatus, setPublishingStatus] = useState<"Active" | "Draft" | "All">("All");
   const [handleList, setHandleList] = useState("");
-  const [layout, setLayout] = useState<1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'>(4);
+  const [layout, setLayout] = useState<1|'1L'|2|'2-int'|3|4|8|9|12|'list'|'compact-list'|'table'>(4);
   const [barcodeType, setBarcodeType] = useState<"EAN-13" | "QR Code" | "None">("EAN-13");
   const [twoIntOrientation, setTwoIntOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [loading, setLoading] = useState(false);
@@ -227,7 +227,7 @@ export default function Home() {
   const [serverQuery, setServerQuery] = useState<string>(""); // <— NEW: shows the query used by API
   const [useHandleList, setUseHandleList] = useState(false);
   const [showOrderEditor, setShowOrderEditor] = useState(false);
-  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|'1L'|2|'2-int'|3|4|8}>({});
+  const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|'1L'|2|'2-int'|3|4|8|9|12}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
   const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-4)
@@ -1924,7 +1924,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setItems(newItems);
   }
 
-  function setItemLayout(index: number, layout: 1|'1L'|2|'2-int'|3|4|8) {
+  function setItemLayout(index: number, layout: 1|'1L'|2|'2-int'|3|4|8|9|12) {
     setItemLayouts({...itemLayouts, [index]: layout});
   }
 
@@ -2064,7 +2064,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
   }
 
   // Compute page groups based on current per-item layout assignments
-  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8}): PageGroup[] {
+  function computePageGroups(currentItems: Item[], currentItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8|9|12}): PageGroup[] {
     const groups: PageGroup[] = [];
     if (!currentItems.length) return groups;
     const layoutAssignments = currentItems.map((_, i) => currentItemLayouts[i] || layout);
@@ -2163,7 +2163,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     // Rebuild items
     const newItems = flatOldIndices.map(i => items[i]);
     // Rebuild per-index maps
-    const newItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8} = {};
+    const newItemLayouts: {[key:number]: 1|'1L'|2|'2-int'|3|4|8|9|12} = {};
     const newItemBarcodeTypes: {[key:number]: "EAN-13"|"QR Code"|"None"} = {};
     const newItemAuthorBioToggle: {[key:number]: boolean} = {};
     flatOldIndices.forEach((oldIdx, newIdx) => {
@@ -3064,8 +3064,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         <button onClick={fetchItems} disabled={loading} style={btn()}>{loading ? "Loading..." : "Fetch Products"}</button>
         <span>Layout:</span>
-        {[1,2,3,4,8].map(n => (
-          <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8)} style={btn(n===layout)}>{n}-up</button>
+        {[1,2,3,4,8,9,12].map(n => (
+          <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8|9|12)} style={btn(n===layout)}>{n}-up</button>
         ))}
         <button onClick={()=>setLayout('1L')} style={btn(layout==='1L')}>1L</button>
         {layout === '1L' && (
@@ -3861,7 +3861,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         item={items[editingItemIndex]}
         editedItem={editedContent[editingItemIndex]}
         editingField={editingField}
-        itemLayout={itemLayouts[editingItemIndex] || (typeof layout === 'number' ? layout : layout === '1L' ? '1L' : 4) as 1|'1L'|2|'2-int'|3|4|8}
+        itemLayout={itemLayouts[editingItemIndex] || (typeof layout === 'number' ? layout : layout === '1L' ? '1L' : 4) as 1|'1L'|2|'2-int'|3|4|8|9|12}
         isMixedView={isMixedView}
         closeModal={closeEditModal}
         saveContent={saveEditedContent}
@@ -5017,7 +5017,7 @@ function EditModal({
   item: Item; 
   editedItem?: {description?: string; authorBio?: string}; 
   editingField: 'description' | 'authorBio';
-  itemLayout: 1|'1L'|2|'2-int'|3|4|8;
+  itemLayout: 1|'1L'|2|'2-int'|3|4|8|9|12;
   isMixedView: boolean;
   closeModal: () => void;
   saveContent: (text: string) => void;
@@ -5144,13 +5144,13 @@ function EditModal({
 
 function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, moveItemToPosition, itemLayouts, setItemLayout, clearItemLayout, itemBarcodeTypes, setItemBarcodeType, clearItemBarcodeType, itemAuthorBioToggle, setItemAuthorBioToggle, clearItemAuthorBioToggle, itemInternalsCount1L, setItemInternalsCount1L, clearItemInternalsCount1L, internalsCount1L, hyperlinkToggle, generateProductUrl, isMixedView, openEditModal, editedContent, setItemFooterNote, previousEditionIsbns, handlePreviousEditionIsbnChange, moreFromAuthorIsbns, handleMoreFromAuthorIsbnChange, loadingMoreFromAuthor, moreFromAuthorImages }: {
   items: Item[]; 
-  layout: 1|'1L'|2|'2-int'|3|4|8|'list'|'compact-list'|'table'; 
+  layout: 1|'1L'|2|'2-int'|3|4|8|9|12|'list'|'compact-list'|'table'; 
   showOrderEditor: boolean;
   moveItemUp: (index: number) => void;
   moveItemDown: (index: number) => void;
   moveItemToPosition: (index: number, newPosition: number) => void;
-  itemLayouts: {[key: number]: 1|'1L'|2|'2-int'|3|4|8};
-  setItemLayout: (index: number, layout: 1|'1L'|2|'2-int'|3|4|8) => void;
+  itemLayouts: {[key: number]: 1|'1L'|2|'2-int'|3|4|8|9|12};
+  setItemLayout: (index: number, layout: 1|'1L'|2|'2-int'|3|4|8|9|12) => void;
   clearItemLayout: (index: number) => void;
   itemBarcodeTypes: {[key: number]: "EAN-13" | "QR Code" | "None"};
   setItemBarcodeType: (index: number, barcodeType: "EAN-13" | "QR Code" | "None") => void;
@@ -5190,7 +5190,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
   const [positionInputs, setPositionInputs] = useState<{[key: number]: string}>({});
   
   // Convert layout to LayoutType format
-  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === '1L' ? '1L' : layout === '2-int' ? '2-int' : layout === 'table' ? 'table' : layout;
+  const layoutType = typeof layout === 'number' ? `${layout}-up` as const : layout === '1L' ? '1L' : layout === '2-int' ? '2-int' : layout === 'table' ? 'table' : layout === 'list' ? 'list' : layout === 'compact-list' ? 'compact-list' : layout;
   
   // Get the handler for the current layout
   const layoutHandler = layoutRegistry.getHandler(layoutType);
@@ -5241,12 +5241,14 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 flexWrap: 'wrap',
                 zIndex: 10
               }}>
-                {truncations.description?.isTruncated && (
+                {items[i].description && (
                   <div
                     onClick={() => openEditModal?.(i, 'description')}
                     style={{
-                      background: truncations.description.severity === 'severe' ? '#dc3545' : 
-                                 truncations.description.severity === 'moderate' ? '#ffc107' : '#28a745',
+                      background: truncations.description?.isTruncated 
+                        ? (truncations.description.severity === 'severe' ? '#dc3545' : 
+                           truncations.description.severity === 'moderate' ? '#ffc107' : '#28a745')
+                        : '#6c757d',
                       color: 'white',
                       padding: '4px 8px',
                       borderRadius: 4,
@@ -5259,7 +5261,9 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                       transition: 'all 0.2s ease'
                     }}
-                    title={`Description: ${truncations.description.percentOver > 75 ? 'Severely over limit' : truncations.description.percentOver > 50 ? 'Significantly over limit' : truncations.description.percentOver > 25 ? 'Slightly over limit' : 'Within limit'}. ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`}
+                    title={truncations.description?.isTruncated 
+                      ? `Description: ${truncations.description.percentOver > 75 ? 'Severely over limit' : truncations.description.percentOver > 50 ? 'Significantly over limit' : truncations.description.percentOver > 25 ? 'Slightly over limit' : 'Within limit'}. ${truncations.description.originalLength} chars (limit: ${truncations.description.limit}). Click to edit.`
+                      : `Description: ${items[i].description?.length || 0} chars. Click to edit.`}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.05)';
                       e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
@@ -5270,9 +5274,11 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                     }}
                   >
                     <span>📝 Desc</span>
-                    <span style={{ fontSize: 9, opacity: 0.9 }}>
-                      {Math.round(truncations.description.percentOver)}%
-                    </span>
+                    {truncations.description?.isTruncated && (
+                      <span style={{ fontSize: 9, opacity: 0.9 }}>
+                        {Math.round(truncations.description.percentOver)}%
+                      </span>
+                    )}
                   </div>
                 )}
                 {truncations.authorBio?.isTruncated && (

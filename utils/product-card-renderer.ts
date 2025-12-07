@@ -315,7 +315,8 @@ export const renderProductCard1Up = (item: Item, globalIndex: number, options: R
 
 export const renderProductCard3Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
   const plainDescription = item.description ? htmlToPlainText(item.description) : '';
-  const truncatedDesc = plainDescription.length > 1400 ? plainDescription.substring(0, 1397) + '...' : plainDescription;
+  // Reduced character limit to prevent overflow - truncate more aggressively
+  const truncatedDesc = plainDescription.length > 1200 ? plainDescription.substring(0, 1197) + '...' : plainDescription;
   const barcodeHtml = generateBarcodeHtml(item, globalIndex, options);
   
   return `
@@ -654,7 +655,131 @@ export const renderProductCard8Up = (item: Item, globalIndex: number, options: R
   `;
 };
 
-export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 8, globalIndex: number, options: RenderOptions): string => {
+export const renderProductCard9Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  // Similar to 8-up but with slightly more space - 9 per page (3x3 grid)
+  const itemBarcodeType = options.itemBarcodeTypes?.[globalIndex] || options.barcodeType;
+  let barcodeHtml = '';
+  
+  if (itemBarcodeType && itemBarcodeType !== "None") {
+    if (itemBarcodeType === "EAN-13") {
+      let barcodeCode = item.sku || '';
+      
+      if (!barcodeCode || barcodeCode.length < 10) {
+        const possibleISBN = item.sku || item.handle || '';
+        
+        if (possibleISBN && possibleISBN.match(/\d{13}/)) {
+          const match = possibleISBN.match(/\d{13}/);
+          barcodeCode = match ? match[0] : '1234567890123';
+        } else if (possibleISBN && possibleISBN.match(/\d{10,13}/)) {
+          const match = possibleISBN.match(/\d{10,13}/);
+          barcodeCode = match ? match[0].padStart(13, '0') : '1234567890123';
+        } else {
+          barcodeCode = '1234567890123';
+        }
+      }
+      
+      const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+      if (barcodeDataUrl) {
+        barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
+      }
+    } else if (itemBarcodeType === "QR Code") {
+      const productUrl = generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams);
+      const qrDataUrl = generateQRCode(productUrl);
+      if (qrDataUrl) {
+        barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">QR: ${esc(productUrl)}</div>`;
+      }
+    }
+  }
+  
+  return `
+    <div class="product-card layout-9-vertical">
+      <div class="product-image-9up">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-9up">
+      </div>
+      <div class="product-title-9up">
+        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+      </div>
+      <div class="product-biblio-9up">
+        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+        ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
+      </div>
+      <div class="barcode-9up">
+        ${barcodeHtml}
+      </div>
+    </div>
+  `;
+};
+
+export const renderProductCard12Up = (item: Item, globalIndex: number, options: RenderOptions): string => {
+  // Similar to 8-up but more compact - 12 per page (4x3 grid)
+  const itemBarcodeType = options.itemBarcodeTypes?.[globalIndex] || options.barcodeType;
+  let barcodeHtml = '';
+  
+  if (itemBarcodeType && itemBarcodeType !== "None") {
+    if (itemBarcodeType === "EAN-13") {
+      let barcodeCode = item.sku || '';
+      
+      if (!barcodeCode || barcodeCode.length < 10) {
+        const possibleISBN = item.sku || item.handle || '';
+        
+        if (possibleISBN && possibleISBN.match(/\d{13}/)) {
+          const match = possibleISBN.match(/\d{13}/);
+          barcodeCode = match ? match[0] : '1234567890123';
+        } else if (possibleISBN && possibleISBN.match(/\d{10,13}/)) {
+          const match = possibleISBN.match(/\d{10,13}/);
+          barcodeCode = match ? match[0].padStart(13, '0') : '1234567890123';
+        } else {
+          barcodeCode = '1234567890123';
+        }
+      }
+      
+      const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
+      if (barcodeDataUrl) {
+        barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
+      }
+    } else if (itemBarcodeType === "QR Code") {
+      const productUrl = generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams);
+      const qrDataUrl = generateQRCode(productUrl);
+      if (qrDataUrl) {
+        barcodeHtml = `<div class="barcode"><img src="${qrDataUrl}" alt="QR Code" class="qr-code"></div>`;
+      } else {
+        barcodeHtml = `<div class="barcode-fallback">QR: ${esc(productUrl)}</div>`;
+      }
+    }
+  }
+  
+  return `
+    <div class="product-card layout-12-vertical">
+      <div class="product-image-12up">
+        <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-12up">
+      </div>
+      <div class="product-title-12up">
+        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+      </div>
+      <div class="product-biblio-12up">
+        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
+        ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+        ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+        ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
+      </div>
+      <div class="barcode-12up">
+        ${barcodeHtml}
+      </div>
+    </div>
+  `;
+};
+
+export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3 | 4 | 8 | 9 | 12, globalIndex: number, options: RenderOptions): string => {
   switch (layout) {
     case 1:
       return renderProductCard1Up(item, globalIndex, options);
@@ -670,6 +795,10 @@ export const renderProductCard = (item: Item, layout: 1 | '1L' | 2 | '2-int' | 3
       return renderProductCard4Up(item, globalIndex, options);
     case 8:
       return renderProductCard8Up(item, globalIndex, options);
+    case 9:
+      return renderProductCard9Up(item, globalIndex, options);
+    case 12:
+      return renderProductCard12Up(item, globalIndex, options);
     default:
       return renderProductCardStandard(item, globalIndex, options);
   }

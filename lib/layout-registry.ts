@@ -6,11 +6,13 @@ import { create2IntLayoutHandler } from './layouts/2-int';
 import { create3UpLayoutHandler } from './layouts/3-up';
 import { create4UpLayoutHandler } from './layouts/4-up';
 import { create8UpLayoutHandler } from './layouts/8-up';
+import { create9UpLayoutHandler } from './layouts/9-up';
+import { create12UpLayoutHandler } from './layouts/12-up';
 import { createListLayoutHandler } from './layouts/list';
 import { createCompactListLayoutHandler } from './layouts/compact-list';
 import { createTableLayoutHandler } from './layouts/table';
 
-export type LayoutType = '1-up' | '1L' | '2-up' | '2-int' | '3-up' | '4-up' | '8-up' | 'list' | 'compact-list' | 'table';
+export type LayoutType = '1-up' | '1L' | '2-up' | '2-int' | '3-up' | '4-up' | '8-up' | '9-up' | '12-up' | 'list' | 'compact-list' | 'table';
 
 class LayoutRegistry {
   private handlers: Map<LayoutType, LayoutHandler> = new Map();
@@ -29,6 +31,8 @@ class LayoutRegistry {
     this.handlers.set('3-up', create3UpLayoutHandler());
     this.handlers.set('4-up', create4UpLayoutHandler());
     this.handlers.set('8-up', create8UpLayoutHandler());
+    this.handlers.set('9-up', create9UpLayoutHandler());
+    this.handlers.set('12-up', create12UpLayoutHandler());
     this.handlers.set('list', createListLayoutHandler());
     this.handlers.set('compact-list', createCompactListLayoutHandler());
     this.handlers.set('table', createTableLayoutHandler());
