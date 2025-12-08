@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { LayoutHandler, Item, esc, formatDateAndBadge } from '../layout-handlers';
+import { LayoutHandler, Item, esc } from '../layout-handlers';
 import { Paragraph, AlignmentType, ImageRun, TextRun, ExternalHyperlink } from 'docx';
 
 export function create12UpLayoutHandler(): LayoutHandler {
@@ -89,6 +89,145 @@ export function create12UpLayoutHandler(): LayoutHandler {
       );
     },
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createHtmlExport: (item: Item, index: number, generateProductUrl: (handle: string) => string, barcodeHtml?: string, bannerColor?: string, websiteName?: string) => {
+      return `
+        <div class="product-card layout-12-vertical">
+          <div class="product-image-12up">
+            <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-12up">
+          </div>
+          <div class="product-title-12up">
+            <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+          </div>
+          <div class="product-biblio-12up">
+            ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.author)}</div>` : ""}
+            ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+            ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
+            ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
+            ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
+          </div>
+          <div class="barcode-12up">
+            ${barcodeHtml || ''}
+          </div>
+        </div>
+      `;
+    },
+
+    createDocxExport: (item: Item, index: number, imageData?: { base64: string; width: number; height: number; mimeType: string } | null, generateProductUrl?: (handle: string) => string, barcodeData?: { base64: string; width: number; height: number; mimeType: string } | null) => {
+      const productUrl = generateProductUrl ? generateProductUrl(item.handle) : `https://woodslane.com.au/products/${item.handle}`;
+      const paragraphs: Paragraph[] = [];
+
+      // Add image if available
+      if (imageData) {
+        try {
+          const imageRun = new ImageRun({
+            data: imageData.base64,
+            transformation: {
+              width: 60,
+              height: 90,
+            },
+            type: "png",
+          });
+          
+          paragraphs.push(new Paragraph({
+            children: [imageRun],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 }
+          }));
+        } catch (error) {
+          console.warn(`Failed to create image for ${item.title}:`, error);
+        }
+      }
+
+      // Title (clickable)
+      paragraphs.push(new Paragraph({
+        children: [
+          new ExternalHyperlink({
+            children: [
+              new TextRun({
+                text: item.title,
+                bold: true,
+                size: 12,
+                color: "2C3E50",
+                underline: {},
+              }),
+            ],
+            link: productUrl,
+          }),
+        ],
+        spacing: { after: 100 },
+      }));
+
+      // Author
+      if (item.author) {
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({
+              text: item.author,
+              size: 9,
+              color: "667eea",
+              bold: true,
+            }),
+          ],
+          spacing: { after: 100 },
+        }));
+      }
+
+      // Specs
+      const specs = [item.imprint, item.sku && `ISBN: ${item.sku}`, item.binding].filter(Boolean);
+      if (specs.length > 0) {
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({
+              text: specs.join(" • "),
+              size: 8,
+              color: "6C757D",
+            }),
+          ],
+          spacing: { after: 100 },
+        }));
+      }
+
+      // Price
+      if (item.price) {
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({
+              text: `AUD$ ${item.price}`,
+              bold: true,
+              size: 10,
+              color: "2C3E50",
+            }),
+          ],
+          spacing: { after: 200 },
+        }));
+      }
+
+      // Add barcode image if available
+      if (barcodeData) {
+        try {
+          const barcodeRun = new ImageRun({
+            data: barcodeData.base64,
+            transformation: {
+              width: barcodeData.width * 0.35,
+              height: barcodeData.height * 0.35,
+            },
+            type: "png",
+          });
+          
+          paragraphs.push(new Paragraph({
+            children: [barcodeRun],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+          }));
+        } catch (error) {
+          console.warn(`Failed to create barcode for ${item.title}:`, error);
+        }
+      }
+
+      return paragraphs;
+    },
+
     getCssStyles: () => `
       .layout-12-vertical {
         display: flex;
@@ -97,13 +236,52 @@ export function create12UpLayoutHandler(): LayoutHandler {
         gap: 4px;
         padding: 5px;
       }
-    `,
-    
-    createDocxElements: async (item: Item, index: number, generateProductUrl: (handle: string) => string) => {
-      const elements: (Paragraph | ImageRun)[] = [];
-      // Similar to 8-up but with 12 per page
-      return elements;
-    }
+      .product-image-12up {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2px;
+      }
+      .book-cover-12up {
+        width: 100%;
+        max-width: 80px;
+        height: auto;
+        max-height: 120px;
+        object-fit: contain;
+        border: none;
+        border-radius: 4px;
+      }
+      .product-title-12up {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+      .product-title-12up .product-title {
+        font-size: 7px;
+        font-weight: bold;
+        color: #000;
+        margin: 0;
+        line-height: 1.2;
+      }
+      .product-biblio-12up {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+      .product-biblio-12up .biblio-item {
+        font-size: 6px;
+        color: #333;
+        line-height: 1.2;
+      }
+      .barcode-12up {
+        width: 100%;
+        text-align: center;
+        margin-top: auto;
+      }
+    `
   };
 }
 

@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function generateGoogleDocsHtml(
   items: Item[], 
-  layout: 1 | 2 | '2-int' | 3 | 4 | 8, 
+  layout: 1 | 2 | '2-int' | 3 | 4 | 8 | 9 | 12, 
   title: string, 
   showFields: Record<string, boolean>,
   hyperlinkToggle: HyperlinkToggle,
@@ -75,7 +75,7 @@ async function generateGoogleDocsHtml(
 
 function renderGoogleDocsHtml(
   itemsWithImages: ItemWithImages[], 
-  layout: 1 | 2 | '2-int' | 3 | 4 | 8, 
+  layout: 1 | 2 | '2-int' | 3 | 4 | 8 | 9 | 12, 
   title: string,
   showFields: Record<string, boolean>,
   hyperlinkToggle: HyperlinkToggle,
@@ -85,7 +85,7 @@ function renderGoogleDocsHtml(
   websiteName: string,
   utmParams?: UtmParams
 ) {
-  const perPage = layout === '2-int' ? 2 : layout;
+  const perPage = layout === '2-int' ? 2 : typeof layout === 'number' ? layout : 4;
   const chunks: ItemWithImages[][] = [];
   for (let i = 0; i < itemsWithImages.length; i += perPage) {
     chunks.push(itemsWithImages.slice(i, i + perPage));
