@@ -736,7 +736,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
             <div class="product-biblio-9up">
               ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
-              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
               ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
@@ -760,7 +759,6 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
             </div>
             <div class="product-biblio-12up">
               ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
-              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
               ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
