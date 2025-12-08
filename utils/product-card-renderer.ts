@@ -338,7 +338,7 @@ export const renderProductCard3Up = (item: Item, globalIndex: number, options: R
         ${item.pages ? `<div class="detail-value" style="font-size: 12px;">Pages: ${esc(item.pages)}</div>` : ""}
         ${item.releaseDate ? `<div class="detail-value" style="font-size: 12px;">${esc(formatDate(item.releaseDate))}</div>` : ""}
         ${item.previousEditionIsbn ? `<div class="detail-value" style="font-size: 12px;">Previous Edition: ${esc(item.previousEditionIsbn)}</div>` : ""}
-        ${item.illustrations ? `<div class="detail-value" style="font-size: 12px;">Illustrations: ${esc(item.illustrations)}</div>` : ""}
+        ${item.icillus ? `<div class="detail-value" style="font-size: 12px;">Illustrations: ${esc(item.icillus)}</div>` : ""}
         ${item.dimensions ? `<div class="detail-value" style="font-size: 12px;">${esc(item.dimensions.replace(/\s*mm\s*/gi, '').trim())}</div>` : ""}
         ${item.sku ? `<div class="detail-value" style="font-size: 12px;">${esc(item.sku)}</div>` : ""}
         ${item.price ? `<div class="detail-value" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
@@ -701,7 +701,7 @@ export const renderProductCard9Up = (item: Item, globalIndex: number, options: R
         <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-9up">
       </div>
       <div class="product-title-9up">
-        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+        <h2 class="product-title" style="font-size: 11px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
       </div>
       <div class="product-biblio-9up">
         ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
@@ -763,7 +763,7 @@ export const renderProductCard12Up = (item: Item, globalIndex: number, options: 
         <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-12up">
       </div>
       <div class="product-title-12up">
-        <h2 class="product-title"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+        <h2 class="product-title" style="font-size: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
       </div>
       <div class="product-biblio-12up">
         ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}

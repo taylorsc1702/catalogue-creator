@@ -404,7 +404,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
           
           const barcodeDataUrl = generateEAN13Barcode(barcodeCode);
           if (barcodeDataUrl) {
-            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div><div class="barcode-text">${esc(barcodeCode)}</div>`;
+            // For layouts 9 and 12, don't include barcode text to save space
+            const includeText = layout !== 9 && layout !== 12;
+            barcodeHtml = `<div class="barcode"><img src="${barcodeDataUrl}" alt="Barcode" class="ean13-barcode"></div>${includeText ? `<div class="barcode-text">${esc(barcodeCode)}</div>` : ''}`;
           } else {
             // Fallback: show the code as text if barcode generation fails
             barcodeHtml = `<div class="barcode-fallback">Barcode: ${esc(barcodeCode)}</div>`;
@@ -730,7 +732,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-9up">
             </div>
             <div class="product-title-9up">
-              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+              <h2 class="product-title" style="font-size: 11px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             </div>
             <div class="product-biblio-9up">
               ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
@@ -754,7 +756,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <img src="${esc(item.imageUrl || 'https://via.placeholder.com/200x300?text=No+Image')}" alt="${esc(item.title)}" class="book-cover-12up">
             </div>
             <div class="product-title-12up">
-              <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
+              <h2 class="product-title" style="font-size: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             </div>
             <div class="product-biblio-12up">
               ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
@@ -2211,11 +2213,14 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .product-title-9up .product-title {
-    font-size: 8px;
+    font-size: 11px;
     font-weight: bold;
     color: #000;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   
   .product-biblio-9up {
@@ -2272,11 +2277,14 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   }
   
   .product-title-12up .product-title {
-    font-size: 7px;
+    font-size: 10px;
     font-weight: bold;
     color: #000;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   
   .product-biblio-12up {
