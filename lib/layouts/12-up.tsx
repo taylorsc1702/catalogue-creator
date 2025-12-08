@@ -74,11 +74,6 @@ export function create12UpLayoutHandler(): LayoutHandler {
                 {esc(item.title)}
               </a>
             </h3>
-            {item.author && (
-              <div style={{ fontSize: 10, color: "#6C757D", marginBottom: 2 }}>
-                {esc(item.author)}
-              </div>
-            )}
             {item.sku && (
               <div style={{ fontSize: 9, color: "#868E96", marginTop: 2 }}>
                 ISBN: {esc(item.sku)}
@@ -100,7 +95,6 @@ export function create12UpLayoutHandler(): LayoutHandler {
             <h2 class="product-title"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
           </div>
           <div class="product-biblio-12up">
-            ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.author)}</div>` : ""}
             ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
             ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
             ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
@@ -157,21 +151,6 @@ export function create12UpLayoutHandler(): LayoutHandler {
         ],
         spacing: { after: 100 },
       }));
-
-      // Author
-      if (item.author) {
-        paragraphs.push(new Paragraph({
-          children: [
-            new TextRun({
-              text: item.author,
-              size: 9,
-              color: "667eea",
-              bold: true,
-            }),
-          ],
-          spacing: { after: 100 },
-        }));
-      }
 
       // Specs
       const specs = [item.imprint, item.sku && `ISBN: ${item.sku}`, item.binding].filter(Boolean);
