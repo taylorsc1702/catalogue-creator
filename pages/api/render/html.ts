@@ -735,8 +735,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <h2 class="product-title" style="font-size: 11px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             </div>
             <div class="product-biblio-9up">
-              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
               ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
@@ -759,8 +759,8 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
               <h2 class="product-title" style="font-size: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
             </div>
             <div class="product-biblio-12up">
-              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+              ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
               ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
               ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
               ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
@@ -1143,13 +1143,13 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .page.layout-9 .page-content {
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 8mm;
+    gap: 3mm;
   }
   
   .page.layout-12 .page-content {
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 6mm;
+    gap: 2mm;
   }
   
   /* Product card base styles */
@@ -2185,15 +2185,15 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 6px;
+    gap: 4px;
+    padding: 4px;
   }
   
   .product-image-9up {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   
   .book-cover-9up {
@@ -2209,7 +2209,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .product-title-9up {
     width: 100%;
     text-align: center;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   
   .product-title-9up .product-title {
@@ -2227,9 +2227,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     text-align: center;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   
   .product-biblio-9up .biblio-item {
@@ -2242,6 +2242,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     width: 100%;
     text-align: center;
     margin-top: auto;
+    margin-bottom: 0;
   }
   
   /* 12-up vertical layout styles (4x3 grid) */
@@ -2249,15 +2250,15 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 5px;
+    gap: 3px;
+    padding: 3px;
   }
   
   .product-image-12up {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   
   .book-cover-12up {
@@ -2273,7 +2274,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   .product-title-12up {
     width: 100%;
     text-align: center;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   
   .product-title-12up .product-title {
@@ -2293,7 +2294,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     flex-direction: column;
     gap: 1px;
     text-align: center;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   
   .product-biblio-12up .biblio-item {
@@ -2306,6 +2307,7 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
     width: 100%;
     text-align: center;
     margin-top: auto;
+    margin-bottom: 0;
   }
   
   .product-title-8up {

@@ -704,8 +704,8 @@ export const renderProductCard9Up = (item: Item, globalIndex: number, options: R
         <h2 class="product-title" style="font-size: 11px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
       </div>
       <div class="product-biblio-9up">
-        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
         ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
         ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
         ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
         ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
@@ -766,8 +766,8 @@ export const renderProductCard12Up = (item: Item, globalIndex: number, options: 
         <h2 class="product-title" style="font-size: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;"><a href="${generateProductUrl(item.handle, options.hyperlinkToggle, options.utmParams)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">${esc(item.title)}</a></h2>
       </div>
       <div class="product-biblio-12up">
-        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
         ${item.imprint ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.imprint)}</div>` : ""}
+        ${item.author ? `<div class="biblio-item" style="font-size: 12px;">${esc(formatAuthor(item.author))}</div>` : ""}
         ${item.sku ? `<div class="biblio-item" style="font-size: 12px;">ISBN: ${esc(item.sku)}</div>` : ""}
         ${item.binding ? `<div class="biblio-item" style="font-size: 12px;">${esc(item.binding)}</div>` : ""}
         ${item.price ? `<div class="biblio-item" style="font-size: 12px;">AUD$ ${esc(item.price)}</div>` : ""}
