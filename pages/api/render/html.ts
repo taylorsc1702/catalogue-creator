@@ -2198,9 +2198,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   .book-cover-9up {
     width: 100%;
-    max-width: 100px;
+    max-width: 90px;
     height: auto;
-    max-height: 150px;
+    max-height: 135px;
     object-fit: contain;
     border: none;
     border-radius: 4px;
@@ -2263,9 +2263,9 @@ async function renderHtml(items: Item[], layout: 1 | '1L' | 2 | '2-int' | 3 | 4 
   
   .book-cover-12up {
     width: 100%;
-    max-width: 80px;
+    max-width: 76px;
     height: auto;
-    max-height: 120px;
+    max-height: 114px;
     object-fit: contain;
     border: none;
     border-radius: 4px;

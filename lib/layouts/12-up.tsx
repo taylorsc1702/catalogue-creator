@@ -26,13 +26,13 @@ export function create12UpLayoutHandler(): LayoutHandler {
         }}>
           <div style={{ 
             flexShrink: 0,
-            width: "60px"
+            width: "57px"
           }}>
             <Image 
-              src={item.imageUrl || "https://via.placeholder.com/60x90?text=No+Image"} 
+              src={item.imageUrl || "https://via.placeholder.com/57x85?text=No+Image"} 
               alt={item.title}
-              width={60}
-              height={90}
+              width={57}
+              height={85}
               style={{ 
                 objectFit: "cover", 
                 borderRadius: 6, 
@@ -123,8 +123,8 @@ export function create12UpLayoutHandler(): LayoutHandler {
           const imageRun = new ImageRun({
             data: imageData.base64,
             transformation: {
-              width: 60,
-              height: 90,
+              width: 57,
+              height: 85,
             },
             type: "png",
           });
