@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle = 'woodslane',
       utmParams,
       discountCode,
+      discountPercentage,
       bannerLinks,
       bannerImageUrl,
       freeText,
@@ -70,6 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle?: HyperlinkToggle;
       utmParams?: UtmParams;
       discountCode?: string;
+      discountPercentage?: string;
       bannerLinks?: Array<{ label?: string; url?: string }>;
       bannerImageUrl?: string;
       freeText?: string;
@@ -100,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error("emailTemplateAssignments must be same length as items");
     }
 
-    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, theme, showFields);
+    const html = generateEmailHtml(items, template, emailTemplateAssignments, emailInternalsToggle, hyperlinkToggle, utmParams, discountCode, discountPercentage, bannerLinks, bannerImageUrl, freeText, issuuUrl, catalogueImageUrl, logoUrls, lineBreakText, sectionOrder, theme, showFields);
     
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);
@@ -118,6 +120,7 @@ function generateEmailHtml(
   hyperlinkToggle?: HyperlinkToggle,
   utmParams?: UtmParams,
   discountCode?: string,
+  discountPercentage?: string,
   bannerLinks?: Array<{ label?: string; url?: string }>,
   bannerImageUrl?: string,
   freeText?: string,
@@ -660,16 +663,17 @@ function generateEmailHtml(
     // Generate complete email with header, banner, free text, separator, and footer
     return generateCompleteEmailHtml(
       content,
-      logoUrl,
-      websiteName,
-      bannerColor,
-      discountCode,
-      bannerLinks,
-      {
-        backgroundColor: bannerLinkBgColor,
-        textColor: bannerLinkTextColor,
-        borderRadius: bannerLinkBorderRadius
-      },
+    logoUrl,
+    websiteName,
+    bannerColor,
+    discountCode,
+    discountPercentage,
+    bannerLinks,
+    {
+      backgroundColor: bannerLinkBgColor,
+      textColor: bannerLinkTextColor,
+      borderRadius: bannerLinkBorderRadius
+    },
       bannerImageUrl,
       freeText,
       issuuUrl,
@@ -823,6 +827,7 @@ function generateEmailHtml(
     websiteName,
     bannerColor,
     discountCode,
+    discountPercentage,
     bannerLinks,
     {
       backgroundColor: bannerLinkBgColor,
@@ -847,6 +852,7 @@ function generateCompleteEmailHtml(
   websiteName: string,
   bannerColor: string,
   discountCode?: string,
+  discountPercentage?: string,
   bannerLinks?: Array<{ label?: string; url?: string }>,
   bannerLinkStyles?: { backgroundColor?: string; textColor?: string; borderRadius?: string },
   bannerImageUrl?: string,
@@ -1060,7 +1066,7 @@ function generateCompleteEmailHtml(
           <table width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px;">
             <tr>
               <td align="center" style="font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; color: #ffffff;">
-                Don't forget to use the code <strong style="font-size: 20px;">${esc(discountCode)}</strong> at the checkout to save 15% off your order*.
+                Don't forget to use the code <strong style="font-size: 20px;">${esc(discountCode)}</strong> at the checkout to save ${esc(discountPercentage || '15')}% off your order*.
               </td>
             </tr>
           </table>

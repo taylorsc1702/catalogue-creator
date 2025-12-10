@@ -242,6 +242,7 @@ export default function Home() {
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
   const [discountCode, setDiscountCode] = useState("");
+  const [discountPercentage, setDiscountPercentage] = useState("15");
   const [utmSource, setUtmSource] = useState("");
   const [utmMedium, setUtmMedium] = useState("");
   const [utmCampaign, setUtmCampaign] = useState("");
@@ -711,6 +712,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setBackCoverText2("");
     setCoverImageUrls(["", "", "", ""]);
     setDiscountCode("");
+    setDiscountPercentage("15");
     setCustomBannerColor("");
     setHyperlinkToggle("woodslane");
     setLayout(4);
@@ -1018,6 +1020,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       setBackCoverText2(getString(coverRecord, "backCoverText2") ?? "");
       setCoverImageUrls(coverImages.slice(0, 4));
       setDiscountCode(getString(brandingRecord, "discountCode") ?? "");
+      setDiscountPercentage(getString(brandingRecord, "discountPercentage") ?? "15");
       setCustomBannerColor(getString(brandingRecord, "customBannerColor") ?? "");
       setHyperlinkToggle(resolvedHyperlink);
       setLayout(resolvedLayout);
@@ -1817,6 +1820,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           hyperlinkToggle,
           utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
           discountCode: discountCode || undefined,
+          discountPercentage: discountPercentage || undefined,
           bannerImageUrl: emailBannerImageUrl.trim() || undefined,
           freeText: emailFreeText.trim() || undefined,
           issuuUrl: emailIssuuUrl.trim() || undefined,
@@ -2828,24 +2832,52 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", color: "#4A5568", fontSize: "1.1rem" }}>
             Discount Code (Optional)
           </label>
-          <input
-            type="text"
-            value={discountCode}
-            onChange={(e) => setDiscountCode(e.target.value)}
-            placeholder="Enter discount code (e.g., 'SAVE20', 'SPRING2025')"
-            style={{
-              width: "100%",
-              maxWidth: "300px",
-              padding: "12px 16px",
-              border: "2px solid #E2E8F0",
-              borderRadius: "8px",
-              fontSize: "16px",
-              outline: "none",
-              transition: "border-color 0.2s",
-            }}
-            onFocus={(e) => e.target.style.borderColor = "#805AD5"}
-            onBlur={(e) => e.target.style.borderColor = "#E2E8F0"}
-          />
+          <div style={{ display: "flex", justifyContent: "center", gap: "12px", alignItems: "center" }}>
+            <input
+              type="text"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              placeholder="Enter discount code (e.g., 'SAVE20', 'SPRING2025')"
+              style={{
+                width: "100%",
+                maxWidth: "250px",
+                padding: "12px 16px",
+                border: "2px solid #E2E8F0",
+                borderRadius: "8px",
+                fontSize: "16px",
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
+            />
+            {discountCode && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={discountPercentage}
+                  onChange={(e) => setDiscountPercentage(e.target.value)}
+                  placeholder="15"
+                  style={{
+                    width: "80px",
+                    padding: "12px 16px",
+                    border: "2px solid #E2E8F0",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    textAlign: "center"
+                  }}
+                />
+                <span style={{ fontSize: "16px", fontWeight: "600", color: "#4A5568" }}>%</span>
+              </div>
+            )}
+          </div>
+          {discountCode && (
+            <div style={{ marginTop: "8px", fontSize: "14px", color: "#718096" }}>
+              Discount message will show: &quot;save {discountPercentage || '15'}% off your order*&quot;
+            </div>
+          )}
         </div>
 
       {/* Search Mode Toggle */}
@@ -4042,19 +4074,42 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                   <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#495057' }}>
                     Discount Code: {discountCode ? <span style={{ color: '#28a745', fontWeight: 600 }}>(Active: {discountCode})</span> : <span style={{ color: '#6c757d' }}>(None - separator will be plain)</span>}
                   </label>
-                  <input
-                    type="text"
-                    value={discountCode || ''}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                    placeholder="Enter discount code (e.g., SAVE20)"
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      border: '2px solid #E9ECEF',
-                      borderRadius: 6,
-                      fontSize: 13
-                    }}
-                  />
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <input
+                      type="text"
+                      value={discountCode || ''}
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      placeholder="Enter discount code (e.g., SAVE20)"
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        border: '2px solid #E9ECEF',
+                        borderRadius: 6,
+                        fontSize: 13
+                      }}
+                    />
+                    {discountCode && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={discountPercentage || '15'}
+                          onChange={(e) => setDiscountPercentage(e.target.value)}
+                          placeholder="%"
+                          style={{
+                            width: '70px',
+                            padding: '8px 12px',
+                            border: '2px solid #E9ECEF',
+                            borderRadius: 6,
+                            fontSize: 13,
+                            textAlign: 'center'
+                          }}
+                        />
+                        <span style={{ fontSize: 13, color: '#495057' }}>%</span>
+                      </div>
+                    )}
+                  </div>
                   <div style={{ fontSize: 11, color: '#6c757d', marginTop: 4 }}>
                     If populated, a discount message will appear in the separator above products. Otherwise, just a colored separator bar.
                   </div>
@@ -4465,6 +4520,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                             hyperlinkToggle,
                             utmParams: { utmSource, utmMedium, utmCampaign, utmContent, utmTerm },
                             discountCode: discountCode || undefined,
+                            discountPercentage: discountPercentage || undefined,
                             bannerImageUrl: emailBannerImageUrl.trim() || undefined,
                             freeText: emailFreeText.trim() || undefined,
                             issuuUrl: emailIssuuUrl.trim() || undefined,
