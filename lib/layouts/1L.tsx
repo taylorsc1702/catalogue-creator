@@ -229,7 +229,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                   color: "#495057",
                   marginBottom: 6
                 }}>
-                  📸 Internals ({item.additionalImages.length}):
+                  📸 ({item.additionalImages.length}):
                 </div>
                 <div style={{
                   display: "flex",
@@ -362,7 +362,7 @@ export function create1LLayoutHandler(): LayoutHandler {
           <!-- Internals section - same structure as 1-up but with 2 bigger images -->
           ${item.additionalImages && item.additionalImages.length > 0 ? `
             <div class="internals-section-full">
-              <div class="internals-title">Internals:</div>
+              <div class="internals-title"></div>
               <div class="internals-thumbnails-full">
                 ${item.additionalImages.slice(0, 2).map((img, idx) => 
                   `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail-full">`
@@ -468,7 +468,7 @@ export function create1LLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: "Internals:",
+                          text: "",
                           bold: true,
                           size: 14,
                           color: "495057",

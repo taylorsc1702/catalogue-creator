@@ -229,25 +229,39 @@ export function create2IntLayoutHandler(orientation: Orientation = 'portrait'): 
             {item.additionalImages && item.additionalImages.length > 0 && (
               <div style={{
                 marginTop: 8,
-                display: "flex",
-                justifyContent: "center",
-                gap: 8
+                paddingTop: 8,
+                borderTop: "1px solid #E9ECEF"
               }}>
-                {item.additionalImages.slice(0, 2).map((img, idx) => (
-                  <InternalImageWithOrientation 
-                    key={idx}
-                    src={img} 
-                    alt={`Internal preview ${idx + 1}`}
-                    width={60}
-                    height={80}
-                    style={{ 
-                      objectFit: "cover", 
-                      borderRadius: 4, 
-                      background: "#F8F9FA",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-                    }}
-                  />
-                ))}
+                <div style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#495057",
+                  marginBottom: 6,
+                  textAlign: "center"
+                }}>
+                  📸 ({item.additionalImages.length}):
+                </div>
+                <div style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 8
+                }}>
+                  {item.additionalImages.slice(0, 2).map((img, idx) => (
+                    <InternalImageWithOrientation 
+                      key={idx}
+                      src={img} 
+                      alt={`Internal preview ${idx + 1}`}
+                      width={60}
+                      height={80}
+                      style={{ 
+                        objectFit: "cover", 
+                        borderRadius: 4, 
+                        background: "#F8F9FA",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

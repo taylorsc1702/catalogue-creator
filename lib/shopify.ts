@@ -32,7 +32,6 @@ const API_URL = `https://${STORE}/admin/api/2024-07/graphql.json`;
 //   { namespace: "my_fields", key: "ICRKDT" },
 //   { namespace: "my_fields", key: "icillus" },
 //   { namespace: "my_fields", key: "ICAUTH" },
-//   { namespace: "my_fields", key: "Illlustrations" },
 //   { namespace: "my_fields", key: "Edition" },
 // ] as const;
 

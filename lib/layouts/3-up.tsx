@@ -174,6 +174,18 @@ export function create3UpLayoutHandler(): LayoutHandler {
                 </div>
               </div>
             )}
+            {item.additionalImages && item.additionalImages.length > 0 && (
+              <div style={{
+                fontSize: 10,
+                fontWeight: 600,
+                color: "#495057",
+                marginTop: 8,
+                paddingTop: 8,
+                borderTop: "1px solid #E9ECEF"
+              }}>
+                📸 ({item.additionalImages.length})
+              </div>
+            )}
             {hasFooterNote && (
               <div style={{
                 marginTop: 8,

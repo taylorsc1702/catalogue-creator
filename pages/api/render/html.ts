@@ -24,8 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hyperlinkToggle?: 'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress';
       itemBarcodeTypes?: {[key: number]: "EAN-13" | "QR Code" | "None"};
       barcodeType?: "EAN-13" | "QR Code" | "None";
-      itemInternalsCount1L?: {[key: number]: number}; // Per-item internals count for 1L layout (1-4)
-      internalsCount1L?: number; // Default number of internals to display for 1L layout (1-4)
+      itemInternalsCount1L?: {[key: number]: number}; // Per-item internals count for 1L layout (1-2)
+      internalsCount1L?: number; // Default number of internals to display for 1L layout (1-2)
       bannerColor?: string;
       websiteName?: string;
       utmParams?: {

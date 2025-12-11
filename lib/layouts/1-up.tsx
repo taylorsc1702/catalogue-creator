@@ -230,7 +230,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                   color: "#495057",
                   marginBottom: 6
                 }}>
-                  📸 Internals ({item.additionalImages.length}):
+                  📸 ({item.additionalImages.length}):
                 </div>
                 <div style={{
                   display: "flex",
@@ -242,8 +242,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
                       key={idx}
                       src={img}
                       alt={`Internal ${idx + 1}`}
-                      width={30}
-                      height={45}
+                      width={33}
+                      height={50}
                       style={{
                         objectFit: "cover",
                         borderRadius: 3,
@@ -303,7 +303,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
             <!-- Internals Thumbnails -->
             ${item.additionalImages && item.additionalImages.length > 0 ? `
               <div class="internals-section">
-                <div class="internals-title">Internals:</div>
+                <div class="internals-title"></div>
                 <div class="internals-thumbnails">
                   ${item.additionalImages.slice(0, 6).map((img, idx) => 
                     `<img src="${esc(img)}" alt="Internal ${idx + 1}" class="internal-thumbnail">`
@@ -468,7 +468,7 @@ export function create1UpLayoutHandler(): LayoutHandler {
                     new Paragraph({
                       children: [
                         new TextRun({
-                          text: "Internals:",
+                          text: "",
                           bold: true,
                           size: 14,
                           color: "495057",
@@ -757,8 +757,8 @@ export function create1UpLayoutHandler(): LayoutHandler {
       }
       
       .internal-thumbnail {
-        width: 40px;
-        height: 60px;
+        width: 44px;
+        height: 66px;
         object-fit: cover;
         border-radius: 4px;
         border: 1px solid #E9ECEF;

@@ -79,6 +79,18 @@ export function create9UpLayoutHandler(): LayoutHandler {
                 ISBN: {esc(item.sku)}
               </div>
             )}
+            {item.additionalImages && item.additionalImages.length > 0 && (
+              <div style={{
+                fontSize: 9,
+                fontWeight: 600,
+                color: "#495057",
+                marginTop: 6,
+                paddingTop: 6,
+                borderTop: "1px solid #E9ECEF"
+              }}>
+                📸 ({item.additionalImages.length})
+              </div>
+            )}
           </div>
         </div>
       );

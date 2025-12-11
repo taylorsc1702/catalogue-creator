@@ -577,24 +577,21 @@ function generateEmailHtml(
           `;
           
         case 'grid-2':
-          // For grid-2, we need to render pairs
-          if (index % 2 === 0 && index + 1 < items.length) {
-            const nextItem = items[index + 1];
-            const nextTemplate = emailTemplateAssignments[index + 1];
-            const nextShowInternals = emailInternalsToggle && emailInternalsToggle[index + 1];
-            if (nextTemplate === 'grid-2') {
-              return `
-                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
-                  <tr>
-                    ${renderGridProduct(item, 280, showInternals)}
-                    ${renderGridProduct(nextItem, 280, nextShowInternals)}
-                  </tr>
-                </table>
-              `;
-            }
+          // For grid-2, we need to render pairs - always create 2 columns
+          if (index % 2 === 0) {
+            const nextItem = index + 1 < items.length ? items[index + 1] : null;
+            const nextShowInternals = nextItem && emailInternalsToggle ? emailInternalsToggle[index + 1] : false;
+            return `
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                <tr>
+                  ${renderGridProduct(item, 280, showInternals)}
+                  ${nextItem ? renderGridProduct(nextItem, 280, nextShowInternals) : '<td width="280" style="padding: 10px;"></td>'}
+                </tr>
+              </table>
+            `;
           }
-          // If not paired, render as single
-          return renderSingleProduct(item, showInternals);
+          // Skip odd indices as they're rendered with their pair above
+          return '';
           
         case 'grid-3':
           // For grid-3, we need to render triplets

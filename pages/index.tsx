@@ -230,14 +230,14 @@ export default function Home() {
   const [itemLayouts, setItemLayouts] = useState<{[key: number]: 1|'1L'|2|'2-int'|3|4|8|9|12}>({});
   const [itemBarcodeTypes, setItemBarcodeTypes] = useState<{[key: number]: "EAN-13" | "QR Code" | "None"}>({});
   const [itemAuthorBioToggle, setItemAuthorBioToggle] = useState<{[key: number]: boolean}>({});
-  const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-4)
+  const [itemInternalsCount1L, setItemInternalsCount1L] = useState<{[key: number]: number}>({}); // Per-item internals count for 1L layout (1-2)
   const [previousEditionIsbns, setPreviousEditionIsbns] = useState<{[key: number]: string}>({}); // Previous edition ISBNs per item
   const [moreFromAuthorIsbns, setMoreFromAuthorIsbns] = useState<{[key: number]: string[]}>({}); // More from author ISBNs per item (up to 3 for 1/1L, 2 for 2-up/2-int)
   const [moreFromAuthorImages, setMoreFromAuthorImages] = useState<{[key: number]: string[]}>({}); // More from author images per item
   const [loadingMoreFromAuthor, setLoadingMoreFromAuthor] = useState<{[key: number]: boolean}>({}); // Loading state for fetching more from author images
   const [hyperlinkToggle, setHyperlinkToggle] = useState<'woodslane' | 'woodslanehealth' | 'woodslaneeducation' | 'woodslanepress'>('woodslane');
   const [customBannerColor, setCustomBannerColor] = useState<string>("");
-  const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Default number of internals to display for 1L layout (1-4)
+  const [internalsCount1L, setInternalsCount1L] = useState<number>(2); // Default number of internals to display for 1L layout (1-2)
   
   // UTM Parameters
   const [catalogueName, setCatalogueName] = useState("");
@@ -3093,8 +3093,13 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+      {/* Fetch Products Button - Own Line */}
+      <div style={{ marginTop: 12 }}>
         <button onClick={fetchItems} disabled={loading} style={btn()}>{loading ? "Loading..." : "Fetch Products"}</button>
+      </div>
+
+      {/* Layout Options - Own Line */}
+      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         <span>Layout:</span>
         {[1,2,3,4,8,9,12].map(n => (
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8|9|12)} style={btn(n===layout)}>{n}-up</button>
@@ -3116,7 +3121,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
               cursor: "pointer"
             }}
           >
-            {[1, 2, 3, 4].map(n => (
+            {[1, 2].map(n => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
@@ -3147,7 +3152,11 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
         <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
         <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
         <button onClick={()=>setLayout('table')} style={btn(layout==='table')}>📊 Table</button>
-        <span style={{ marginLeft: 16, fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
+      </div>
+
+      {/* Barcode Type - Own Line */}
+      <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#495057" }}>Barcode Type:</span>
         {["EAN-13", "QR Code", "None"].map(type => (
           <button 
             key={type}
@@ -3809,78 +3818,83 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
       </div>
       )}
 
-          <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
-            {isAdmin && (
-              <>
-                <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
-                <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
-                <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
-              </>
-            )}
-            <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
-            <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
-            <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
-            {isAdmin && (
-              <button onClick={openEmailHTML} disabled={!items.length || emailGenerating} style={btn()}>
-                {emailGenerating ? '⏳ Generating...' : '📧 Email HTML'}
+          {/* Fixed Layout Exports */}
+          <div style={{ marginTop: 24 }}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: 16, fontWeight: 600, color: "#495057" }}>Fixed Layout Exports</h3>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <button onClick={openPrintView} disabled={!items.length} style={btn()}>📄 HTML Print View</button>
+              {isAdmin && (
+                <>
+                  <button onClick={downloadDocx} disabled={!items.length} style={btn()}>📝 Download DOCX</button>
+                  <button onClick={openGoogleDocs} disabled={!items.length} style={btn()}>📊 Google Docs Import</button>
+                  <button onClick={openGoogleAppsScript} disabled={!items.length} style={btn()}>🚀 Create Google Doc</button>
+                </>
+              )}
+              <button onClick={openListView} disabled={!items.length} style={btn()}>📋 List View</button>
+              <button onClick={openCompactListView} disabled={!items.length} style={btn()}>📋 Compact List</button>
+              <button onClick={openTableView} disabled={!items.length} style={btn()}>📊 Table View</button>
+              {isAdmin && (
+                <button onClick={openEmailHTML} disabled={!items.length || emailGenerating} style={btn()}>
+                  {emailGenerating ? '⏳ Generating...' : '📧 Email HTML'}
+                </button>
+              )}
+              <button onClick={() => openEmailWithOutlook('single')} disabled={!items.length || emailGenerating} style={btn()}>
+                {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - PDF'}
               </button>
-            )}
-            <button onClick={() => openEmailWithOutlook('single')} disabled={!items.length || emailGenerating} style={btn()}>
-              {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - PDF'}
-            </button>
+            </div>
           </div>
 
 
+          {/* Mixed Layout View */}
           {items.length > 0 && (
-            <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 13, color: '#495057', fontWeight: 600 }}>Append view</span>
-                <select
-                  value={appendView}
-                  onChange={(e) => setAppendView(e.target.value as 'none'|'list'|'compact-list'|'table')}
-                  style={{
-                    border: '2px solid #E9ECEF',
-                    borderRadius: 8,
-                    padding: '8px 10px',
-                    fontSize: 13,
-                    background: '#FAFBFC'
-                  }}
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ margin: "0 0 12px 0", fontSize: 16, fontWeight: 600, color: "#495057" }}>Mixed Layout View</h3>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: '#495057', fontWeight: 600 }}>Append view</span>
+                  <select
+                    value={appendView}
+                    onChange={(e) => setAppendView(e.target.value as 'none'|'list'|'compact-list'|'table')}
+                    style={{
+                      border: '2px solid #E9ECEF',
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                      fontSize: 13,
+                      background: '#FAFBFC'
+                    }}
+                  >
+                    <option value="none">None</option>
+                    <option value="list">List</option>
+                    <option value="compact-list">Compact list</option>
+                    <option value="table">Table</option>
+                  </select>
+                </label>
+                <button 
+                  onClick={() => setShowOrderEditor(!showOrderEditor)} 
+                  style={btn(showOrderEditor)}
                 >
-                  <option value="none">None</option>
-                  <option value="list">List</option>
-                  <option value="compact-list">Compact list</option>
-                  <option value="table">Table</option>
-                </select>
-              </label>
-              <button 
-                onClick={() => setShowOrderEditor(!showOrderEditor)} 
-                style={btn(showOrderEditor)}
-              >
-                {showOrderEditor ? '✓ Reordering Mode' : '🔀 Reorder Items'}
-              </button>
-              <button onClick={openMixedLayout} disabled={!items.length} style={btn()}>
-                🎨 Mixed Layout View
-              </button>
-              <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
-                🧩 Preview & Reorder Pages
-              </button>
-              <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
-                🧩 Preview & Reorder Pages
-              </button>
-              {isAdmin && (
-                <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
-                  🚀 Mixed Google Doc
+                  {showOrderEditor ? '✓ Reordering Mode' : '🔀 Reorder Items'}
                 </button>
-              )}
-              <button onClick={() => openEmailWithOutlook('mixed')} disabled={!items.length || emailGenerating} style={btn()}>
-                {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - Mixed Layout (PDF)'}
-              </button>
-              {showOrderEditor && (
-                <span style={{ fontSize: 13, color: '#656F91' }}>
-                  💡 Use arrows to reorder items, assign layouts, or enter position numbers
-                </span>
-              )}
+                <button onClick={openMixedLayout} disabled={!items.length} style={btn()}>
+                  🎨 Mixed Layout View
+                </button>
+                <button onClick={openPreviewAndReorder} disabled={!items.length} style={btn()}>
+                  🧩 Preview & Reorder Pages
+                </button>
+                {isAdmin && (
+                  <button onClick={openGoogleAppsScriptMixed} disabled={!items.length} style={btn()}>
+                    🚀 Mixed Google Doc
+                  </button>
+                )}
+                <button onClick={() => openEmailWithOutlook('mixed')} disabled={!items.length || emailGenerating} style={btn()}>
+                  {emailGenerating ? '⏳ Generating PDF...' : '📧 Outlook - Mixed Layout (PDF)'}
+                </button>
+                {showOrderEditor && (
+                  <span style={{ fontSize: 13, color: '#656F91' }}>
+                    💡 Use arrows to reorder items, assign layouts, or enter position numbers
+                  </span>
+                )}
+              </div>
             </div>
           )}
 

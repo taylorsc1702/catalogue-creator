@@ -156,7 +156,6 @@ const schema = z.object({
         sku: p.sku,
         icrkdt: mf["ICRKDT"],
         icillus: mf["icillus"],
-        illustrations: mf["Illlustrations"],
         edition: mf["Edition"],
         icauth: mf["ICAUTH"] || mf["my_fields.ICAUTH"] || mf["icauth"],
         publicity: mf["publicity"],
