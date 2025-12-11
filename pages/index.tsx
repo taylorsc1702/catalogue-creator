@@ -3149,9 +3149,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             <option value="landscape">Landscape</option>
           </select>
         )}
-        <button onClick={()=>setLayout('list')} style={btn(layout==='list')}>📋 List</button>
-        <button onClick={()=>setLayout('compact-list')} style={btn(layout==='compact-list')}>📄 Compact</button>
-        <button onClick={()=>setLayout('table')} style={btn(layout==='table')}>📊 Table</button>
       </div>
 
       {/* Barcode Type - Own Line */}
