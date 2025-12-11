@@ -268,6 +268,7 @@ export default function Home() {
   const [emailHtml, setEmailHtml] = useState<string>('');
   const [emailTemplate, setEmailTemplate] = useState<EmailTemplateType>('single');
   const [emailTemplateAssignments, setEmailTemplateAssignments] = useState<{[key: number]: EmailAssignmentTemplate}>({});
+  const [emailGridShowDetails, setEmailGridShowDetails] = useState<boolean>(false);
   const [emailBannerImageUrl, setEmailBannerImageUrl] = useState<string>('');
   const [emailFreeText, setEmailFreeText] = useState<string>('');
   const [emailIssuuUrl, setEmailIssuuUrl] = useState<string>('');
@@ -731,6 +732,7 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
     setMoreFromAuthorImages({});
     setEmailTemplate("single");
     setEmailTemplateAssignments({});
+    setEmailGridShowDetails(false);
     setEmailBannerImageUrl("");
     setEmailFreeText("");
     setEmailIssuuUrl("");
@@ -1855,7 +1857,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
             price: true,
             imprint: true,
             releaseDate: true
-          }
+          },
+          emailGridShowDetails: emailGridShowDetails
         })
       });
       
@@ -3105,9 +3108,6 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
           <button key={n} onClick={()=>setLayout(n as 1|2|3|4|8|9|12)} style={btn(n===layout)}>{n}-up</button>
         ))}
         <button onClick={()=>setLayout('1L')} style={btn(layout==='1L')}>1L</button>
-        {layout === '1L' && (
-          <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 600, color: "#495057" }}>Internals:</span>
-        )}
         {layout === '1L' && (
           <select 
             value={internalsCount1L} 
@@ -4551,7 +4551,8 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                               imprint: true,
                               releaseDate: true
                             },
-                            emailInternalsToggle: items.map((_, idx) => emailInternalsToggle[idx] || false)
+                            emailInternalsToggle: items.map((_, idx) => emailInternalsToggle[idx] || false),
+                            emailGridShowDetails: emailGridShowDetails
                           })
                         });
                         if (resp.ok) {
@@ -4583,6 +4584,17 @@ const [selectedAllowedVendors, setSelectedAllowedVendors] = useState<string[]>([
                   <option value="featured">Featured</option>
                   <option value="mixed">Mixed Format</option>
                 </select>
+                {(emailTemplate === 'grid-2' || emailTemplate === 'grid-3' || emailTemplate === 'grid-4' || emailTemplate === 'mixed') && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#495057', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={emailGridShowDetails}
+                      onChange={(e) => setEmailGridShowDetails(e.target.checked)}
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                    />
+                    <span>Show Product Details (Grid Views)</span>
+                  </label>
+                )}
                 <button onClick={openEmailHTML} disabled={emailGenerating} style={{
                   background: '#007bff',
                   color: 'white',
@@ -5659,7 +5671,7 @@ function Preview({ items, layout, showOrderEditor, moveItemUp, moveItemDown, mov
                 {it.additionalImages && it.additionalImages.length > 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8, paddingLeft: 8, borderLeft: "1px solid #DEE2E6" }}>
                     <span style={{ fontSize: 11, color: "#6C757D", fontWeight: 600 }}>
-                      Internals: {it.additionalImages.length}
+                      {it.additionalImages.length}
                     </span>
                     {(itemLayouts[i] === '1L' || (layout === '1L' && !itemLayouts[i])) && (
                       <>
